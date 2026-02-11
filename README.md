@@ -64,3 +64,7 @@
 Дизайн приложения разработан в Figma. Доступ к макетам:
 
 [https://www.figma.com/design/DmOfAy8XxDgmWRsm0bwuCK/VolunteerWeb?node-id=0-1&t=LcB0iv4bNcpMYx2P-1](#)
+
+## Литература
+
+- **Современный веб-дизайн** - Ю.А. Сырых
