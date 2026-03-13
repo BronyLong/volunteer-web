@@ -1,59 +1,42 @@
-digraph BP5_Admin {
+digraph BP5_AdminManagement {
+
     rankdir=TB;
-    splines=ortho;
-    nodesep=0.6;
     ranksep=0.9;
+    nodesep=0.6;
     fontsize=11;
     fontname="Segoe UI";
     node [fontname="Segoe UI", shape=box];
 
-    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
-    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    start [label="Начало администрирования", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса", shape=oval, style=filled, fillcolor="lightgrey"];
 
-    // Администратор
     subgraph cluster_admin {
-        label = "Администратор";
-        style = "rounded";
-        color = "lightyellow";
+        label="Администратор";
+        style="rounded";
+        color="lightyellow";
 
-        a_view_users   [label="Просмотр списка\nпользователей"];
-        a_change_roles [label="Изменение ролей\n(волонтёр /\nкоординатор /\nадминистратор)"];
-        a_block        [label="Блокировка /\nразблокировка\nучётных записей"];
-
-        a_manage_dicts [label="Управление\nсправочниками\n(категории\nмероприятий и др.)"];
-        a_view_stats   [label="Просмотр сводной\nстатистики системы"];
-        a_view_log     [label="Просмотр журнала\nключевых действий\n(при наличии)"];
+        a_view_users [label="Просмотр\nпользователей"];
+        a_change_roles [label="Изменение\nролей"];
+        a_block_user [label="Блокировка\nаккаунта"];
+        a_unblock_user [label="Разблокировка\nаккаунта"];
+        a_manage_categories [label="Управление\nкатегориями\nмероприятий"];
+        a_view_stats [label="Просмотр\nсводной статистики"];
     }
 
-    // Система
     subgraph cluster_system {
-        label = "Информационная система";
-        style = "rounded";
-        color = "lightblue";
+        label="Информационная система";
+        style="rounded";
+        color="lightblue";
 
-        s_update_roles  [label="Применение изменений\nролей и прав доступа"];
-        s_update_status [label="Изменение статуса\nаккаунта"];
-        s_update_dicts  [label="Сохранение изменений\nв справочниках"];
-        s_generate_stats[label="Формирование отчётных\nпоказателей"];
-        s_store_log     [label="Запись событий\nв журнал"];
+        s_update_roles [label="Обновление\nролей"];
+        s_update_status [label="Изменение\nстатуса аккаунта"];
+        s_save_categories [label="Сохранение\nкатегорий"];
+        s_generate_stats [label="Формирование\nстатистики"];
     }
 
-    // Поток управления пользователями
-    start -> a_view_users;
-    a_view_users -> a_change_roles -> s_update_roles;
-    a_view_users -> a_block        -> s_update_status;
-
-    // Управление справочниками
-    a_manage_dicts -> s_update_dicts;
-
-    // Статистика и журнал
-    a_view_stats -> s_generate_stats;
-    a_view_log   -> s_store_log    [style=dashed, label="чтение записей"];
-
-    // Завершение
-    s_update_roles  -> end;
-    s_update_status -> end;
-    s_update_dicts  -> end;
-    s_generate_stats-> end;
+    start -> a_view_users -> a_change_roles -> s_update_roles;
+    a_block_user -> s_update_status;
+    a_unblock_user -> s_update_status;
+    a_manage_categories -> s_save_categories;
+    a_view_stats -> s_generate_stats -> end_ok;
 }
-

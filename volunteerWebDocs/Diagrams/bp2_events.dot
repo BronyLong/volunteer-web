@@ -1,60 +1,55 @@
-digraph BP2_Events {
+digraph BP2_EventManagement {
+
     rankdir=TB;
-    splines=ortho;
-    nodesep=0.6;
     ranksep=0.9;
+    nodesep=0.6;
     fontsize=11;
     fontname="Segoe UI";
     node [fontname="Segoe UI", shape=box];
 
-    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
-    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    start [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(мероприятие создано\nили обновлено)", shape=oval, style=filled, fillcolor="lightgrey"];
 
-    // Координатор
-    subgraph cluster_coord {
-        label = "Координатор";
-        style = "rounded";
-        color = "lightyellow";
+    subgraph cluster_coordinator {
+        label="Координатор";
+        style="rounded";
+        color="lightyellow";
 
-        c_identify_need [label="Выявление потребности\nв новом мероприятии"];
-        c_define_params [label="Определение цели,\nформата, сроков,\nколичества участников"];
-        c_create_event  [label="Заполнение карточки\nмероприятия"];
-        c_update_event  [label="Корректировка данных\nмероприятия"];
-        c_set_status    [label="Изменение статуса\n(открыто / завершено /\nотменено)"];
+        c_plan_event [label="Формирование идеи\nи параметров мероприятия"];
+        c_create_event [label="Создание карточки\nмероприятия"];
+        c_edit_event [label="Редактирование\nданных мероприятия"];
+        c_finish_event [label="Перевод статуса\nв «завершено»"];
+        c_cancel_event [label="Перевод статуса\nв «отменено»"];
     }
 
-    // Система
     subgraph cluster_system {
-        label = "Информационная система";
-        style = "rounded";
-        color = "lightblue";
+        label="Информационная система";
+        style="rounded";
+        color="lightblue";
 
-        s_store_event   [label="Сохранение данных\nмероприятия"];
-        s_publish_event [label="Публикация мероприятия\nв общем списке"];
+        s_validate_event [label="Проверка корректности\nвведённых данных"];
+        s_save_event [label="Сохранение\nмероприятия"];
+        s_publish_event [label="Публикация мероприятия\nв списке"];
+        s_update_event [label="Обновление\nданных мероприятия"];
     }
 
-    // Администратор
     subgraph cluster_admin {
-        label = "Администратор";
-        style = "rounded";
-        color = "lightgreen";
+        label="Администратор";
+        style="rounded";
+        color="lightgreen";
 
-        a_review_events [label="Просмотр списка\nмероприятий"];
-        a_fix_event     [label="Корректировка или\nудаление ошибочных\nмероприятий"];
-        a_assign_coord  [label="Назначение ответственных\nкоординаторов"];
+        a_edit_event [label="Административное\nредактирование\nмероприятия"];
+        a_delete_event [label="Удаление\nнекорректного\nмероприятия"];
     }
 
-    // Поток координатора и системы
-    start -> c_identify_need -> c_define_params -> c_create_event -> s_store_event -> s_publish_event;
-    s_publish_event -> c_update_event  [label="при необходимости", style=dashed];
-    c_update_event  -> s_store_event   [style=dashed];
-    c_set_status    -> s_store_event   [label="смена статуса", style=dashed];
+    start -> c_plan_event -> c_create_event -> s_validate_event;
+    s_validate_event -> s_save_event;
+    s_save_event -> s_publish_event -> end_ok;
 
-    // Действия администратора
-    s_publish_event -> a_review_events;
-    a_review_events -> a_fix_event    -> s_store_event;
-    a_review_events -> a_assign_coord -> s_store_event;
+    c_edit_event -> s_update_event -> end_ok;
+    c_finish_event -> s_update_event;
+    c_cancel_event -> s_update_event;
 
-    s_store_event -> end;
+    a_edit_event -> s_update_event;
+    a_delete_event -> end_ok;
 }
-

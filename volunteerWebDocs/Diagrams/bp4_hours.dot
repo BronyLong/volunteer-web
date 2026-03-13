@@ -1,55 +1,44 @@
-digraph BP4_Hours {
+digraph BP4_VolunteerHours {
+
     rankdir=TB;
-    splines=ortho;
-    nodesep=0.6;
     ranksep=0.9;
+    nodesep=0.6;
     fontsize=11;
     fontname="Segoe UI";
     node [fontname="Segoe UI", shape=box];
 
-    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
-    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    start [label="Начало мероприятия", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(часы учтены)", shape=oval, style=filled, fillcolor="lightgrey"];
 
-    // Координатор
-    subgraph cluster_coord {
-        label = "Координатор";
-        style = "rounded";
-        color = "lightyellow";
-
-        c_conduct_event [label="Проведение мероприятия\nв соответствии с планом"];
-        c_form_list     [label="Формирование списка\nфактических участников"];
-        c_set_hours     [label="Ввод отработанных\nчасов по каждому\nволонтёру"];
-        c_adjust_hours  [label="Корректировка ранее\nвнесённых значений\n(при необходимости)"];
-    }
-
-    // Система
-    subgraph cluster_system {
-        label = "Информационная система";
-        style = "rounded";
-        color = "lightblue";
-
-        s_store_hours   [label="Сохранение данных\nоб участии и часах"];
-        s_recalc_totals [label="Пересчёт суммарных\nчасов по волонтёру"];
-        s_update_stats  [label="Обновление статистики\nв личном кабинете"];
-        s_log_change    [label="Фиксация факта\nкорректировки\n(при журналировании)"];
-    }
-
-    // Волонтёр
     subgraph cluster_volunteer {
-        label = "Волонтёр";
-        style = "rounded";
-        color = "lightgreen";
+        label="Волонтёры";
+        style="rounded";
+        color="lightyellow";
 
-        v_view_stats    [label="Просмотр истории\nучастия и часов\nв личном кабинете"];
+        v_participate [label="Участие\nв мероприятии"];
     }
 
-    // Поток
-    start -> c_conduct_event -> c_form_list -> c_set_hours -> s_store_hours;
-    s_store_hours -> s_recalc_totals -> s_update_stats -> v_view_stats -> end;
+    subgraph cluster_coordinator {
+        label="Координатор";
+        style="rounded";
+        color="lightgreen";
 
-    // Корректировки
-    c_set_hours   -> c_adjust_hours [style=dashed, label="обнаружена ошибка"];
-    c_adjust_hours -> s_store_hours;
-    c_adjust_hours -> s_log_change  [style=dashed];
+        c_check_attendance [label="Фиксация\nучастников"];
+        c_enter_hours [label="Ввод количества\nотработанных часов"];
+        c_correct_hours [label="Корректировка\nчасов (при ошибке)"];
+    }
+
+    subgraph cluster_system {
+        label="Информационная система";
+        style="rounded";
+        color="lightblue";
+
+        s_save_hours [label="Сохранение данных\nо часах"];
+        s_update_stats [label="Обновление\nстатистики волонтёра"];
+    }
+
+    start -> v_participate -> c_check_attendance -> c_enter_hours;
+    c_enter_hours -> s_save_hours -> s_update_stats -> end_ok;
+
+    c_correct_hours -> s_save_hours;
 }
-

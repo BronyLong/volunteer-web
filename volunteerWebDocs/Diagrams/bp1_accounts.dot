@@ -1,5 +1,5 @@
-digraph BP1_Accounts {
-    // Общие настройки: сверху вниз, обычные (плавные) стрелки
+digraph BP1_AccountManagement {
+
     rankdir=TB;
     ranksep=0.9;
     nodesep=0.6;
@@ -8,19 +8,19 @@ digraph BP1_Accounts {
     node [fontname="Segoe UI", shape=box];
 
     start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
-    end_ok [label="Завершение процесса\n(учётная запись создана,\nпрофиль заполнен)", shape=oval, style=filled, fillcolor="lightgrey"];
-    end_fail [label="Завершение процесса\n(регистрация не выполнена)", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(пользователь зарегистрирован\nи профиль заполнен)", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(регистрация отклонена)", shape=oval, style=filled, fillcolor="lightgrey"];
 
     // Потенциальный волонтёр
     subgraph cluster_volunteer {
-        label = "Потенциальный волонтёр / волонтёр";
+        label = "Потенциальный пользователь / волонтёр";
         style = "rounded";
         color = "lightyellow";
 
-        v_view_site     [label="Просмотр информации\nо деятельности организации"];
-        v_register      [label="Заполнение формы\nрегистрации"];
-        v_login         [label="Вход в систему"];
-        v_edit_profile  [label="Заполнение и\nактуализация профиля"];
+        v_visit_site   [label="Переход на сайт\nволонтёрской организации"];
+        v_register     [label="Заполнение формы\nрегистрации"];
+        v_login        [label="Ввод email\nи пароля"];
+        v_edit_profile [label="Заполнение\nи редактирование\nличного профиля"];
     }
 
     // Система
@@ -29,33 +29,36 @@ digraph BP1_Accounts {
         style = "rounded";
         color = "lightblue";
 
-        s_check_email    [label="Проверка уникальности\nemail и корректности данных"];
-        s_email_taken    [label="Отказ в регистрации:\nemail уже используется"];
-        s_create_account [label="Создание учётной\nзаписи с ролью\n«волонтёр»"];
-        s_auth_ok        [label="Выдача доступа\nк личному кабинету"];
-        s_store_profile  [label="Сохранение и обновление\nанкетных данных"];
+        s_validate_data  [label="Проверка корректности\nданных регистрации"];
+        s_check_email    [label="Проверка уникальности\nemail"];
+        s_create_account [label="Создание учётной записи\n(роль «волонтёр»)"];
+        s_authenticate   [label="Проверка учётных данных"];
+        s_open_dashboard [label="Предоставление доступа\nк личному кабинету"];
+        s_save_profile   [label="Сохранение данных\nпрофиля"];
+        s_email_error    [label="Отказ в регистрации\n(email уже используется)"];
     }
 
     // Администратор
     subgraph cluster_admin {
-        label = "Администратор системы";
+        label = "Администратор";
         style = "rounded";
         color = "lightgreen";
 
-        a_view_users    [label="Просмотр списка\nпользователей и ролей"];
-        a_update_roles  [label="Изменение ролей\nпользователей"];
-        a_block_user    [label="Блокировка /\nразблокировка аккаунтов"];
+        a_view_users   [label="Просмотр списка\nпользователей"];
+        a_change_role  [label="Изменение ролей\nпользователей"];
+        a_block_user   [label="Блокировка /\nразблокировка аккаунта"];
     }
 
-    // Основной линейный поток (сверху вниз)
-    start -> v_view_site -> v_register -> s_check_email;
+    // Основной поток
+    start -> v_visit_site -> v_register -> s_validate_data -> s_check_email;
+
     s_check_email -> s_create_account [label="email свободен"];
-    s_check_email -> s_email_taken   [label="email занят", style=dashed];
+    s_check_email -> s_email_error [label="email занят", style=dashed];
 
-    s_create_account -> v_login -> s_auth_ok -> v_edit_profile -> s_store_profile -> end_ok;
-    s_email_taken -> end_fail;
+    s_create_account -> v_login -> s_authenticate -> s_open_dashboard -> v_edit_profile -> s_save_profile -> end_ok;
 
-    // Администрирование (отдельная вертикальная ветка)
-    a_view_users -> a_update_roles -> a_block_user;
+    s_email_error -> end_fail;
+
+    // Администрирование
+    a_view_users -> a_change_role -> a_block_user;
 }
-

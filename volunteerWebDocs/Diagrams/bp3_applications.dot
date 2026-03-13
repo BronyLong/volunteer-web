@@ -1,70 +1,55 @@
-digraph BP3_Applications {
+digraph BP3_EventRegistration {
+
     rankdir=TB;
-    splines=ortho;
-    nodesep=0.6;
     ranksep=0.9;
+    nodesep=0.6;
     fontsize=11;
     fontname="Segoe UI";
     node [fontname="Segoe UI", shape=box];
 
-    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
-    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    start [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(список участников\nсформирован)", shape=oval, style=filled, fillcolor="lightgrey"];
 
-    // Волонтёр
     subgraph cluster_volunteer {
-        label = "Волонтёр";
-        style = "rounded";
-        color = "lightyellow";
+        label="Волонтёр";
+        style="rounded";
+        color="lightyellow";
 
-        v_view_events  [label="Просмотр списка\nмероприятий"];
-        v_filter       [label="Фильтрация по дате,\nкатегории, статусу"];
-        v_view_card    [label="Просмотр карточки\nмероприятия"];
-        v_apply        [label="Подача заявки\nна участие"];
-        v_cancel       [label="Отмена заявки\n(по инициативе\nволонтёра)"];
-        v_view_result  [label="Просмотр статуса\nзаявки в личном\nкабинете"];
+        v_view_events [label="Просмотр списка\nмероприятий"];
+        v_open_event [label="Просмотр карточки\nмероприятия"];
+        v_apply [label="Подача заявки\nна участие"];
+        v_cancel [label="Отмена заявки"];
     }
 
-    // Система
     subgraph cluster_system {
-        label = "Информационная система";
-        style = "rounded";
-        color = "lightblue";
+        label="Информационная система";
+        style="rounded";
+        color="lightblue";
 
-        s_check_status [label="Проверка статуса\nмероприятия и\nналичия мест"];
-        s_create_app   [label="Создание заявки со\nстатусом «ожидание»"];
-        s_control_limit[label="Контроль лимита\nучастников", shape=diamond];
-        s_close_signup [label="Ограничение подачи\nновых заявок при\nдостижении лимита"];
-        s_update_app   [label="Обновление статуса\nзаявки"];
+        s_check_limit [label="Проверка статуса\nи лимита участников"];
+        s_create_application [label="Создание заявки\nсо статусом\n«ожидание»"];
+        s_update_status [label="Обновление\nстатуса заявки"];
     }
 
-    // Координатор
-    subgraph cluster_coord {
-        label = "Координатор";
-        style = "rounded";
-        color = "lightgreen";
+    subgraph cluster_coordinator {
+        label="Координатор";
+        style="rounded";
+        color="lightgreen";
 
-        c_view_apps    [label="Просмотр заявок\nпо мероприятию"];
-        c_decide       [label="Принятие решения по\nзаявке (подтвердить /\nотклонить)", shape=diamond];
+        c_view_apps [label="Просмотр заявок"];
+        c_accept [label="Подтверждение\nучастия"];
+        c_reject [label="Отклонение\nзаявки"];
     }
 
-    // Основной поток
-    start -> v_view_events -> v_filter -> v_view_card -> v_apply -> s_check_status;
+    start -> v_view_events -> v_open_event -> v_apply -> s_check_limit;
 
-    s_check_status -> s_create_app   [label="набор открыт,\nесть места"];
-    s_check_status -> end            [label="набор закрыт", style=dashed];
+    s_check_limit -> s_create_application [label="места есть"];
+    s_create_application -> c_view_apps;
 
-    s_create_app -> s_control_limit;
-    s_control_limit -> s_close_signup [label="лимит достигнут"];
-    s_control_limit -> c_view_apps    [label="лимит не достигнут"];
+    c_view_apps -> c_accept -> s_update_status;
+    c_view_apps -> c_reject -> s_update_status;
 
-    c_view_apps -> c_decide;
-    c_decide -> s_update_app [label="подтверждено /\nотклонено"];
-    s_update_app -> v_view_result;
+    v_cancel -> s_update_status;
 
-    // Отмена заявки волонтёром до решения координатора
-    v_apply -> v_cancel    [style=dashed, label="до рассмотрения"];
-    v_cancel -> s_update_app [style=dashed, label="статус «отменена»"];
-
-    v_view_result -> end;
+    s_update_status -> end_ok;
 }
-

@@ -1,0 +1,6 @@
+dot -Tpng bp1_accounts.dot -o bp1_accounts.png
+dot -Tpng bp2_events.dot -o bp2_events.png
+dot -Tpng bp3_applications.dot -o bp3_applications.png
+dot -Tpng bp4_hours.dot -o bp4_hours.png
+dot -Tpng bp5_admin.dot -o bp5_admin.png
+dot -Tpng bp6_info.dot -o bp6_info.png
