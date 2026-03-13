@@ -1,0 +1,60 @@
+digraph BP2_Events {
+    rankdir=TB;
+    splines=ortho;
+    nodesep=0.6;
+    ranksep=0.9;
+    fontsize=11;
+    fontname="Segoe UI";
+    node [fontname="Segoe UI", shape=box];
+
+    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+
+    // Координатор
+    subgraph cluster_coord {
+        label = "Координатор";
+        style = "rounded";
+        color = "lightyellow";
+
+        c_identify_need [label="Выявление потребности\nв новом мероприятии"];
+        c_define_params [label="Определение цели,\nформата, сроков,\nколичества участников"];
+        c_create_event  [label="Заполнение карточки\nмероприятия"];
+        c_update_event  [label="Корректировка данных\nмероприятия"];
+        c_set_status    [label="Изменение статуса\n(открыто / завершено /\nотменено)"];
+    }
+
+    // Система
+    subgraph cluster_system {
+        label = "Информационная система";
+        style = "rounded";
+        color = "lightblue";
+
+        s_store_event   [label="Сохранение данных\nмероприятия"];
+        s_publish_event [label="Публикация мероприятия\nв общем списке"];
+    }
+
+    // Администратор
+    subgraph cluster_admin {
+        label = "Администратор";
+        style = "rounded";
+        color = "lightgreen";
+
+        a_review_events [label="Просмотр списка\nмероприятий"];
+        a_fix_event     [label="Корректировка или\nудаление ошибочных\nмероприятий"];
+        a_assign_coord  [label="Назначение ответственных\nкоординаторов"];
+    }
+
+    // Поток координатора и системы
+    start -> c_identify_need -> c_define_params -> c_create_event -> s_store_event -> s_publish_event;
+    s_publish_event -> c_update_event  [label="при необходимости", style=dashed];
+    c_update_event  -> s_store_event   [style=dashed];
+    c_set_status    -> s_store_event   [label="смена статуса", style=dashed];
+
+    // Действия администратора
+    s_publish_event -> a_review_events;
+    a_review_events -> a_fix_event    -> s_store_event;
+    a_review_events -> a_assign_coord -> s_store_event;
+
+    s_store_event -> end;
+}
+

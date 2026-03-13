@@ -1,0 +1,61 @@
+digraph BP1_Accounts {
+    // Общие настройки: сверху вниз, обычные (плавные) стрелки
+    rankdir=TB;
+    ranksep=0.9;
+    nodesep=0.6;
+    fontsize=11;
+    fontname="Segoe UI";
+    node [fontname="Segoe UI", shape=box];
+
+    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(учётная запись создана,\nпрофиль заполнен)", shape=oval, style=filled, fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(регистрация не выполнена)", shape=oval, style=filled, fillcolor="lightgrey"];
+
+    // Потенциальный волонтёр
+    subgraph cluster_volunteer {
+        label = "Потенциальный волонтёр / волонтёр";
+        style = "rounded";
+        color = "lightyellow";
+
+        v_view_site     [label="Просмотр информации\nо деятельности организации"];
+        v_register      [label="Заполнение формы\nрегистрации"];
+        v_login         [label="Вход в систему"];
+        v_edit_profile  [label="Заполнение и\nактуализация профиля"];
+    }
+
+    // Система
+    subgraph cluster_system {
+        label = "Информационная система";
+        style = "rounded";
+        color = "lightblue";
+
+        s_check_email    [label="Проверка уникальности\nemail и корректности данных"];
+        s_email_taken    [label="Отказ в регистрации:\nemail уже используется"];
+        s_create_account [label="Создание учётной\nзаписи с ролью\n«волонтёр»"];
+        s_auth_ok        [label="Выдача доступа\nк личному кабинету"];
+        s_store_profile  [label="Сохранение и обновление\nанкетных данных"];
+    }
+
+    // Администратор
+    subgraph cluster_admin {
+        label = "Администратор системы";
+        style = "rounded";
+        color = "lightgreen";
+
+        a_view_users    [label="Просмотр списка\nпользователей и ролей"];
+        a_update_roles  [label="Изменение ролей\nпользователей"];
+        a_block_user    [label="Блокировка /\nразблокировка аккаунтов"];
+    }
+
+    // Основной линейный поток (сверху вниз)
+    start -> v_view_site -> v_register -> s_check_email;
+    s_check_email -> s_create_account [label="email свободен"];
+    s_check_email -> s_email_taken   [label="email занят", style=dashed];
+
+    s_create_account -> v_login -> s_auth_ok -> v_edit_profile -> s_store_profile -> end_ok;
+    s_email_taken -> end_fail;
+
+    // Администрирование (отдельная вертикальная ветка)
+    a_view_users -> a_update_roles -> a_block_user;
+}
+

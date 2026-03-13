@@ -1,0 +1,51 @@
+digraph BP6_Info {
+    rankdir=TB;
+    splines=ortho;
+    nodesep=0.6;
+    ranksep=0.9;
+    fontsize=11;
+    fontname="Segoe UI";
+    node [fontname="Segoe UI", shape=box];
+
+    start  [label="Начало процесса", shape=oval, style=filled, fillcolor="lightgrey"];
+    end    [label="Завершение\nпроцесса", shape=oval, style=filled, fillcolor="lightgrey"];
+
+    // Координатор и администратор
+    subgraph cluster_staff {
+        label = "Координатор / администратор";
+        style = "rounded";
+        color = "lightyellow";
+
+        st_prepare_content [label="Подготовка материалов:\nновости, анонсы,\nотчёты"];
+        st_create_news     [label="Создание / редактирование\nновостной записи\nв системе"];
+        st_review_content  [label="Актуализация и удаление\nустаревших публикаций"];
+    }
+
+    // Система
+    subgraph cluster_system {
+        label = "Информационная система";
+        style = "rounded";
+        color = "lightblue";
+
+        s_publish_news [label="Публикация записей\nна главной странице\nи в разделе новостей"];
+    }
+
+    // Пользователи
+    subgraph cluster_users {
+        label = "Потенциальные и действующие волонтёры / гости";
+        style = "rounded";
+        color = "lightgreen";
+
+        u_read_news   [label="Просмотр новостей\nи отчётов"];
+        u_open_events [label="Переход к списку\nмероприятий"];
+        u_register    [label="Регистрация в системе\nили подача заявки\nна участие"];
+    }
+
+    // Поток
+    start -> st_prepare_content -> st_create_news -> s_publish_news;
+    s_publish_news -> u_read_news -> u_open_events -> u_register -> end;
+
+    // Актуализация информации
+    st_review_content -> s_publish_news [style=dashed, label="обновление ленты"];
+}
+
