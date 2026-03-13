@@ -1,0 +1,61 @@
+digraph VolunteerWebArchitecture {
+    rankdir=LR;
+    fontsize=11;
+    fontname="Segoe UI";
+    node [fontname="Segoe UI"];
+
+    // Клиентский слой
+    subgraph cluster_client {
+        label = "Клиентский слой";
+        style = "rounded";
+        color = "lightgrey";
+
+        browser [label="Пользователь\n(веб-браузер)", shape=box];
+        spa [label="Клиентское приложение\nReact SPA", shape=box];
+    }
+
+    // Серверный слой
+    subgraph cluster_backend {
+        label = "Серверный слой (Node.js / Express)";
+        style = "rounded";
+        color = "lightblue";
+
+        api [label="Сервер приложений\nExpress API", shape=box, style="filled", fillcolor="white"];
+
+        auth       [label="Модуль аутентификации\nи авторизации (JWT)", shape=component];
+        profiles   [label="Модуль пользователей\nи профилей", shape=component];
+        events     [label="Модуль мероприятий\nи заявок", shape=component];
+        hours      [label="Модуль учёта часов\nи статистики", shape=component];
+        admin      [label="Административный\nмодуль", shape=component];
+    }
+
+    // Слой данных
+    subgraph cluster_db {
+        label = "Слой хранения данных";
+        style = "rounded";
+        color = "lightgreen";
+
+        db [label="База данных\nPostgreSQL", shape=cylinder];
+    }
+
+    // Взаимодействие между слоями
+    browser -> spa [label="HTTP(S)\nGET HTML/JS/CSS"];
+    spa -> api     [label="REST API\nJSON (GET/POST/PUT/DELETE)"];
+    api -> db      [label="SQL‑запросы"];
+    db  -> api     [label="Результаты\nзапросов"];
+    api -> spa     [label="JSON‑ответы"];
+
+    // Взаимодействие модулей внутри бэкенда
+    api -> auth     [label="Логин / Проверка JWT"];
+    api -> profiles [label="Профили\nпользователей"];
+    api -> events   [label="Мероприятия\nи заявки"];
+    api -> hours    [label="Учёт часов\nи метрики"];
+    api -> admin    [label="Админ‑операции\n(роли, блокировки,\nкатегории)"];
+
+    // Модули работают с БД
+    auth     -> db  [style=dashed];
+    profiles -> db  [style=dashed];
+    events   -> db  [style=dashed];
+    hours    -> db  [style=dashed];
+    admin    -> db  [style=dashed];
+}
