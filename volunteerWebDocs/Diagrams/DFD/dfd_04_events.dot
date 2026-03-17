@@ -1,0 +1,53 @@
+digraph DFD_Level2_Events {
+    graph [fontname="Segoe UI", fontsize=11, ranksep=1.0, nodesep=0.55, splines=true, overlap=false, pad=0.25, bgcolor="white"];
+    node [fontname="Segoe UI", fontsize=11, margin="0.18,0.10"];
+    edge [fontname="Segoe UI", fontsize=10, color="#5A5A5A", arrowsize=0.8, penwidth=1.3];
+
+    rankdir=LR;
+    label="DFD — Планирование и управление мероприятиями";
+    labelloc=t;
+    guest [label="Гость", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    volunteer [label="Волонтёр", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    coordinator [label="Координатор", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    admin [label="Администратор", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    p1 [label="Создание и редактирование мероприятия", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    p2 [label="Публикация и просмотр мероприятий", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    p3 [label="Изменение статуса мероприятия", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    d1 [label="Мероприятия", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    d2 [label="Категории", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    c1 [shape=plaintext, label="название, описание,
+дата, место, лимит"];
+    c2 [shape=plaintext, label="категории"];
+    c3 [shape=plaintext, label="список категорий"];
+    c4 [shape=plaintext, label="карточка мероприятия"];
+    c5 [shape=plaintext, label="запрос открытого
+списка мероприятий"];
+    c6 [shape=plaintext, label="фильтры и просмотр
+деталей"];
+    c7 [shape=plaintext, label="список и карточки
+мероприятий"];
+    c8 [shape=plaintext, label="список и карточки
+мероприятий"];
+    c9 [shape=plaintext, label="чтение мероприятий"];
+    c10 [shape=plaintext, label="завершение, отмена
+или корректировка"];
+    c11 [shape=plaintext, label="административное
+вмешательство"];
+    c12 [shape=plaintext, label="новый статус"];
+    c13 [shape=plaintext, label="обновлённые
+параметры"];
+    coordinator -> c1; c1 -> p1;
+    p1 -> c2; c2 -> d2;
+    d2 -> c3; c3 -> p1;
+    p1 -> c4; c4 -> d1;
+    guest -> c5; c5 -> p2;
+    volunteer -> c6; c6 -> p2;
+    p2 -> c7; c7 -> guest;
+    p2 -> c8; c8 -> volunteer;
+    p2 -> c9; c9 -> d1;
+    coordinator -> c10; c10 -> p3;
+    admin -> c11; c11 -> p3;
+    p3 -> c12; c12 -> d1;
+    p3 -> c13; c13 -> coordinator;
+
+}

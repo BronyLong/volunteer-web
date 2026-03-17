@@ -1,0 +1,66 @@
+digraph UML_DomainModel {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        nodesep=0.7,
+        ranksep=1.0,
+        pad=0.2,
+        bgcolor="white"
+    ];
+
+    node [
+        shape=record,
+        fontname="Segoe UI",
+        fontsize=10,
+        margin="0.15,0.08"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9,
+        arrowsize=0.8
+    ];
+
+    User [label="{User|+ id: UUID\l+ email: string\l+ passwordHash: string\l+ role: UserRole\l+ isActive: boolean\l+ createdAt: datetime\l+ updatedAt: datetime\l+ lastLogin: datetime\l|+ register()\l+ login()\l+ logout()\l+ changePassword()\l+ block()\l+ unblock()\l}"];
+
+    VolunteerProfile [label="{VolunteerProfile|+ userId: UUID\l+ firstName: string\l+ lastName: string\l+ middleName: string\l+ phone: string\l+ city: string\l+ avatarUrl: text\l+ bio: text\l+ dateOfBirth: date\l|+ updateProfile()\l+ uploadAvatar()\l+ viewStatistics()\l}"];
+
+    CoordinatorProfile [label="{CoordinatorProfile|+ userId: UUID\l+ firstName: string\l+ lastName: string\l+ middleName: string\l+ phone: string\l+ avatarUrl: text\l+ bio: text\l+ position: string\l+ department: string\l|+ updateProfile()\l+ manageEvent()\l}"];
+
+    AdminProfile [label="{AdminProfile|+ userId: UUID\l+ firstName: string\l+ lastName: string\l+ phone: string\l|+ updateProfile()\l+ manageSystem()\l}"];
+
+    Event [label="{Event|+ id: UUID\l+ title: string\l+ shortDescription: string\l+ fullDescription: text\l+ startAt: datetime\l+ endAt: datetime\l+ location: string\l+ participantLimit: int\l+ status: EventStatus\l+ createdAt: datetime\l+ updatedAt: datetime\l|+ create()\l+ update()\l+ changeStatus()\l+ assignCoordinator()\l+ getFreePlaces()\l}"];
+
+    Category [label="{Category|+ id: int\l+ name: string\l|+ create()\l+ update()\l+ delete()\l}"];
+
+    EventApplication [label="{EventApplication|+ id: int\l+ userId: UUID\l+ eventId: UUID\l+ status: ApplicationStatus\l+ createdAt: datetime\l+ updatedAt: datetime\l|+ apply()\l+ approve()\l+ reject()\l+ cancel()\l}"];
+
+    VolunteerHours [label="{VolunteerHours|+ id: int\l+ userId: UUID\l+ eventId: UUID\l+ hoursWorked: int\l+ confirmedBy: UUID\l+ confirmedAt: datetime\l|+ addHours()\l+ updateHours()\l+ confirmParticipation()\l}"];
+
+    VolunteerCategory [label="{VolunteerCategory|+ id: int\l+ userId: UUID\l+ categoryId: int\l+ createdAt: datetime\l|+ assignCategory()\l+ removeCategory()\l}"];
+
+    News [label="{News (optional)|+ id: int\l+ title: string\l+ content: text\l+ publishedAt: datetime\l+ authorId: UUID\l|+ publish()\l+ edit()\l+ delete()\l}"];
+
+    AuditLog [label="{AuditLog (optional)|+ id: int\l+ actorUserId: UUID\l+ action: string\l+ entityType: string\l+ entityId: string\l+ createdAt: datetime\l|+ writeLog()\l+ viewHistory()\l}"];
+
+    User -> VolunteerProfile [label="1 to 0..1", arrowhead="none"];
+    User -> CoordinatorProfile [label="1 to 0..1", arrowhead="none"];
+    User -> AdminProfile [label="1 to 0..1", arrowhead="none"];
+
+    Category -> Event [label="1 to 0..*", arrowhead="none"];
+    User -> EventApplication [label="1 to 0..*", arrowhead="none"];
+    Event -> EventApplication [label="1 to 0..*", arrowhead="none"];
+
+    User -> VolunteerHours [label="1 to 0..*", arrowhead="none"];
+    Event -> VolunteerHours [label="1 to 0..*", arrowhead="none"];
+    CoordinatorProfile -> VolunteerHours [label="confirms", style="dashed", arrowhead="vee"];
+
+    User -> VolunteerCategory [label="1 to 0..*", arrowhead="none"];
+    Category -> VolunteerCategory [label="1 to 0..*", arrowhead="none"];
+
+    CoordinatorProfile -> Event [label="manages 1 to 0..*", style="dashed", arrowhead="vee"];
+    AdminProfile -> User [label="administers", style="dashed", arrowhead="vee"];
+    AdminProfile -> Category [label="manages", style="dashed", arrowhead="vee"];
+    User -> News [label="author", style="dashed", arrowhead="vee"];
+    User -> AuditLog [label="actor", style="dashed", arrowhead="vee"];
+}

@@ -1,0 +1,66 @@
+digraph DFD_Level1 {
+    graph [fontname="Segoe UI", fontsize=11, ranksep=1.0, nodesep=0.55, splines=true, overlap=false, pad=0.25, bgcolor="white"];
+    node [fontname="Segoe UI", fontsize=11, margin="0.18,0.10"];
+    edge [fontname="Segoe UI", fontsize=10, color="#5A5A5A", arrowsize=0.8, penwidth=1.3];
+
+    rankdir=LR;
+    label="DFD Level 1 — Декомпозиция системы";
+    labelloc=t;
+    guest [label="Гость", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    volunteer [label="Волонтёр", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    coordinator [label="Координатор", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    admin [label="Администратор", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    subgraph cluster_proc {
+        label="Процессы информационной системы"; style="rounded"; color="#C9D7E8";
+        p1 [label="Управление учётными записями", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+        p2 [label="Управление профилями", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+        p3 [label="Управление мероприятиями", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+        p4 [label="Обработка заявок", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+        p5 [label="Учёт часов и статистика", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+        p6 [label="Администрирование и новости", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    }
+    subgraph cluster_data {
+        label="Хранилища данных"; style="rounded"; color="#CDE7CD";
+        d1 [label="Пользователи и роли", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+        d2 [label="Профили", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+        d3 [label="Мероприятия", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+        d4 [label="Заявки", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+        d5 [label="Учёт часов", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+        d6 [label="Категории, новости, журнал действий", shape=cylinder, fillcolor="#F6FFF6", style=filled];
+    }
+    x1 [shape=plaintext, label="регистрация, вход, просмотр открытых данных"];
+    x2 [shape=plaintext, label="запросы списка мероприятий"];
+    x3 [shape=plaintext, label="публичный список мероприятий"];
+    x4 [shape=plaintext, label="новости и объявления"];
+    x5 [shape=plaintext, label="изменение профиля"];
+    x6 [shape=plaintext, label="подача и отзыв заявок"];
+    x7 [shape=plaintext, label="личная статистика и часы"];
+    x8 [shape=plaintext, label="создание и редактирование мероприятий"];
+    x9 [shape=plaintext, label="решения по заявкам и подтверждение часов"];
+    x10 [shape=plaintext, label="статистика по мероприятиям"];
+    x11 [shape=plaintext, label="управление ролями, категориями и новостями"];
+    x12 [shape=plaintext, label="сводная статистика и журнал действий"];
+    guest -> x1; x1 -> p1;
+    guest -> x2; x2 -> p3;
+    p3 -> x3; x3 -> guest;
+    p6 -> x4; x4 -> guest;
+    volunteer -> x5; x5 -> p2;
+    volunteer -> x6; x6 -> p4;
+    p5 -> x7; x7 -> volunteer;
+    coordinator -> x8; x8 -> p3;
+    coordinator -> x9; x9 -> p4;
+    p5 -> x10; x10 -> coordinator;
+    admin -> x11; x11 -> p6;
+    p6 -> x12; x12 -> admin;
+    p1 -> d1; d1 -> p1;
+    p2 -> d2; d2 -> p2;
+    p3 -> d3; d3 -> p3;
+    p4 -> d4; d4 -> p4;
+    p5 -> d5; d5 -> p5;
+    p6 -> d6; d6 -> p6;
+    p1 -> p2 [label="созданный пользователь"];
+    p3 -> p4 [label="доступные мероприятия"];
+    p4 -> p5 [label="подтверждённые участия"];
+    p6 -> p3 [label="категории и правила"];
+
+}

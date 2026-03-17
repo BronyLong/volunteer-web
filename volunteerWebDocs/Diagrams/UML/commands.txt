@@ -1,0 +1,3 @@
+dot -Tpng uml_classes_domain.dot -o uml_classes_domain.png
+dot -Tpng uml_classes_events.dot -o uml_classes_events.png
+dot -Tpng uml_classes_users.dot -o uml_classes_users.png

@@ -1,0 +1,48 @@
+digraph DFD_Level2_Admin {
+    graph [fontname="Segoe UI", fontsize=11, ranksep=1.0, nodesep=0.55, splines=true, overlap=false, pad=0.25, bgcolor="white"];
+    node [fontname="Segoe UI", fontsize=11, margin="0.18,0.10"];
+    edge [fontname="Segoe UI", fontsize=10, color="#5A5A5A", arrowsize=0.8, penwidth=1.3];
+
+    rankdir=LR;
+    label="DFD — Администрирование системы";
+    labelloc=t;
+    admin [label="Администратор", shape=box, style="rounded,filled", fillcolor="#F7F7F7"];
+    p1 [label="Управление пользователями", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    p2 [label="Управление категориями", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    p3 [label="Модерация мероприятий", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    p4 [label="Просмотр журнала и статистики", shape=ellipse, style=filled, fillcolor="#FFF5CC"];
+    d1 [label="Пользователи и роли", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    d2 [label="Категории", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    d3 [label="Мероприятия", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    d4 [label="Журнал действий", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    d5 [label="Статистика часов", shape=cylinder, style=filled, fillcolor="#F6FFF6"];
+    f1 [shape=plaintext, label="поиск, блокировка,
+разблокировка, роль"];
+    f2 [shape=plaintext, label="изменения аккаунтов"];
+    f3 [shape=plaintext, label="список пользователей
+и результаты действий"];
+    f4 [shape=plaintext, label="создание, изменение,
+удаление категорий"];
+    f5 [shape=plaintext, label="справочник категорий"];
+    f6 [shape=plaintext, label="исправление или
+удаление мероприятия"];
+    f7 [shape=plaintext, label="обновлённые
+мероприятия"];
+    f8 [shape=plaintext, label="запрос аудита
+и аналитики"];
+    f9 [shape=plaintext, label="журнал действий"];
+    f10 [shape=plaintext, label="сводные показатели"];
+    f11 [shape=plaintext, label="аудит и отчёты"];
+    admin -> f1; f1 -> p1;
+    p1 -> f2; f2 -> d1;
+    p1 -> f3; f3 -> admin;
+    admin -> f4; f4 -> p2;
+    p2 -> f5; f5 -> d2;
+    admin -> f6; f6 -> p3;
+    p3 -> f7; f7 -> d3;
+    admin -> f8; f8 -> p4;
+    p4 -> f9; f9 -> d4;
+    p4 -> f10; f10 -> d5;
+    p4 -> f11; f11 -> admin;
+
+}

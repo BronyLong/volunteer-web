@@ -1,0 +1,40 @@
+digraph UML_EventSubsystem {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        nodesep=0.7,
+        ranksep=1.0,
+        bgcolor="white"
+    ];
+
+    node [shape=record, fontname="Segoe UI", fontsize=10, margin="0.15,0.08"];
+    edge [fontname="Segoe UI", fontsize=9, arrowsize=0.8];
+
+    Event [label="{Event|+ id: UUID\l+ title: string\l+ shortDescription: string\l+ fullDescription: text\l+ startAt: datetime\l+ endAt: datetime\l+ location: string\l+ participantLimit: int\l+ status: EventStatus\l|+ create()\l+ update()\l+ cancel()\l+ complete()\l+ getFreePlaces()\l}"];
+
+    Category [label="{Category|+ id: int\l+ name: string\l|+ create()\l+ update()\l+ delete()\l}"];
+
+    EventApplication [label="{EventApplication|+ id: int\l+ status: ApplicationStatus\l+ createdAt: datetime\l+ updatedAt: datetime\l|+ apply()\l+ approve()\l+ reject()\l+ cancel()\l}"];
+
+    VolunteerHours [label="{VolunteerHours|+ id: int\l+ hoursWorked: int\l+ confirmedAt: datetime\l|+ addHours()\l+ updateHours()\l}"];
+
+    Volunteer [label="{Volunteer|+ userId: UUID\l+ fullName: string\l+ phone: string\l|+ submitApplication()\l+ cancelApplication()\l+ viewMyEvents()\l}"];
+
+    Coordinator [label="{Coordinator|+ userId: UUID\l+ fullName: string\l|+ createEvent()\l+ editEvent()\l+ reviewApplication()\l+ confirmHours()\l}"];
+
+    EventService [label="{EventService| |+ createEvent()\l+ updateEvent()\l+ closeRegistration()\l+ assignCoordinator()\l}"];
+    ApplicationService [label="{ApplicationService| |+ submit()\l+ validateLimit()\l+ approve()\l+ reject()\l}"];
+    HoursService [label="{HoursService| |+ recordHours()\l+ recalcVolunteerStats()\l}"];
+
+    Category -> Event [label="1 to 0..*", arrowhead="none"];
+    Event -> EventApplication [label="1 to 0..*", arrowhead="none"];
+    Volunteer -> EventApplication [label="1 to 0..*", arrowhead="none"];
+    Event -> VolunteerHours [label="1 to 0..*", arrowhead="none"];
+    Volunteer -> VolunteerHours [label="1 to 0..*", arrowhead="none"];
+    Coordinator -> VolunteerHours [label="confirms", style="dashed", arrowhead="vee"];
+
+    Coordinator -> EventService [label="uses", style="dashed", arrowhead="vee"];
+    Volunteer -> ApplicationService [label="uses", style="dashed", arrowhead="vee"];
+    Coordinator -> ApplicationService [label="uses", style="dashed", arrowhead="vee"];
+    Coordinator -> HoursService [label="uses", style="dashed", arrowhead="vee"];
+}
