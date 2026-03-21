@@ -1,0 +1,15 @@
+.mainButton
+{
+    height: 40px;
+    width: 150px;
+
+    border-radius: 12px;
+    border-style: none;
+    
+    background-color: #2E7D32;
+    color: #FFFFFF;
+
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+}
