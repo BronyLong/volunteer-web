@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Главная</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/main.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <div class="header__left">
+        <a href="#" class="logo">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <nav class="header__menu">
+          <a href="#" class="btn btn--green">Хочу помочь</a>
+          <a href="#" class="btn btn--green">Нужна помощь</a>
+        </nav>
+      </div>
+
+      <div class="header__right">
+        <a href="#" class="btn btn--outline">Регистрация</a>
+
+        <a href="#" class="btn btn--green btn--icon">
+          <img src="../../SVG/accountOutline.svg" alt="" class="btn__icon">
+          <span>Войти</span>
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="btn btn--green btn--icon header__login-mobile">
+          <img src="../../SVG/accountOutline.svg" alt="" class="btn__icon">
+          <span>Войти</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Хочу помочь</a>
+          <a href="#" class="mobile-menu__link">Нужна помощь</a>
+          <a href="#" class="mobile-menu__link">Регистрация</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <h1 class="hero__title">
+            Присоединяйтесь к добрым делам и находите мероприятия, где ваша помощь действительно нужна
+          </h1>
+
+          <p class="hero__text">
+            Сайт помогает регистрироваться, подавать заявки на участие,
+            отслеживать волонтёрские часы и взаимодействовать с
+            координаторами в одном удобном интерфейсе.
+          </p>
+
+          <div class="hero__actions">
+            <a href="#" class="hero__button hero__button--filled">Смотреть мероприятия</a>
+            <a href="#" class="hero__button hero__button--outline">Узнать о платформе</a>
+          </div>
+        </div>
+
+        <div class="hero__event-card">
+          <p class="hero__event-subtitle">Ближайшее мероприятие</p>
+
+          <h2 class="hero__event-title">
+            Название название<br>
+            название название
+          </h2>
+
+          <p class="hero__event-date">Дата проведения: 1.01.1980</p>
+
+          <div class="event-preview">
+            <div class="event-preview__inner">
+              <div class="event-preview__top">
+                <div class="event-preview__image-wrap">
+                  <img
+                    src=""
+                    alt="Мероприятие"
+                    class="event-preview__image"
+                  >
+                </div>
+
+                <div class="event-preview__place">
+                  <span class="event-preview__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="inline-icon-svg">
+                  </span>
+                  <p>Место проведения место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-preview__places">
+                <span class="event-preview__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="inline-icon-svg">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-preview__category-row">
+                <div class="event-preview__category-pill">
+                  <img src="../../SVG/leaf_category.svg" alt="" class="inline-icon-svg">
+                  Экология
+                </div>
+              </div>
+
+              <a href="#" class="event-preview__button">Подать заявку</a>
+            </div>
+          </div>
+
+          <div class="hero__slider-dots">
+            <span class="hero__dot hero__dot--active"></span>
+            <span class="hero__dot"></span>
+            <span class="hero__dot"></span>
+            <span class="hero__dot"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="advantages">
+      <div class="container">
+        <p class="section-label section-label--orange">О платформе</p>
+        <h2 class="section-title">Что получает пользователь от системы</h2>
+
+        <div class="advantages__grid">
+          <article class="feature-card">
+            <div class="feature-card__icon">
+              <img src="../../SVG/rocket.svg" alt="" class="feature-card__icon-svg">
+            </div>
+            <h3 class="feature-card__title">Удобный старт</h3>
+            <p class="feature-card__text">Быстрая регистрация и понятная навигация для новых волонтёров.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon">
+              <img src="../../SVG/calendar.svg" alt="" class="feature-card__icon-svg">
+            </div>
+            <h3 class="feature-card__title">Актуальные события</h3>
+            <p class="feature-card__text">Каталог мероприятий с датой, местом, статусом и доступными местами.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon">
+              <img src="../../SVG/statistics.svg" alt="" class="feature-card__icon-svg">
+            </div>
+            <h3 class="feature-card__title">Прозрачная активность</h3>
+            <p class="feature-card__text">Личный кабинет со статистикой участия и подтверждёнными часами.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__icon">
+              <img src="../../SVG/hammer_and_wrench.svg" alt="" class="feature-card__icon-svg">
+            </div>
+            <h3 class="feature-card__title">Удобные инструменты</h3>
+            <p class="feature-card__text">Функции для координаторов и администраторов без перегрузки интерфейса.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="join-cta">
+  <div class="container">
+    <div class="join-banner">
+      <div class="join-banner__text">
+        Хотите стать частью команды?
+      </div>
+      <a href="#" class="join-banner__button">
+        Принять участие
+      </a>
+    </div>
+  </div>
+</section>
+
+    <section class="steps">
+      <div class="container">
+        <p class="section-label section-label--green">О платформе</p>
+        <h2 class="section-title section-title--center">Как стать волонтером в 4 шага</h2>
+
+        <div class="steps__grid">
+          <article class="step-card">
+            <span class="step-card__num">01</span>
+            <h3 class="step-card__title">Зарегистрируйтесь</h3>
+            <p class="step-card__text">Создайте аккаунт, заполните профиль и укажите основную информацию о себе.</p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-card__num">02</span>
+            <h3 class="step-card__title">Выберите мероприятие</h3>
+            <p class="step-card__text">Найдите подходящую инициативу по дате, категории и формату участия.</p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-card__num">03</span>
+            <h3 class="step-card__title">Подайте заявку</h3>
+            <p class="step-card__text">Оставьте заявку на участие и отслеживайте её статус в личном кабинете.</p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-card__num">04</span>
+            <h3 class="step-card__title">Помогайте и развивайтесь</h3>
+            <p class="step-card__text">Участвуйте в мероприятиях, накапливайте часы и следите за своей статистикой.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="events">
+      <div class="container">
+        <p class="section-label section-label--green">Мероприятия</p>
+        <h2 class="section-title">Вы можете помочь здесь</h2>
+
+        <div class="events__grid">
+          <article class="event-card">
+            <div class="event-card__top">
+              <span class="event-card__tag event-card__tag--green">
+                <img src="../../SVG/leaf_category.svg" alt="" class="tag-icon-svg">
+                Экология
+              </span>
+              <span class="event-card__spots">20 мест</span>
+            </div>
+            <h3 class="event-card__title">Экологическая акция в городском парке</h3>
+            <div class="event-card__meta">
+              <p>
+                <img src="../../SVG/location.svg" alt="" class="meta-icon-svg">
+                Центральный парк
+              </p>
+              <p>
+                <img src="../../SVG/calendar_card.svg" alt="" class="meta-icon-svg">
+                15 июня 2026
+              </p>
+            </div>
+            <a href="#" class="event-card__button event-card__button--green">Подробнее</a>
+          </article>
+
+          <article class="event-card">
+            <div class="event-card__top">
+              <span class="event-card__tag event-card__tag--orange">
+                <img src="../../SVG/elderly_category.svg" alt="" class="tag-icon-svg">
+                Пожилым
+              </span>
+              <span class="event-card__spots">20 мест</span>
+            </div>
+            <h3 class="event-card__title">Поддержка пожилых людей</h3>
+            <div class="event-card__meta">
+              <p>
+                <img src="../../SVG/location.svg" alt="" class="meta-icon-svg">
+                Дом ветеранов
+              </p>
+              <p>
+                <img src="../../SVG/calendar_card.svg" alt="" class="meta-icon-svg">
+                15 августа 2026
+              </p>
+            </div>
+            <a href="#" class="event-card__button event-card__button--orange">Подробнее</a>
+          </article>
+
+          <article class="event-card">
+            <div class="event-card__top">
+              <span class="event-card__tag event-card__tag--green">
+                <img src="../../SVG/animals_category.svg" alt="" class="tag-icon-svg">
+                Животным
+              </span>
+              <span class="event-card__spots">20 мест</span>
+            </div>
+            <h3 class="event-card__title">Помощь приюту для животных</h3>
+            <div class="event-card__meta">
+              <p>
+                <img src="../../SVG/location.svg" alt="" class="meta-icon-svg">
+                Приют “Добрые лапы”
+              </p>
+              <p>
+                <img src="../../SVG/calendar_card.svg" alt="" class="meta-icon-svg">
+                20 октября 2026
+              </p>
+            </div>
+            <a href="#" class="event-card__button event-card__button--green">Подробнее</a>
+          </article>
+
+          <article class="event-card event-card--mobile-only">
+            <div class="event-card__top">
+              <span class="event-card__tag event-card__tag--orange">
+                <img src="../../SVG/childern_category.svg" alt="" class="tag-icon-svg">
+                Детям
+              </span>
+              <span class="event-card__spots">18 мест</span>
+            </div>
+            <h3 class="event-card__title">Помощь детям-инвалидам</h3>
+            <div class="event-card__meta">
+              <p>
+                <img src="../../SVG/location.svg" alt="" class="meta-icon-svg">
+                Детский дом "Аист"
+              </p>
+              <p>
+                <img src="../../SVG/calendar_card.svg" alt="" class="meta-icon-svg">
+                2 ноября 2026
+              </p>
+            </div>
+            <a href="#" class="event-card__button event-card__button--orange">Подробнее</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <div class="cta__box"> 
+          <div class="cta__content">
+            <h2 class="cta__title">Станьте частью волонтерского сообщества</h2>
+            <p class="cta__text">
+              Присоединяйтесь к платформе, выбирайте мероприятия, отслеживайте свою
+              активность и помогайте тем, кому это действительно нужно.
+            </p>
+          </div>
+
+          <div class="cta__actions">
+            <a href="#" class="cta__button cta__button--light">Подробнее</a>
+            <a href="#" class="cta__button cta__button--solid">Подробнее</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials">
+        <span class="footer__socials-title">Мы в социальных сетях</span>
+        <div class="footer__icons">
+          <a href="#" class="social">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/vkontakte.svg" alt="VK" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/max.svg" alt="Соцсеть" class="social-icon-svg">
+          </a>
+        </div>
+      </div>
+
+      <p class="footer__copy">© Рука помощи.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active');
+
+        const isOpen = mobileMenu.classList.contains('is-open');
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+  </script>
+</body>
+</html>
