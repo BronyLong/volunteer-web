@@ -1129,8 +1129,6 @@ select {
 }
   }
 
-  
-
   .cta__title {
     font-size: 28px;
   }
@@ -1178,7 +1176,7 @@ select {
     margin-top: 14px;
     text-align: left;
   }
-}
+
 
 @media (max-width: 480px) {
   .header__login-mobile {
