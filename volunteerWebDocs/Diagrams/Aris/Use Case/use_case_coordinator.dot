@@ -1,0 +1,56 @@
+digraph UseCaseCoordinatorReadable {
+    graph [
+        rankdir=TB,
+        splines=polyline,
+        nodesep=1.0,
+        ranksep=1.2,
+        pad=0.5,
+        fontname="Segoe UI",
+        fontsize=18
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=18,
+        shape=ellipse,
+        margin="0.3,0.2"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=14,
+        arrowhead=none
+    ];
+
+    coordinator [label="Координатор", shape=plaintext, fontsize=20];
+
+    subgraph cluster_system {
+        label="Функции координатора";
+        fontsize=20;
+        style="rounded";
+
+        uc_login  [label="Авторизация"];
+
+        uc_create [label="Создание\nмероприятия"];
+        uc_edit   [label="Редактирование\nмероприятия"];
+        uc_delete [label="Удаление\nмероприятия"];
+        uc_view   [label="Просмотр\nзаявок"];
+
+        uc_form   [label="Заполнение\nданных"];
+        uc_save   [label="Сохранение\nданных"];
+    }
+
+    coordinator -> uc_login;
+    coordinator -> uc_create;
+    coordinator -> uc_edit;
+    coordinator -> uc_delete;
+    coordinator -> uc_view;
+
+    uc_create -> uc_form [style=dashed, label="<<include>>"];
+    uc_create -> uc_save [style=dashed, label="<<include>>"];
+
+    uc_edit -> uc_form [style=dashed, label="<<include>>"];
+    uc_edit -> uc_save [style=dashed, label="<<include>>"];
+
+    uc_delete -> uc_save [style=dashed, label="<<include>>"];
+}

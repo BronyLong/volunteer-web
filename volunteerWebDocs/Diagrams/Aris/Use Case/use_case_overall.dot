@@ -1,0 +1,83 @@
+digraph UseCaseOverallReadable {
+    graph [
+        rankdir=TB,
+        splines=polyline,
+        nodesep=1.0,
+        ranksep=1.2,
+        pad=0.5,
+        fontname="Segoe UI",
+        fontsize=18
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=18,
+        shape=ellipse,
+        margin="0.3,0.2"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=14,
+        arrowhead=none
+    ];
+
+    // Акторы
+    guest [label="Гость", shape=plaintext, fontsize=20];
+    volunteer [label="Волонтёр", shape=plaintext, fontsize=20];
+    coordinator [label="Координатор", shape=plaintext, fontsize=20];
+
+    subgraph cluster_system {
+        label="Веб-приложение";
+        fontsize=20;
+        style="rounded";
+
+        // Общие функции
+        uc_home     [label="Просмотр\nглавной страницы"];
+        uc_list     [label="Просмотр списка\nмероприятий"];
+        uc_filter   [label="Фильтрация\nмероприятий"];
+        uc_event    [label="Просмотр\nмероприятия"];
+        uc_register [label="Регистрация"];
+        uc_login    [label="Авторизация"];
+
+        // Волонтёр
+        uc_profile  [label="Личный кабинет"];
+        uc_edit     [label="Редактирование\nпрофиля"];
+        uc_apply    [label="Подача заявки"];
+        uc_cancel   [label="Отмена заявки"];
+
+        // Координатор
+        uc_create   [label="Создание\nмероприятия"];
+        uc_edit_ev  [label="Редактирование\nмероприятия"];
+        uc_delete   [label="Удаление\nмероприятия"];
+        uc_view     [label="Просмотр\nзаявок"];
+    }
+
+    // Связи
+    guest -> uc_home;
+    guest -> uc_list;
+    guest -> uc_filter;
+    guest -> uc_event;
+    guest -> uc_register;
+    guest -> uc_login;
+
+    volunteer -> uc_home;
+    volunteer -> uc_list;
+    volunteer -> uc_event;
+    volunteer -> uc_profile;
+    volunteer -> uc_edit;
+    volunteer -> uc_apply;
+    volunteer -> uc_cancel;
+
+    coordinator -> uc_home;
+    coordinator -> uc_create;
+    coordinator -> uc_edit_ev;
+    coordinator -> uc_delete;
+    coordinator -> uc_view;
+
+    // include
+    uc_apply -> uc_login [style=dashed, label="<<include>>"];
+    uc_cancel -> uc_login [style=dashed, label="<<include>>"];
+    uc_profile -> uc_login [style=dashed, label="<<include>>"];
+    uc_create -> uc_login [style=dashed, label="<<include>>"];
+}

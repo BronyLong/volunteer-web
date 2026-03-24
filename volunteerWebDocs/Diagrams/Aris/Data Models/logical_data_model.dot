@@ -1,0 +1,47 @@
+digraph LogicalDataModel {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.25,
+        nodesep=0.8,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12,
+        label="Логическая модель данных веб-приложения волонтёрской организации",
+        labelloc="t"
+    ];
+
+    node [
+        shape=record,
+        style="rounded,filled",
+        fillcolor="#F7F9FC",
+        color="#6B7A90",
+        penwidth=1.2,
+        fontname="Segoe UI",
+        fontsize=10
+    ];
+
+    edge [
+        color="#5B6B82",
+        fontname="Segoe UI",
+        fontsize=9,
+        arrowsize=0.8
+    ];
+
+    User [label="{User|PK id\lemail\lpassword_hash\lrole\lis_active\lcreated_at\llast_login_at\l}"];
+
+    Profile [label="{Profile|PK, FK user_id\lfirst_name\llast_name\lmiddle_name\lphone\lcity\lbirth_date\lavatar_url\lbio\lsocial_vk\lsocial_telegram\l}"];
+
+    Category [label="{Category|PK id\lname\l}"];
+
+    Event [label="{Event|PK id\ltitle\ldescription\lstart_at\llocation\lparticipant_limit\lavailable_slots\lFK category_id\lFK created_by\lcreated_at\lupdated_at\l}"];
+
+    Application [label="{Application|PK id\lFK user_id\lFK event_id\lstatus\lcreated_at\lcancelled_at\l}"];
+
+    User -> Profile [label="1 : 1", dir=both];
+    User -> Event [label="1 : N", dir=both];
+    Category -> Event [label="1 : N", dir=both];
+    User -> Application [label="1 : N", dir=both];
+    Event -> Application [label="1 : N", dir=both];
+}

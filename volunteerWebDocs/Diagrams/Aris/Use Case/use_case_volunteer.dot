@@ -1,0 +1,61 @@
+digraph UseCaseVolunteerReadable {
+    graph [
+        rankdir=TB,
+        splines=polyline,
+        nodesep=1.0,
+        ranksep=1.2,
+        pad=0.5,
+        fontname="Segoe UI",
+        fontsize=18
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=18,
+        shape=ellipse,
+        margin="0.3,0.2"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=14,
+        arrowhead=none
+    ];
+
+    volunteer [label="Волонтёр", shape=plaintext, fontsize=20];
+
+    subgraph cluster_system {
+        label="Функции волонтёра";
+        fontsize=20;
+        style="rounded";
+
+        uc_login   [label="Авторизация"];
+        uc_profile [label="Личный кабинет"];
+        uc_edit    [label="Редактирование\nпрофиля"];
+
+        uc_list    [label="Просмотр списка\nмероприятий"];
+        uc_event   [label="Просмотр\nмероприятия"];
+
+        uc_apply   [label="Подача заявки"];
+        uc_cancel  [label="Отмена заявки"];
+
+        // include логика
+        uc_check1  [label="Проверка\nавторизации"];
+        uc_check2  [label="Проверка\nповторной заявки"];
+        uc_check3  [label="Проверка\nсвободных мест"];
+    }
+
+    volunteer -> uc_login;
+    volunteer -> uc_profile;
+    volunteer -> uc_edit;
+    volunteer -> uc_list;
+    volunteer -> uc_event;
+    volunteer -> uc_apply;
+    volunteer -> uc_cancel;
+
+    uc_apply -> uc_check1 [style=dashed, label="<<include>>"];
+    uc_apply -> uc_check2 [style=dashed, label="<<include>>"];
+    uc_apply -> uc_check3 [style=dashed, label="<<include>>"];
+
+    uc_cancel -> uc_check1 [style=dashed, label="<<include>>"];
+}

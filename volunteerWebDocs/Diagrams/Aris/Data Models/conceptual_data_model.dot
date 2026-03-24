@@ -1,0 +1,44 @@
+digraph ConceptualDataModel {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.25,
+        nodesep=0.8,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12,
+        label="Концептуальная модель данных веб-приложения волонтёрской организации",
+        labelloc="t"
+    ];
+
+    node [
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F7F9FC",
+        color="#6B7A90",
+        penwidth=1.2,
+        fontname="Segoe UI",
+        fontsize=11,
+        margin="0.16,0.10"
+    ];
+
+    edge [
+        color="#5B6B82",
+        fontname="Segoe UI",
+        fontsize=10,
+        arrowsize=0.8
+    ];
+
+    User        [label="Пользователь"];
+    Profile     [label="Профиль пользователя"];
+    Event       [label="Мероприятие"];
+    Application [label="Заявка на участие"];
+    Category    [label="Категория мероприятия"];
+
+    User -> Profile     [label="1 : 1\nимеет", dir=both];
+    User -> Application [label="1 : N\nподаёт", dir=both];
+    Event -> Application [label="1 : N\nсодержит", dir=both];
+    Category -> Event   [label="1 : N\nклассифицирует", dir=both];
+    User -> Event       [label="1 : N\nкоординатор создаёт", dir=both];
+}

@@ -1,0 +1,54 @@
+digraph PhysicalDataModel {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.25,
+        nodesep=0.8,
+        ranksep=1.05,
+        fontname="Segoe UI",
+        fontsize=12,
+        label="Физическая модель данных (PostgreSQL)",
+        labelloc="t"
+    ];
+
+    node [
+        shape=record,
+        style="rounded,filled",
+        fillcolor="#F7F9FC",
+        color="#6B7A90",
+        penwidth=1.2,
+        fontname="Segoe UI",
+        fontsize=9.5
+    ];
+
+    edge [
+        color="#5B6B82",
+        fontname="Segoe UI",
+        fontsize=8.5,
+        arrowsize=0.8
+    ];
+
+    users [label="{users|id UUID PK\lemail VARCHAR(255) UNIQUE NOT NULL\lpassword_hash TEXT NOT NULL\lrole VARCHAR(32) NOT NULL\lis_active BOOLEAN DEFAULT true\lcreated_at TIMESTAMP NOT NULL\llast_login_at TIMESTAMP\l}"];
+
+    profiles [label="{profiles|user_id UUID PK, FK users.id\lfirst_name VARCHAR(100) NOT NULL\llast_name VARCHAR(100) NOT NULL\lmiddle_name VARCHAR(100)\lphone VARCHAR(30)\lcity VARCHAR(120)\lbirth_date DATE\lavatar_url TEXT\lbio TEXT\lsocial_vk TEXT\lsocial_telegram TEXT\l}"];
+
+    categories [label="{categories|id SERIAL PK\lname VARCHAR(100) UNIQUE NOT NULL\l}"];
+
+    events [label="{events|id UUID PK\ltitle VARCHAR(255) NOT NULL\ldescription TEXT NOT NULL\lstart_at TIMESTAMP NOT NULL\llocation VARCHAR(255) NOT NULL\lparticipant_limit INTEGER NOT NULL\lavailable_slots INTEGER NOT NULL\lcategory_id INTEGER FK categories.id\lcreated_by UUID FK users.id\lcreated_at TIMESTAMP NOT NULL\lupdated_at TIMESTAMP NOT NULL\l}"];
+
+    applications [label="{applications|id BIGSERIAL PK\luser_id UUID FK users.id\levent_id UUID FK events.id\lstatus VARCHAR(20) DEFAULT 'active'\lcreated_at TIMESTAMP NOT NULL\lcancelled_at TIMESTAMP\lUNIQUE (user_id, event_id)\l}"];
+
+    idx1 [shape=note, fillcolor="#FFF8E8", color="#D4A64A", label="Индексы:\l- users(email) UNIQUE\l- categories(name) UNIQUE\l- applications(user_id, event_id) UNIQUE\l- events(start_at)\l- events(category_id)\l- applications(event_id)\l"];
+
+    chk [shape=note, fillcolor="#EEF9F0", color="#68A36B", label="Ограничения:\l- participant_limit > 0\l- available_slots >= 0\l- available_slots <= participant_limit\l"];
+
+    users -> profiles [label="1 : 1", dir=both];
+    users -> events [label="1 : N", dir=both];
+    categories -> events [label="1 : N", dir=both];
+    users -> applications [label="1 : N", dir=both];
+    events -> applications [label="1 : N", dir=both];
+
+    events -> idx1 [style=dashed, arrowhead=none];
+    events -> chk [style=dashed, arrowhead=none];
+}

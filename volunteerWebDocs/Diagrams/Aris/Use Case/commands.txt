@@ -1,0 +1,3 @@
+dot -Tpng use_case_coordinator.dot -o use_case_coordinator.png
+dot -Tpng use_case_overall.dot -o use_case_overall.png
+dot -Tpng use_case_volunteer.dot -o use_case_volunteer.png
