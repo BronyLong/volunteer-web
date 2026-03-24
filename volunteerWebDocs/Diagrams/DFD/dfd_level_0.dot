@@ -1,0 +1,96 @@
+digraph DFD_Level0 {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=1.0,
+        ranksep=1.1,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    guest       [label="Гость", shape=box];
+    volunteer   [label="Волонтёр", shape=box];
+    coordinator [label="Координатор", shape=box];
+
+    p1 [label="1. Регистрация\nи аутентификация", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p2 [label="2. Управление\nпрофилем", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p3 [label="3. Просмотр\nмероприятий", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p4 [label="4. Управление\nзаявками", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p5 [label="5. Управление мероприятиями\nкоординатором", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    d1 [label="D1. Пользователи", shape=cylinder];
+    d2 [label="D2. Профили", shape=cylinder];
+    d3 [label="D3. Мероприятия", shape=cylinder];
+    d4 [label="D4. Заявки", shape=cylinder];
+    d5 [label="D5. Категории", shape=cylinder];
+
+    { rank=same; guest; volunteer; coordinator; }
+    { rank=same; p1; p2; p3; p4; p5; }
+    { rank=same; d1; d2; d3; d4; d5; }
+
+    guest -> p1 [label="Данные\nрегистрации / входа"];
+    p1 -> guest [label="Результат\nрегистрации / входа"];
+
+    volunteer -> p1 [label="Данные входа"];
+    coordinator -> p1 [label="Данные входа"];
+    p1 -> volunteer [label="Результат входа"];
+    p1 -> coordinator [label="Результат входа"];
+
+    volunteer -> p2 [label="Запрос профиля,\nновые данные"];
+    coordinator -> p2 [label="Запрос профиля,\nновые данные"];
+    p2 -> volunteer [label="Данные профиля,\nрезультат обновления"];
+    p2 -> coordinator [label="Данные профиля,\nрезультат обновления"];
+
+    guest -> p3 [label="Запрос списка,\nфильтры,\nстраница мероприятия"];
+    volunteer -> p3 [label="Запрос списка,\nфильтры,\nстраница мероприятия"];
+    coordinator -> p3 [label="Запрос списка,\nстраница мероприятия"];
+    p3 -> guest [label="Список мероприятий,\nстраница мероприятия"];
+    p3 -> volunteer [label="Список мероприятий,\nстраница мероприятия"];
+    p3 -> coordinator [label="Список мероприятий,\nстраница мероприятия"];
+
+    volunteer -> p4 [label="Подача заявки,\nотмена заявки"];
+    p4 -> volunteer [label="Результат операции,\nстатус заявки"];
+
+    coordinator -> p5 [label="Создание,\nредактирование,\nудаление мероприятия,\nзапрос списка заявок"];
+    p5 -> coordinator [label="Результат операции,\nсписок заявок"];
+
+    p1 -> d1 [label="Создание / поиск"];
+    d1 -> p1 [label="Данные пользователя"];
+
+    p2 -> d2 [label="Чтение / обновление"];
+    d2 -> p2 [label="Данные профиля"];
+
+    p3 -> d3 [label="Чтение"];
+    d3 -> p3 [label="Данные мероприятий"];
+
+    p3 -> d5 [label="Чтение"];
+    d5 -> p3 [label="Категории"];
+
+    p4 -> d4 [label="Создание /\nудаление"];
+    d4 -> p4 [label="Данные заявки"];
+
+    p4 -> d3 [label="Чтение /\nобновление мест"];
+    d3 -> p4 [label="Данные мероприятия"];
+
+    p5 -> d3 [label="Создание /\nизменение /\nудаление"];
+    d3 -> p5 [label="Данные мероприятия"];
+
+    p5 -> d4 [label="Чтение заявок"];
+    d4 -> p5 [label="Список заявок"];
+
+    p5 -> d5 [label="Чтение"];
+    d5 -> p5 [label="Категории"];
+}

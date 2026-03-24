@@ -1,61 +1,66 @@
-digraph VolunteerWebArchitecture {
-    rankdir=LR;
-    fontsize=11;
-    fontname="Segoe UI";
-    node [fontname="Segoe UI"];
+digraph Architecture_Volunteer_Web_App {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.25,
+        nodesep=0.9,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
 
-    // Клиентский слой
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded,filled",
+        color="#6B7A90"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
     subgraph cluster_client {
-        label = "Клиентский слой";
-        style = "rounded";
-        color = "lightgrey";
+        label="Клиентский слой";
+        style="rounded";
+        color="#AAB7C4";
 
-        browser [label="Пользователь\n(веб-браузер)", shape=box];
-        spa [label="Клиентское приложение\nReact SPA", shape=box];
+        browser [label="Пользователь\n(веб-браузер)", shape=box, fillcolor="#F7F9FC"];
+        spa [label="Клиентское приложение\nReact SPA", shape=box, fillcolor="#EAF3FF"];
     }
 
-    // Серверный слой
     subgraph cluster_backend {
-        label = "Серверный слой (Node.js / Express)";
-        style = "rounded";
-        color = "lightblue";
+        label="Серверный слой (Node.js / Express)";
+        style="rounded";
+        color="#AAB7C4";
 
-        api [label="Сервер приложений\nExpress API", shape=box, style="filled", fillcolor="white"];
+        api [label="Сервер приложений\nExpress API", shape=box, fillcolor="#EAF3FF"];
 
-        auth       [label="Модуль аутентификации\nи авторизации (JWT)", shape=component];
-        profiles   [label="Модуль пользователей\nи профилей", shape=component];
-        events     [label="Модуль мероприятий\nи заявок", shape=component];
-        hours      [label="Модуль учёта часов\nи статистики", shape=component];
-        admin      [label="Административный\nмодуль", shape=component];
+        auth [label="Модуль аутентификации\nи авторизации (JWT)", shape=component, fillcolor="#FFF4CC"];
+        profiles [label="Модуль пользователей\nи профилей", shape=component, fillcolor="#FFF4CC"];
+        events [label="Модуль мероприятий", shape=component, fillcolor="#FFF4CC"];
+        applications [label="Модуль заявок\nна участие", shape=component, fillcolor="#FFF4CC"];
     }
 
-    // Слой данных
-    subgraph cluster_db {
-        label = "Слой хранения данных";
-        style = "rounded";
-        color = "lightgreen";
+    subgraph cluster_data {
+        label="Слой хранения данных";
+        style="rounded";
+        color="#AAB7C4";
 
-        db [label="База данных\nPostgreSQL", shape=cylinder];
+        db [label="PostgreSQL", shape=cylinder, fillcolor="#EAF3FF"];
     }
 
-    // Взаимодействие между слоями
-    browser -> spa [label="HTTP(S)\nGET HTML/JS/CSS"];
-    spa -> api     [label="REST API\nJSON (GET/POST/PUT/DELETE)"];
-    api -> db      [label="SQL‑запросы"];
-    db  -> api     [label="Результаты\nзапросов"];
-    api -> spa     [label="JSON‑ответы"];
+    browser -> spa [label="Взаимодействие\nчерез UI"];
+    spa -> api [label="HTTP / JSON"];
+    api -> auth [label="Проверка доступа"];
+    api -> profiles [label="Работа с профилем"];
+    api -> events [label="Чтение / изменение\nмероприятий"];
+    api -> applications [label="Подача / отмена заявки,\nполучение списка заявок"];
 
-    // Взаимодействие модулей внутри бэкенда
-    api -> auth     [label="Логин / Проверка JWT"];
-    api -> profiles [label="Профили\nпользователей"];
-    api -> events   [label="Мероприятия\nи заявки"];
-    api -> hours    [label="Учёт часов\nи метрики"];
-    api -> admin    [label="Админ‑операции\n(роли, блокировки,\nкатегории)"];
-
-    // Модули работают с БД
-    auth     -> db  [style=dashed];
-    profiles -> db  [style=dashed];
-    events   -> db  [style=dashed];
-    hours    -> db  [style=dashed];
-    admin    -> db  [style=dashed];
+    auth -> db [label="Пользователи,\nJWT-логика"];
+    profiles -> db [label="Пользователи,\nпрофили"];
+    events -> db [label="Мероприятия,\nкатегории"];
+    applications -> db [label="Заявки,\nобновление мест"];
 }

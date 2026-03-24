@@ -1,0 +1,31 @@
+digraph Sequence_ApplyForEvent {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=record];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    volunteer [label="{Волонтёр|}"];
+    frontend [label="{Frontend (React)|}"];
+    backend [label="{Backend API (Express)|}"];
+    db [label="{PostgreSQL|}"];
+
+    volunteer -> frontend [label="1. Нажатие «Подать заявку»"];
+    frontend -> backend [label="2. POST /events/{id}/applications\nJWT + eventId"];
+    backend -> db [label="3. Проверить пользователя"];
+    db -> backend [label="4. Пользователь найден"];
+
+    backend -> db [label="5. Проверить наличие\nсуществующей заявки"];
+    db -> backend [label="6. Заявка не найдена"];
+
+    backend -> db [label="7. Проверить количество\nсвободных мест"];
+    db -> backend [label="8. Места доступны"];
+
+    backend -> db [label="9. Создать заявку"];
+    db -> backend [label="10. OK"];
+
+    backend -> db [label="11. Уменьшить available_slots"];
+    db -> backend [label="12. OK"];
+
+    backend -> frontend [label="13. 200 OK\nstatus=applied"];
+    frontend -> volunteer [label="14. Обновление UI:\n«заявка отправлена»"];
+}

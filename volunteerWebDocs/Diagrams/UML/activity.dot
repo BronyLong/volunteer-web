@@ -1,0 +1,37 @@
+digraph Activity_ApplyForEvent {
+    rankdir=TB;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="Начало", shape=circle, width=0.3, fixedsize=true];
+    endok [label="Заявка подана", shape=doublecircle, width=0.45, fixedsize=true];
+    endfail [label="Завершение", shape=doublecircle, width=0.45, fixedsize=true];
+
+    openEvent [label="Волонтёр открывает\nстраницу мероприятия"];
+    clickApply [label="Нажимает кнопку\n«Подать заявку»"];
+    checkAuth [label="Проверка:\nпользователь авторизован?", shape=diamond];
+    redirectLogin [label="Переход на страницу входа"];
+    checkDuplicate [label="Проверка:\nзаявка уже существует?", shape=diamond];
+    showDuplicate [label="Отображение сообщения:\nзаявка уже подана"];
+    checkSlots [label="Проверка:\nесть свободные места?", shape=diamond];
+    noSlots [label="Отображение сообщения:\nсвободных мест нет"];
+    createApp [label="Создание записи заявки"];
+    decSlots [label="Уменьшение числа\nсвободных мест"];
+    updateUI [label="Обновление страницы:\nстатус «заявка отправлена»"];
+
+    start -> openEvent -> clickApply -> checkAuth;
+    checkAuth -> redirectLogin [label="нет"];
+    redirectLogin -> endfail;
+
+    checkAuth -> checkDuplicate [label="да"];
+    checkDuplicate -> showDuplicate [label="да"];
+    showDuplicate -> endfail;
+
+    checkDuplicate -> checkSlots [label="нет"];
+    checkSlots -> noSlots [label="нет"];
+    noSlots -> endfail;
+
+    checkSlots -> createApp [label="да"];
+    createApp -> decSlots -> updateUI -> endok;
+}

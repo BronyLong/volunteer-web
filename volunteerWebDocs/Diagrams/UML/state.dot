@@ -1,0 +1,17 @@
+digraph State_Application {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="", shape=point];
+    created [label="Заявка создана"];
+    active [label="Заявка активна\n(участие запрошено)"];
+    cancelled [label="Заявка отменена"];
+    finish [label="", shape=point];
+
+    start -> created [label="apply()"];
+    created -> active [label="сохранение в БД"];
+    active -> cancelled [label="cancel()"];
+    cancelled -> finish;
+}

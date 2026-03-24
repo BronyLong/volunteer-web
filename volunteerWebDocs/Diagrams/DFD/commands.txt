@@ -1,9 +1,7 @@
-dot -Tpng dfd_00_context.dot -o dfd_00_context.png
-dot -Tpng dfd_01_level1.dot -o dfd_01_level1.png
-dot -Tpng dfd_02_accounts_auth.dot -o dfd_02_accounts_auth.png
-dot -Tpng dfd_03_profiles.dot -o dfd_03_profiles.png
-dot -Tpng dfd_04_events.dot -o dfd_04_events.png
-dot -Tpng dfd_05_applications.dot -o dfd_05_applications.png
-dot -Tpng dfd_06_hours_stats.dot -o dfd_06_hours_stats.png
-dot -Tpng dfd_07_admin.dot -o dfd_07_admin.png
-dot -Tpng dfd_08_news.dot -o dfd_08_news.png
+dot -Tpng context.dot -o context.png
+dot -Tpng dfd_Level_0.dot -o dfd_Level_0.png
+dot -Tpng dfd_Level_1_coordinator.dot -o dfd_Level_1_coordinator.png
+dot -Tpng dfd_Level_1_events.dot -o dfd_Level_1_events.png
+dot -Tpng dfd_Level_1_reg_auth.dot -o dfd_Level_1_reg_auth.png
+dot -Tpng dfd_Level_2_applications.dot -o dfd_Level_2_applications.png
+dot -Tpng dfd_level_2_applications_management.dot -o dfd_level_2_applications_management.png

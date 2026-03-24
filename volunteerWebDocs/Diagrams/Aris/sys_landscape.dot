@@ -1,0 +1,38 @@
+digraph ARIS_System_Landscape {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.8,
+        ranksep=1.0,
+        pad=0.2
+    ];
+
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Segoe UI",
+        fontsize=10,
+        color="#6B7A90"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    user [label="Пользователь", fillcolor="#F7F9FC"];
+    browser [label="Веб-браузер", fillcolor="#F7F9FC"];
+    frontend [label="Клиентское приложение\nReact SPA", fillcolor="#EAF3FF"];
+    backend [label="Сервер приложений\nNode.js / Express", fillcolor="#EAF3FF"];
+    db [label="PostgreSQL", fillcolor="#EAF3FF"];
+
+    user -> browser [label="Взаимодействие"];
+    browser -> frontend [label="HTML / CSS / JS"];
+    frontend -> backend [label="HTTP / JSON"];
+    backend -> db [label="SQL-запросы"];
+    db -> backend [label="Данные"];
+    backend -> frontend [label="JSON-ответ"];
+    frontend -> browser [label="Отображение интерфейса"];
+}

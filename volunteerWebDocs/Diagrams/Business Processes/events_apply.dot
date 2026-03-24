@@ -1,0 +1,53 @@
+digraph BP2_Apply_For_Event {
+    rankdir=TB;
+    graph [fontname="Segoe UI", fontsize=11, nodesep=0.55, ranksep=0.75];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="Начало процесса", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(заявка подана)", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(заявка не подана)", shape=oval, style="filled", fillcolor="lightgrey"];
+
+    subgraph cluster_volunteer {
+        label="Волонтёр";
+        style="rounded";
+        color="gray60";
+
+        open_events [label="Открывает список мероприятий"];
+        filter_events [label="При необходимости\nфильтрует мероприятия"];
+        open_event [label="Открывает страницу\nконкретного мероприятия"];
+        click_apply [label="Нажимает кнопку\n«Подать заявку»"];
+        see_result [label="Видит обновлённый статус\nна странице мероприятия"];
+    }
+
+    subgraph cluster_system {
+        label="Система";
+        style="rounded";
+        color="lightblue";
+
+        check_auth [label="Проверяет:\nпользователь авторизован?", shape=diamond];
+        redirect_login [label="Перенаправляет\nна страницу входа"];
+        check_duplicate [label="Проверяет:\nзаявка уже существует?", shape=diamond];
+        show_duplicate [label="Отображает сообщение:\nзаявка уже подана"];
+        check_slots [label="Проверяет:\nесть свободные места?", shape=diamond];
+        show_no_slots [label="Отображает сообщение:\nсвободных мест нет"];
+        create_application [label="Создаёт запись заявки"];
+        reduce_slots [label="Уменьшает количество\nсвободных мест"];
+        update_status [label="Отображает статус:\n«заявка отправлена»"];
+    }
+
+    start -> open_events -> filter_events -> open_event -> click_apply -> check_auth;
+    check_auth -> redirect_login [label="нет"];
+    redirect_login -> end_fail;
+
+    check_auth -> check_duplicate [label="да"];
+    check_duplicate -> show_duplicate [label="да"];
+    show_duplicate -> end_fail;
+
+    check_duplicate -> check_slots [label="нет"];
+    check_slots -> show_no_slots [label="нет"];
+    show_no_slots -> end_fail;
+
+    check_slots -> create_application [label="да"];
+    create_application -> reduce_slots -> update_status -> see_result -> end_ok;
+}

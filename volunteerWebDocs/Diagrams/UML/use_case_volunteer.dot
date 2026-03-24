@@ -1,0 +1,33 @@
+digraph UseCase_Volunteer {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    volunteer [label="Волонтёр", shape=actor];
+
+    subgraph cluster_system {
+        label="Веб-приложение";
+        style="rounded";
+
+        uc_home     [label="Просмотр главной страницы", shape=ellipse];
+        uc_events   [label="Просмотр списка\nмероприятий", shape=ellipse];
+        uc_event    [label="Просмотр страницы\nмероприятия", shape=ellipse];
+        uc_filter   [label="Фильтрация мероприятий", shape=ellipse];
+
+        uc_profile  [label="Просмотр профиля", shape=ellipse];
+        uc_editprof [label="Редактирование профиля", shape=ellipse];
+
+        uc_apply    [label="Подача заявки\nна мероприятие", shape=ellipse];
+        uc_cancel   [label="Отмена заявки\nна мероприятие", shape=ellipse];
+    }
+
+    volunteer -> uc_home;
+    volunteer -> uc_events;
+    volunteer -> uc_event;
+    volunteer -> uc_filter;
+    volunteer -> uc_profile;
+    volunteer -> uc_editprof;
+    volunteer -> uc_apply;
+    volunteer -> uc_cancel;
+}

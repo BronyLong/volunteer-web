@@ -1,0 +1,46 @@
+digraph ARIS_EPC_Apply_For_Event {
+    graph [
+        rankdir=TB,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.7,
+        ranksep=0.7,
+        pad=0.2
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    e1 [label="Выбрано мероприятие", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f1 [label="Открыть страницу\nмероприятия", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e2 [label="Страница мероприятия\nоткрыта", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f2 [label="Отправить запрос\nна подачу заявки", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e3 [label="Запрос получен системой", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f3 [label="Проверить авторизацию", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e4 [label="Пользователь\nавторизован", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f4 [label="Проверить наличие\nповторной заявки", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e5 [label="Повторной заявки нет", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f5 [label="Проверить наличие\nсвободных мест", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e6 [label="Свободные места есть", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f6 [label="Создать заявку", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e7 [label="Заявка создана", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+    f7 [label="Обновить количество\nсвободных мест", shape=box, style="rounded,filled", fillcolor="#FFF4CC"];
+
+    e8 [label="Статус заявки обновлён", shape=hexagon, style="filled", fillcolor="#EAF3FF"];
+
+    e1 -> f1 -> e2 -> f2 -> e3 -> f3 -> e4 -> f4 -> e5 -> f5 -> e6 -> f6 -> e7 -> f7 -> e8;
+}

@@ -1,0 +1,27 @@
+digraph UseCase_Guest {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    guest [label="Гость", shape=actor];
+
+    subgraph cluster_system {
+        label="Веб-приложение";
+        style="rounded";
+
+        uc_home     [label="Просмотр главной страницы", shape=ellipse];
+        uc_events   [label="Просмотр списка\nмероприятий", shape=ellipse];
+        uc_event    [label="Просмотр страницы\nмероприятия", shape=ellipse];
+        uc_filter   [label="Фильтрация мероприятий", shape=ellipse];
+        uc_register [label="Регистрация", shape=ellipse];
+        uc_login    [label="Вход в систему", shape=ellipse];
+    }
+
+    guest -> uc_home;
+    guest -> uc_events;
+    guest -> uc_event;
+    guest -> uc_filter;
+    guest -> uc_register;
+    guest -> uc_login;
+}

@@ -1,0 +1,94 @@
+digraph DFD_Level1_Events_Applications {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=1.0,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    guest     [label="Гость", shape=box];
+    volunteer [label="Волонтёр", shape=box];
+
+    p31 [label="3.1 Получение списка\nмероприятий", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p32 [label="3.2 Фильтрация\nмероприятий", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p33 [label="3.3 Просмотр страницы\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    p41 [label="4.1 Подача заявки", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p42 [label="4.2 Отмена заявки", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p43 [label="4.3 Проверка возможности\nподачи заявки", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p44 [label="4.4 Обновление\nсвободных мест", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    d3 [label="D3. Мероприятия", shape=cylinder];
+    d4 [label="D4. Заявки", shape=cylinder];
+    d5 [label="D5. Категории", shape=cylinder];
+
+    { rank=same; guest; volunteer; }
+    { rank=same; p31; p32; p33; p41; p42; p43; p44; }
+    { rank=same; d3; d4; d5; }
+
+    guest -> p31 [label="Запрос списка"];
+    volunteer -> p31 [label="Запрос списка"];
+    p31 -> guest [label="Список мероприятий"];
+    p31 -> volunteer [label="Список мероприятий"];
+
+    guest -> p32 [label="Параметры фильтра"];
+    volunteer -> p32 [label="Параметры фильтра"];
+    p32 -> guest [label="Отфильтрованный\nсписок"];
+    p32 -> volunteer [label="Отфильтрованный\nсписок"];
+
+    guest -> p33 [label="Идентификатор\nмероприятия"];
+    volunteer -> p33 [label="Идентификатор\nмероприятия"];
+    p33 -> guest [label="Данные мероприятия"];
+    p33 -> volunteer [label="Данные мероприятия,\nстатус заявки"];
+
+    volunteer -> p41 [label="Запрос на подачу"];
+    p41 -> volunteer [label="Результат подачи"];
+
+    volunteer -> p42 [label="Запрос на отмену"];
+    p42 -> volunteer [label="Результат отмены"];
+
+    p31 -> d3 [label="Чтение"];
+    d3 -> p31 [label="Список мероприятий"];
+
+    p32 -> d3 [label="Чтение"];
+    d3 -> p32 [label="Данные мероприятий"];
+    p32 -> d5 [label="Чтение"];
+    d5 -> p32 [label="Категории"];
+
+    p33 -> d3 [label="Чтение"];
+    d3 -> p33 [label="Данные мероприятия"];
+    p33 -> d4 [label="Проверка заявки"];
+    d4 -> p33 [label="Наличие /\nотсутствие заявки"];
+
+    p41 -> p43 [label="Проверка условий"];
+    p43 -> d4 [label="Проверка дубля"];
+    d4 -> p43 [label="Результат"];
+    p43 -> d3 [label="Проверка мест"];
+    d3 -> p43 [label="Количество мест"];
+    p43 -> p41 [label="Подача разрешена"];
+    p41 -> d4 [label="Создание"];
+    d4 -> p41 [label="Созданная заявка"];
+    p41 -> p44 [label="Уменьшить места"];
+
+    p42 -> d4 [label="Удаление"];
+    d4 -> p42 [label="Результат удаления"];
+    p42 -> p44 [label="Увеличить места"];
+
+    p44 -> d3 [label="Обновление\navailableSlots"];
+    d3 -> p44 [label="Обновлённые данные"];
+}

@@ -1,3 +1,9 @@
-dot -Tpng uml_classes_domain.dot -o uml_classes_domain.png
-dot -Tpng uml_classes_events.dot -o uml_classes_events.png
-dot -Tpng uml_classes_users.dot -o uml_classes_users.png
+dot -Tpng activity.dot -o activity.png
+dot -Tpng class.dot -o class.png
+dot -Tpng component.dot -o component.png
+dot -Tpng deployment.dot -o deployment.png
+dot -Tpng sequence.dot -o sequence.png
+dot -Tpng state.dot -o state.png
+dot -Tpng use_case_volunteer.dot -o use_case_volunteer.png
+dot -Tpng use_case_guest.dot -o use_case_guest.png
+dot -Tpng use_case_coordinator.dot -o use_case_coordinator.png

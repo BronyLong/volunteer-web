@@ -1,0 +1,64 @@
+digraph ARIS_BPMN_Apply_For_Event {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.8,
+        ranksep=1.0,
+        pad=0.2
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    start [label="Старт", shape=circle, width=0.35, fixedsize=true];
+    end_ok [label="Заявка подана", shape=doublecircle, width=0.45, fixedsize=true];
+    end_fail [label="Завершение", shape=doublecircle, width=0.45, fixedsize=true];
+
+    subgraph cluster_volunteer {
+        label="Волонтёр";
+        style="rounded";
+        color="#7F8FA6";
+
+        open_list [label="Открыть список\nмероприятий", shape=box];
+        select_event [label="Выбрать мероприятие", shape=box];
+        open_page [label="Открыть страницу\nмероприятия", shape=box];
+        click_apply [label="Нажать\n«Подать заявку»", shape=box];
+        see_result [label="Получить обновлённый\nстатус", shape=box];
+    }
+
+    subgraph cluster_system {
+        label="Система";
+        style="rounded";
+        color="#7F8FA6";
+
+        auth_check [label="Пользователь\nавторизован?", shape=diamond];
+        duplicate_check [label="Заявка уже\nсуществует?", shape=diamond];
+        slot_check [label="Есть свободные\nместа?", shape=diamond];
+        create_app [label="Создать заявку", shape=box];
+        update_slots [label="Уменьшить число\nсвободных мест", shape=box];
+        show_error [label="Показать сообщение\nоб ошибке", shape=box];
+    }
+
+    start -> open_list -> select_event -> open_page -> click_apply -> auth_check;
+    auth_check -> show_error [label="нет"];
+    show_error -> end_fail;
+
+    auth_check -> duplicate_check [label="да"];
+    duplicate_check -> show_error [label="да"];
+    duplicate_check -> slot_check [label="нет"];
+
+    slot_check -> show_error [label="нет"];
+    slot_check -> create_app [label="да"];
+
+    create_app -> update_slots -> see_result -> end_ok;
+}

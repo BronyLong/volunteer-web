@@ -1,0 +1,63 @@
+digraph BP4_Coordinator_Manage_Event {
+    rankdir=TB;
+    graph [fontname="Segoe UI", fontsize=11, nodesep=0.55, ranksep=0.8];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="Начало процесса", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(операция выполнена)", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(операция не выполнена)", shape=oval, style="filled", fillcolor="lightgrey"];
+
+    subgraph cluster_coord {
+        label="Координатор";
+        style="rounded";
+        color="gray60";
+
+        login [label="Входит в систему"];
+        open_panel [label="Переходит в раздел\nуправления мероприятиями"];
+        choose_action [label="Выбирает действие:\nсоздать / редактировать /\nудалить / просмотреть заявки"];
+        fill_event_form [label="Заполняет или изменяет\nданные мероприятия"];
+        confirm_delete [label="Подтверждает удаление"];
+        open_event_page [label="Открывает страницу\nмероприятия"];
+        view_applications [label="Просматривает список\nподанных заявок"];
+    }
+
+    subgraph cluster_system {
+        label="Система";
+        style="rounded";
+        color="lightblue";
+
+        check_role [label="Проверяет роль:\nкоординатор?", shape=diamond];
+        deny_access [label="Запрещает доступ"];
+        validate_event [label="Проверяет корректность\nданных мероприятия", shape=diamond];
+        create_event [label="Создаёт мероприятие"];
+        update_event [label="Обновляет данные\nмероприятия"];
+        delete_event [label="Удаляет мероприятие"];
+        show_event [label="Отображает страницу\nмероприятия"];
+        show_error [label="Отображает сообщение\nоб ошибке"];
+    }
+
+    start -> login -> open_panel -> check_role;
+    check_role -> deny_access [label="нет"];
+    deny_access -> end_fail;
+
+    check_role -> choose_action [label="да"];
+
+    choose_action -> fill_event_form [label="создание"];
+    fill_event_form -> validate_event;
+    validate_event -> create_event [label="данные корректны"];
+    validate_event -> show_error [label="ошибка"];
+    create_event -> end_ok;
+    show_error -> end_fail;
+
+    choose_action -> fill_event_form [label="редактирование"];
+    fill_event_form -> validate_event;
+    validate_event -> update_event [label="данные корректны"];
+    update_event -> end_ok;
+
+    choose_action -> confirm_delete [label="удаление"];
+    confirm_delete -> delete_event -> end_ok;
+
+    choose_action -> open_event_page [label="просмотр заявок"];
+    open_event_page -> show_event -> view_applications -> end_ok;
+}

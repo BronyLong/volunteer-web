@@ -1,0 +1,43 @@
+digraph BP3_Cancel_Application {
+    rankdir=TB;
+    graph [fontname="Segoe UI", fontsize=11, nodesep=0.55, ranksep=0.75];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="Начало процесса", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(заявка отменена)", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(отмена не выполнена)", shape=oval, style="filled", fillcolor="lightgrey"];
+
+    subgraph cluster_volunteer {
+        label="Волонтёр";
+        style="rounded";
+        color="gray60";
+
+        open_event [label="Открывает страницу\nмероприятия"];
+        see_status [label="Видит статус:\n«заявка отправлена»"];
+        click_cancel [label="Нажимает кнопку\n«Отменить заявку»"];
+        get_new_status [label="Видит обновлённый статус\nна странице мероприятия"];
+    }
+
+    subgraph cluster_system {
+        label="Система";
+        style="rounded";
+        color="lightblue";
+
+        check_auth [label="Проверяет:\nпользователь авторизован?", shape=diamond];
+        check_application [label="Проверяет наличие\nактивной заявки", shape=diamond];
+        show_error [label="Отображает сообщение\nоб ошибке"];
+        delete_application [label="Удаляет запись заявки"];
+        increase_slots [label="Увеличивает количество\nсвободных мест"];
+        update_status [label="Отображает статус:\n«заявка не подана»"];
+    }
+
+    start -> open_event -> see_status -> click_cancel -> check_auth;
+    check_auth -> show_error [label="нет"];
+    show_error -> end_fail;
+
+    check_auth -> check_application [label="да"];
+    check_application -> show_error [label="заявки нет"];
+    check_application -> delete_application [label="заявка есть"];
+    delete_application -> increase_slots -> update_status -> get_new_status -> end_ok;
+}

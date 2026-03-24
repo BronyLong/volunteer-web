@@ -1,0 +1,73 @@
+digraph DFD_Level1_Auth_Profile {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=1.0,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    guest       [label="Гость", shape=box];
+    volunteer   [label="Волонтёр", shape=box];
+    coordinator [label="Координатор", shape=box];
+
+    p11 [label="1.1 Регистрация", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p12 [label="1.2 Авторизация", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p13 [label="1.3 Проверка прав\nдоступа", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p21 [label="2.1 Просмотр\nпрофиля", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p22 [label="2.2 Редактирование\nпрофиля", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    d1 [label="D1. Пользователи", shape=cylinder];
+    d2 [label="D2. Профили", shape=cylinder];
+
+    { rank=same; guest; volunteer; coordinator; }
+    { rank=same; p11; p12; p13; p21; p22; }
+    { rank=same; d1; d2; }
+
+    guest -> p11 [label="Email,\nпароль"];
+    p11 -> guest [label="Результат\nрегистрации"];
+
+    volunteer -> p12 [label="Email,\nпароль"];
+    coordinator -> p12 [label="Email,\nпароль"];
+    p12 -> volunteer [label="JWT,\nрезультат входа"];
+    p12 -> coordinator [label="JWT,\nрезультат входа"];
+
+    volunteer -> p21 [label="Запрос данных"];
+    coordinator -> p21 [label="Запрос данных"];
+    p21 -> volunteer [label="Данные профиля"];
+    p21 -> coordinator [label="Данные профиля"];
+
+    volunteer -> p22 [label="Новые данные"];
+    coordinator -> p22 [label="Новые данные"];
+    p22 -> volunteer [label="Результат\nобновления"];
+    p22 -> coordinator [label="Результат\nобновления"];
+
+    p11 -> d1 [label="Проверка email /\nсоздание"];
+    d1 -> p11 [label="Данные пользователя"];
+
+    p12 -> d1 [label="Поиск учётной записи"];
+    d1 -> p12 [label="Данные пользователя"];
+
+    p13 -> d1 [label="Проверка роли"];
+    d1 -> p13 [label="Роль пользователя"];
+
+    p21 -> d2 [label="Чтение"];
+    d2 -> p21 [label="Данные профиля"];
+
+    p22 -> d2 [label="Обновление"];
+    d2 -> p22 [label="Обновлённые данные"];
+}

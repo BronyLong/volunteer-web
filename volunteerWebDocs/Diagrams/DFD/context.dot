@@ -1,0 +1,58 @@
+digraph DFD_Context {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=0.9,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        shape=box,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    guest       [label="Гость"];
+    volunteer   [label="Волонтёр"];
+    coordinator [label="Координатор"];
+
+    system [
+        label="Веб-приложение\nволонтёрской организации",
+        shape=ellipse,
+        style="filled",
+        fillcolor="#EAF3FF",
+        color="#5B7DB1",
+        penwidth=1.2
+    ];
+
+    guest -> system [
+        label="Просмотр главной страницы,\nмероприятий,\nрегистрация,\nвход"
+    ];
+    system -> guest [
+        label="Страницы сайта,\nформы входа и регистрации,\nданные о мероприятиях"
+    ];
+
+    volunteer -> system [
+        label="Вход,\nработа с профилем,\nпросмотр мероприятий,\nподача и отмена заявки"
+    ];
+    system -> volunteer [
+        label="Профиль,\nсписок мероприятий,\nстраница мероприятия,\nстатус заявки"
+    ];
+
+    coordinator -> system [
+        label="Вход,\nсоздание, редактирование,\nудаление мероприятий,\nпросмотр заявок"
+    ];
+    system -> coordinator [
+        label="Страницы управления,\nданные мероприятий,\nсписок заявок"
+    ];
+}

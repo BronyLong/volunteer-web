@@ -1,0 +1,72 @@
+digraph DFD_Level1_Coordinator {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=1.0,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    coordinator [label="Координатор", shape=box];
+
+    p51 [label="5.1 Создание\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p52 [label="5.2 Редактирование\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p53 [label="5.3 Удаление\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p54 [label="5.4 Просмотр списка\nзаявок на мероприятие", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p55 [label="5.5 Проверка роли\nкоординатора", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    d1 [label="D1. Пользователи", shape=cylinder];
+    d3 [label="D3. Мероприятия", shape=cylinder];
+    d4 [label="D4. Заявки", shape=cylinder];
+    d5 [label="D5. Категории", shape=cylinder];
+
+    coordinator -> p51 [label="Данные нового\nмероприятия"];
+    p51 -> coordinator [label="Результат создания"];
+
+    coordinator -> p52 [label="Изменённые данные"];
+    p52 -> coordinator [label="Результат\nредактирования"];
+
+    coordinator -> p53 [label="Идентификатор\nмероприятия"];
+    p53 -> coordinator [label="Результат удаления"];
+
+    coordinator -> p54 [label="Запрос списка\nзаявок"];
+    p54 -> coordinator [label="Список пользователей,\nподавших заявки"];
+
+    p51 -> p55 [label="Проверка прав"];
+    p52 -> p55 [label="Проверка прав"];
+    p53 -> p55 [label="Проверка прав"];
+    p54 -> p55 [label="Проверка прав"];
+
+    p55 -> d1 [label="Проверка роли"];
+    d1 -> p55 [label="Роль пользователя"];
+
+    p51 -> d3 [label="Создание"];
+    d3 -> p51 [label="Сохранённое\nмероприятие"];
+    p51 -> d5 [label="Чтение категорий"];
+    d5 -> p51 [label="Категории"];
+
+    p52 -> d3 [label="Обновление"];
+    d3 -> p52 [label="Обновлённое\nмероприятие"];
+    p52 -> d5 [label="Чтение категорий"];
+    d5 -> p52 [label="Категории"];
+
+    p53 -> d3 [label="Удаление"];
+    d3 -> p53 [label="Результат удаления"];
+
+    p54 -> d4 [label="Чтение заявок"];
+    d4 -> p54 [label="Список заявок"];
+}

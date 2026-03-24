@@ -1,0 +1,35 @@
+digraph ARIS_Organizational_Chart {
+    graph [
+        rankdir=TB,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.6,
+        ranksep=0.8,
+        pad=0.2
+    ];
+
+    node [
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F7F9FC",
+        color="#6B7A90",
+        fontname="Segoe UI",
+        fontsize=10
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    org [label="Волонтёрская организация", shape=box, fillcolor="#EAF3FF", color="#5B7DB1"];
+
+    coord [label="Координатор\n\nФункции:\n- создание мероприятий\n- редактирование мероприятий\n- удаление мероприятий\n- просмотр заявок"];
+    vol [label="Волонтёр\n\nФункции:\n- просмотр мероприятий\n- подача заявки\n- отмена заявки\n- редактирование профиля"];
+    guest [label="Гость\n\nФункции:\n- просмотр главной страницы\n- просмотр мероприятий\n- регистрация\n- вход"];
+
+    org -> coord;
+    org -> vol;
+    org -> guest;
+}

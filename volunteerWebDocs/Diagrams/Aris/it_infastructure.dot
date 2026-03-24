@@ -1,0 +1,37 @@
+digraph ARIS_IT_Infrastructure {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.8,
+        ranksep=1.0,
+        pad=0.2
+    ];
+
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Segoe UI",
+        fontsize=10,
+        color="#6B7A90"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    client [label="Клиентское устройство\n(ПК / ноутбук / смартфон)", fillcolor="#F7F9FC"];
+    browser [label="Веб-браузер", fillcolor="#F7F9FC"];
+    internet [label="Интернет / HTTPS", fillcolor="#FFFFFF"];
+    app_server [label="Сервер приложения\nNode.js / Express", fillcolor="#EAF3FF"];
+    db_server [label="Сервер базы данных", fillcolor="#EAF3FF"];
+    postgres [label="PostgreSQL", fillcolor="#EAF3FF"];
+
+    client -> browser [label="Запуск"];
+    browser -> internet [label="HTTPS"];
+    internet -> app_server [label="Запросы"];
+    app_server -> db_server [label="TCP / SQL"];
+    db_server -> postgres [label="Хранение данных"];
+}

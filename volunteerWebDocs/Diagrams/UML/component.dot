@@ -1,0 +1,27 @@
+digraph Component_VolunteerApp {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=component];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    browser [label="Web Browser"];
+    frontend [label="Frontend\nReact SPA"];
+    api [label="Backend API\nNode.js / Express"];
+    auth [label="Auth Module"];
+    profile [label="Profile Module"];
+    events [label="Events Module"];
+    applications [label="Applications Module"];
+    db [label="PostgreSQL DB"];
+
+    browser -> frontend [label="HTML/CSS/JS"];
+    frontend -> api [label="HTTP / JSON"];
+    api -> auth;
+    api -> profile;
+    api -> events;
+    api -> applications;
+
+    auth -> db [label="SQL"];
+    profile -> db [label="SQL"];
+    events -> db [label="SQL"];
+    applications -> db [label="SQL"];
+}

@@ -1,0 +1,47 @@
+digraph BP1_Registration_Login {
+    rankdir=TB;
+    graph [fontname="Segoe UI", fontsize=11, nodesep=0.5, ranksep=0.7];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    start [label="Начало процесса", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_ok [label="Завершение процесса\n(учётная запись создана\nили выполнен вход)", shape=oval, style="filled", fillcolor="lightgrey"];
+    end_fail [label="Завершение процесса\n(операция не выполнена)", shape=oval, style="filled", fillcolor="lightgrey"];
+
+    subgraph cluster_user {
+        label="Гость / пользователь";
+        style="rounded";
+        color="gray60";
+
+        open_site [label="Открывает веб-приложение"];
+        choose_action [label="Выбирает действие:\nрегистрация или вход"];
+        fill_form [label="Заполняет форму\n(email, пароль)"];
+        send_form [label="Отправляет форму"];
+        get_result [label="Получает результат\nавторизации"];
+    }
+
+    subgraph cluster_system {
+        label="Система";
+        style="rounded";
+        color="lightblue";
+
+        validate_data [label="Проверяет корректность\nвведённых данных"];
+        check_email [label="Проверяет уникальность email", shape=diamond];
+        create_account [label="Создаёт учётную запись"];
+        verify_credentials [label="Проверяет учётные данные", shape=diamond];
+        grant_access [label="Предоставляет доступ\nк защищённым разделам"];
+        show_error [label="Отображает сообщение\nоб ошибке"];
+    }
+
+    start -> open_site -> choose_action -> fill_form -> send_form -> validate_data;
+    validate_data -> check_email [label="регистрация"];
+    check_email -> create_account [label="email уникален"];
+    create_account -> grant_access -> get_result -> end_ok;
+
+    check_email -> show_error [label="email уже существует"];
+    show_error -> end_fail;
+
+    validate_data -> verify_credentials [label="вход"];
+    verify_credentials -> grant_access [label="данные верны"];
+    verify_credentials -> show_error [label="данные неверны"];
+}

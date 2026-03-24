@@ -1,0 +1,111 @@
+digraph ClassDiagram_VolunteerApp {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=record];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    User [label="{User|
++ id: UUID\l
++ email: string\l
++ passwordHash: string\l
++ role: UserRole\l
++ isActive: boolean\l
++ createdAt: datetime\l
++ lastLogin: datetime\l|
++ register()\l
++ login()\l
++ logout()\l
++ changePassword()\l
+}"];
+
+    Profile [label="{Profile|
++ userId: UUID\l
++ firstName: string\l
++ lastName: string\l
++ middleName: string\l
++ phone: string\l
++ city: string\l
++ avatarUrl: text\l
++ bio: text\l
++ dateOfBirth: date\l|
++ updateProfile()\l
++ uploadAvatar()\l
+}"];
+
+    CoordinatorProfile [label="{CoordinatorProfile|
++ userId: UUID\l
++ position: string\l
++ department: string\l|
++ manageEvents()\l
++ viewApplications()\l
+}"];
+
+    Category [label="{Category|
++ id: int\l
++ name: string\l|
++ create()\l
++ update()\l
++ delete()\l
+}"];
+
+    Event [label="{Event|
++ id: UUID\l
++ title: string\l
++ shortDescription: string\l
++ fullDescription: text\l
++ startAt: datetime\l
++ endAt: datetime\l
++ location: string\l
++ participantLimit: int\l
++ availableSlots: int\l|
++ createEvent()\l
++ updateEvent()\l
++ deleteEvent()\l
++ getFreePlaces()\l
+}"];
+
+    Application [label="{Application|
++ id: int\l
++ userId: UUID\l
++ eventId: UUID\l
++ createdAt: datetime\l|
++ apply()\l
++ cancel()\l
++ checkDuplicate()\l
+}"];
+
+    AuthService [label="{AuthService|
++ issueJwt()\l
++ verifyJwt()\l
++ hashPassword()\l
++ validateCredentials()\l
+}"];
+
+    EventService [label="{EventService|
++ createEvent()\l
++ updateEvent()\l
++ deleteEvent()\l
++ getEventList()\l
++ getEventById()\l
+}"];
+
+    ApplicationService [label="{ApplicationService|
++ submitApplication()\l
++ cancelApplication()\l
++ validateLimit()\l
++ validateDuplicate()\l
++ getApplicationsByEvent()\l
+}"];
+
+    User -> Profile [label="1 to 1", dir=both];
+    User -> CoordinatorProfile [label="1 to 0..1", style=dashed];
+    Category -> Event [label="1 to 0..*", dir=both];
+    User -> Application [label="1 to 0..*", dir=both];
+    Event -> Application [label="1 to 0..*", dir=both];
+
+    User -> AuthService [style=dashed, label="uses"];
+    CoordinatorProfile -> EventService [style=dashed, label="uses"];
+    Profile -> EventService [style=invis];
+    User -> ApplicationService [style=dashed, label="uses"];
+    CoordinatorProfile -> ApplicationService [style=dashed, label="uses"];
+}

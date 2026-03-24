@@ -1,0 +1,19 @@
+digraph Deployment_VolunteerApp {
+    rankdir=LR;
+    graph [fontname="Segoe UI", fontsize=11];
+    node [fontname="Segoe UI", fontsize=10, shape=box, style="rounded"];
+    edge [fontname="Segoe UI", fontsize=9];
+
+    client [label="<<device>>\nКлиентское устройство\n(ПК / ноутбук / смартфон)"];
+    browser [label="<<execution environment>>\nВеб-браузер"];
+    server [label="<<node>>\nСервер приложения"];
+    app [label="<<artifact>>\nNode.js / Express API"];
+    dbserver [label="<<node>>\nСервер БД"];
+    postgres [label="<<artifact>>\nPostgreSQL"];
+
+    client -> browser [label="запуск"];
+    browser -> server [label="HTTPS"];
+    server -> app [label="развертывание"];
+    app -> dbserver [label="TCP / SQL"];
+    dbserver -> postgres [label="развертывание"];
+}

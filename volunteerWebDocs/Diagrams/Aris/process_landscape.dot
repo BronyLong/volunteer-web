@@ -1,0 +1,52 @@
+digraph ARIS_Process_Landscape {
+    graph [
+        rankdir=TB,
+        splines=ortho,
+        fontname="Segoe UI",
+        fontsize=12,
+        nodesep=0.7,
+        ranksep=0.9,
+        pad=0.2
+    ];
+
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Segoe UI",
+        fontsize=10,
+        color="#6B7A90"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    manage_users [label="Управление пользователями\nи аутентификацией", fillcolor="#EAF3FF"];
+    manage_profile [label="Управление профилем", fillcolor="#EAF3FF"];
+    manage_events [label="Управление мероприятиями", fillcolor="#EAF3FF"];
+    manage_apps [label="Управление заявками", fillcolor="#EAF3FF"];
+    browse_info [label="Просмотр информации\nо мероприятиях", fillcolor="#EAF3FF"];
+
+    reg [label="Регистрация и вход", fillcolor="#FFF4CC"];
+    profile [label="Просмотр и редактирование профиля", fillcolor="#FFF4CC"];
+    create_event [label="Создание мероприятия", fillcolor="#FFF4CC"];
+    edit_event [label="Редактирование мероприятия", fillcolor="#FFF4CC"];
+    delete_event [label="Удаление мероприятия", fillcolor="#FFF4CC"];
+    browse_events [label="Просмотр списка мероприятий", fillcolor="#FFF4CC"];
+    view_event [label="Просмотр страницы мероприятия", fillcolor="#FFF4CC"];
+    apply [label="Подача заявки", fillcolor="#FFF4CC"];
+    cancel [label="Отмена заявки", fillcolor="#FFF4CC"];
+    view_apps [label="Просмотр заявок\nкоординатором", fillcolor="#FFF4CC"];
+
+    manage_users -> reg;
+    manage_profile -> profile;
+    manage_events -> create_event;
+    manage_events -> edit_event;
+    manage_events -> delete_event;
+    browse_info -> browse_events;
+    browse_info -> view_event;
+    manage_apps -> apply;
+    manage_apps -> cancel;
+    manage_apps -> view_apps;
+}

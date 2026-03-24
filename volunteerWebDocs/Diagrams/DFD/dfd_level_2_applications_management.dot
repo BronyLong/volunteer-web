@@ -1,0 +1,92 @@
+digraph DFD_Level2_Coordinator_Event_Management {
+    graph [
+        rankdir=LR,
+        splines=ortho,
+        bgcolor="white",
+        pad=0.2,
+        nodesep=1.0,
+        ranksep=1.0,
+        fontname="Segoe UI",
+        fontsize=12
+    ];
+
+    node [
+        fontname="Segoe UI",
+        fontsize=10,
+        style="rounded"
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=9
+    ];
+
+    coordinator [label="Координатор", shape=box];
+
+    p511 [label="5.1.1 Проверка роли\nкоординатора", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p512 [label="5.1.2 Проверка данных\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p513 [label="5.1.3 Создание\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    p521 [label="5.2.1 Проверка роли\nкоординатора", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p522 [label="5.2.2 Проверка данных\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p523 [label="5.2.3 Обновление\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    p531 [label="5.3.1 Проверка роли\nкоординатора", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p532 [label="5.3.2 Удаление\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    p541 [label="5.4.1 Проверка роли\nкоординатора", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p542 [label="5.4.2 Получение данных\nмероприятия", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p543 [label="5.4.3 Получение списка\nзаявок", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+    p544 [label="5.4.4 Формирование списка\nподавших заявки", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
+
+    d1 [label="D1. Пользователи", shape=cylinder];
+    d3 [label="D3. Мероприятия", shape=cylinder];
+    d4 [label="D4. Заявки", shape=cylinder];
+    d5 [label="D5. Категории", shape=cylinder];
+
+    coordinator -> p511 [label="Запрос на создание"];
+    p513 -> coordinator [label="Результат создания"];
+
+    coordinator -> p521 [label="Запрос на редактирование"];
+    p523 -> coordinator [label="Результат\nредактирования"];
+
+    coordinator -> p531 [label="Запрос на удаление"];
+    p532 -> coordinator [label="Результат удаления"];
+
+    coordinator -> p541 [label="Запрос списка заявок"];
+    p544 -> coordinator [label="Список пользователей,\nподавших заявки"];
+
+    p511 -> d1 [label="Проверка роли"];
+    d1 -> p511 [label="Роль"];
+    p511 -> p512 [label="Доступ разрешён"];
+    p512 -> d5 [label="Чтение категорий"];
+    d5 -> p512 [label="Категории"];
+    p512 -> p513 [label="Данные корректны"];
+    p513 -> d3 [label="Создание"];
+    d3 -> p513 [label="Созданное\nмероприятие"];
+
+    p521 -> d1 [label="Проверка роли"];
+    d1 -> p521 [label="Роль"];
+    p521 -> p522 [label="Доступ разрешён"];
+    p522 -> d5 [label="Чтение категорий"];
+    d5 -> p522 [label="Категории"];
+    p522 -> p523 [label="Данные корректны"];
+    p523 -> d3 [label="Обновление"];
+    d3 -> p523 [label="Обновлённое\nмероприятие"];
+
+    p531 -> d1 [label="Проверка роли"];
+    d1 -> p531 [label="Роль"];
+    p531 -> p532 [label="Доступ разрешён"];
+    p532 -> d3 [label="Удаление"];
+    d3 -> p532 [label="Результат удаления"];
+
+    p541 -> d1 [label="Проверка роли"];
+    d1 -> p541 [label="Роль"];
+    p541 -> p542 [label="Доступ разрешён"];
+    p542 -> d3 [label="Чтение мероприятия"];
+    d3 -> p542 [label="Данные мероприятия"];
+    p542 -> p543 [label="Мероприятие найдено"];
+    p543 -> d4 [label="Чтение заявок"];
+    d4 -> p543 [label="Список заявок"];
+    p543 -> p544 [label="Данные получены"];
+}
