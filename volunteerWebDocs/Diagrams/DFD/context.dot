@@ -1,25 +1,26 @@
 digraph DFD_Context {
     graph [
-        rankdir=LR,
-        splines=ortho,
+        rankdir=TB,
+        splines=polyline,
         bgcolor="white",
-        pad=0.2,
-        nodesep=0.9,
-        ranksep=1.0,
+        pad=0.5,
+        nodesep=1.2,
+        ranksep=1.3,
         fontname="Segoe UI",
-        fontsize=12
+        fontsize=18
     ];
 
     node [
         fontname="Segoe UI",
-        fontsize=10,
+        fontsize=18,
         shape=box,
-        style="rounded"
+        style="rounded",
+        margin="0.30,0.20"
     ];
 
     edge [
         fontname="Segoe UI",
-        fontsize=9
+        fontsize=14
     ];
 
     guest       [label="Гость"];
@@ -32,7 +33,8 @@ digraph DFD_Context {
         style="filled",
         fillcolor="#EAF3FF",
         color="#5B7DB1",
-        penwidth=1.2
+        penwidth=1.2,
+        margin="0.35,0.22"
     ];
 
     guest -> system [
