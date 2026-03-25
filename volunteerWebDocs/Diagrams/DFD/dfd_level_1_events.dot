@@ -5,7 +5,7 @@ digraph DFD_Level1_Events_Applications {
         bgcolor="white",
         pad=0.5,
         nodesep=1.2,
-        ranksep=1.3,
+        ranksep=5.3,
         fontname="Segoe UI",
         fontsize=18
     ];
@@ -22,7 +22,6 @@ digraph DFD_Level1_Events_Applications {
         fontsize=14
     ];
 
-    guest     [label="Гость", shape=box];
     volunteer [label="Волонтёр", shape=box];
 
     p31 [label="3.1 Получение списка\nмероприятий", shape=ellipse, style="filled", fillcolor="#FFF4CC"];
@@ -38,31 +37,30 @@ digraph DFD_Level1_Events_Applications {
     d4 [label="D4. Заявки", shape=cylinder];
     d5 [label="D5. Категории", shape=cylinder];
 
-    { rank=same; guest; volunteer; }
+    { rank=same; volunteer; }
     { rank=same; p31; p32; p33; p41; p42; p43; p44; }
     { rank=same; d3; d4; d5; }
 
-    guest -> p31 [label="Запрос списка"];
+    // --- Просмотр списка мероприятий ---
     volunteer -> p31 [label="Запрос списка"];
-    p31 -> guest [label="Список мероприятий"];
     p31 -> volunteer [label="Список мероприятий"];
 
-    guest -> p32 [label="Параметры фильтра"];
+    // --- Фильтрация ---
     volunteer -> p32 [label="Параметры фильтра"];
-    p32 -> guest [label="Отфильтрованный\nсписок"];
     p32 -> volunteer [label="Отфильтрованный\nсписок"];
 
-    guest -> p33 [label="Идентификатор\nмероприятия"];
+    // --- Просмотр мероприятия ---
     volunteer -> p33 [label="Идентификатор\nмероприятия"];
-    p33 -> guest [label="Данные мероприятия"];
     p33 -> volunteer [label="Данные мероприятия,\nстатус заявки"];
 
+    // --- Заявки ---
     volunteer -> p41 [label="Запрос на подачу"];
     p41 -> volunteer [label="Результат подачи"];
 
     volunteer -> p42 [label="Запрос на отмену"];
     p42 -> volunteer [label="Результат отмены"];
 
+    // --- Работа с БД ---
     p31 -> d3 [label="Чтение"];
     d3 -> p31 [label="Список мероприятий"];
 
@@ -76,6 +74,7 @@ digraph DFD_Level1_Events_Applications {
     p33 -> d4 [label="Проверка заявки"];
     d4 -> p33 [label="Наличие /\nотсутствие заявки"];
 
+    // --- Подача заявки ---
     p41 -> p43 [label="Проверка условий"];
     p43 -> d4 [label="Проверка дубля"];
     d4 -> p43 [label="Результат"];
@@ -86,10 +85,12 @@ digraph DFD_Level1_Events_Applications {
     d4 -> p41 [label="Созданная заявка"];
     p41 -> p44 [label="Уменьшить места"];
 
+    // --- Отмена заявки ---
     p42 -> d4 [label="Удаление"];
     d4 -> p42 [label="Результат удаления"];
     p42 -> p44 [label="Увеличить места"];
 
+    // --- Обновление мест ---
     p44 -> d3 [label="Обновление\navailableSlots"];
     d3 -> p44 [label="Обновлённые данные"];
 }

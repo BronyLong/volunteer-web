@@ -39,14 +39,12 @@
             "id": "2c1f96c7beab7c95",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "Необходимые данные для проекта/!Задачи проекта и длительность их выполнения.md",
-                "mode": "source",
-                "source": false
+                "file": "Diagrams/UML/state.png"
               },
-              "icon": "lucide-file",
-              "title": "!Задачи проекта и длительность их выполнения"
+              "icon": "lucide-image",
+              "title": "state"
             }
           }
         ],
@@ -214,6 +212,17 @@
   },
   "active": "2c1f96c7beab7c95",
   "lastOpenFiles": [
+    "Diagrams/UML/sequence.png",
+    "Diagrams/UML/deployment.png",
+    "Diagrams/UML/component.png",
+    "Diagrams/UML/class.png",
+    "Diagrams/UML/activity.png",
+    "Необходимые данные для проекта/ООАП.md",
+    "Необходимые данные для проекта/!Задачи проекта и длительность их выполнения.md",
+    "Необходимые данные для проекта/Аналогичные продукты.md",
+    "Необходимые данные для проекта/Архитектура веб-приложения.md",
+    "Необходимые данные для проекта/Атрибуты аккаунтов пользователей.md",
+    "Необходимые данные для проекта/ТЗ (переделать в Word).md",
     "Diagrams/Aris/Use Case/use_case_volunteer.png",
     "Diagrams/Aris/Use Case/use_case_overall.png",
     "Diagrams/Aris/Use Case/use_case_coordinator.png",
@@ -223,7 +232,6 @@
     "Diagrams/Aris/Use Case/use_case_overall.dot",
     "Diagrams/Aris/Use Case/use_case_coordinator.dot",
     "Diagrams/Aris/Use Case",
-    "Необходимые данные для проекта/Аналогичные продукты.md",
     "Выполненные задачи/24.03.2026.md",
     "Diagrams/Aris/Data Models/logical_data_model.dot",
     "Diagrams/Aris/Data Models/conceptual_data_model.png",
@@ -233,17 +241,8 @@
     "Diagrams/Aris/Data Models/logical_data_model.png",
     "Diagrams/Aris/Data Models",
     "Выполненные задачи/23.03.2026.md",
-    "Необходимые данные для проекта/!Задачи проекта и длительность их выполнения.md",
-    "Необходимые данные для проекта/Архитектура веб-приложения.md",
     "Необходимые данные для проекта/_Общий документ (Конкатенация всех файлов).md",
-    "Diagrams/Aris/data_model.png",
-    "Выполненные задачи/Register Page.png",
-    "Выполненные задачи/Event Open.png",
-    "Diagrams/UML/use_case_coordinator.png",
-    "Diagrams/UML/use_case_guest.png",
-    "Необходимые данные для проекта/ТЗ (переделать в Word).md",
     "Необходимые данные для проекта/Список необходимых макетов.md",
-    "Необходимые данные для проекта/ООАП.md",
     "Необходимые данные для проекта/Обоснование стека.md",
     "Необходимые данные для проекта/Цели создания проекта.md",
     "Необходимые данные для проекта/Бизнес процессы.md",
@@ -257,7 +256,6 @@
     "Выполненные задачи/15.03.2026.md",
     "Выполненные задачи/16.03.2026.md",
     "Выполненные задачи/12.03.2026.md",
-    "Необходимые данные для проекта/Атрибуты аккаунтов пользователей.md",
     "Выполненные задачи/11.03.2026.md",
     "Выполненные задачи/10.03.2026.md",
     "Выполненные задачи/08.03.2026.md",

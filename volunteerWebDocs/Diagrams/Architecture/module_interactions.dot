@@ -1,0 +1,167 @@
+digraph VolunteerSystemModules {
+    layout=neato;
+    overlap=false;
+    splines=true;
+    outputorder=edgesfirst;
+    bgcolor="white";
+
+    graph [
+        pad=0.3
+    ];
+
+    node [
+        shape=box,
+        style="rounded",
+        fontname="Segoe UI",
+        fontsize=11,
+        margin="0.18,0.10",
+        pin=true
+    ];
+
+    edge [
+        fontname="Segoe UI",
+        fontsize=10,
+        arrowsize=0.8
+    ];
+
+    // -------------------------
+    // ОСНОВНЫЕ МОДУЛИ
+    // -------------------------
+    auth [label="Модуль аутентификации\nи авторизации", pos="1,9!"];
+    users [label="Модуль пользователей\nи профилей", pos="1,6.7!"];
+    db [label="Модуль базы данных", pos="1,4.3!"];
+
+    events [label="Модуль мероприятий", pos="6.3,4.3!"];
+    applications [label="Модуль заявок\nна участие", pos="6.3,2.0!"];
+
+    // -------------------------
+    // ПОДПИСИ (отдельные текстовые узлы)
+    // -------------------------
+    node [shape=plaintext, style="", fontsize=10, pin=true];
+
+    t_auth_users [label="Создание учетной записи\nи проверка данных", pos="2.2,7.9!"];
+    t_users_auth [label="Передача данных\nдля авторизации", pos="0.15,7.2!"];
+
+    t_users_db [label="Сохранение и обновление\nпрофиля пользователя", pos="2.25,5.5!"];
+    t_db_users [label="Получение данных профиля", pos="0.25,4.9!"];
+
+    t_db_events [label="Загрузка списка мероприятий", pos="3.65,4.55!"];
+    t_events_db [label="Создание, изменение\nи удаление мероприятий", pos="3.75,5.0!"];
+
+    t_db_apps [label="Получение данных о заявках", pos="3.5,3.2!"];
+    t_apps_db [label="Создание и удаление заявок", pos="3.55,1.55!"];
+
+    t_events_apps [label="Передача информации\nо мероприятии", pos="7.55,3.3!"];
+    t_apps_events [label="Проверка лимита участников\nи статуса заявки", pos="7.55,2.7!"];
+
+    t_auth_apps [label="Проверка авторизации\nпользователя", pos="3.2,6.0!"];
+
+    // -------------------------
+    // ВОЗВРАТ СТИЛЯ УЗЛОВ ДЛЯ МОДУЛЕЙ
+    // -------------------------
+    node [
+        shape=box,
+        style="rounded",
+        fontname="Segoe UI",
+        fontsize=11,
+        margin="0.18,0.10",
+        pin=true
+    ];
+
+    // -------------------------
+    // СТРЕЛКИ МЕЖДУ МОДУЛЯМИ
+    // -------------------------
+
+    // auth -> users
+    auth -> users [
+        color="black"
+    ];
+
+    // users -> auth
+    users -> auth [
+        color="black"
+    ];
+
+    // users -> db
+    users -> db [
+        color="black"
+    ];
+
+    // db -> users
+    db -> users [
+        color="black"
+    ];
+
+    // db -> events
+    db -> events [
+        color="black"
+    ];
+
+    // events -> db
+    events -> db [
+        color="black"
+    ];
+
+    // db -> applications
+    db -> applications [
+        color="black"
+    ];
+
+    // applications -> db
+    applications -> db [
+        color="black"
+    ];
+
+    // events -> applications
+    events -> applications [
+        color="black"
+    ];
+
+    // applications -> events
+    applications -> events [
+        color="black"
+    ];
+
+    // auth -> applications
+    auth -> applications [
+        color="black"
+    ];
+
+    // -------------------------
+    // НЕВИДИМЫЕ СВЯЗИ, ЧТОБЫ ПОДПИСИ ДЕРЖАЛИСЬ РЯДОМ
+    // -------------------------
+    edge [style=invis, arrowhead=none];
+
+    t_auth_users -> auth;
+    t_auth_users -> users;
+
+    t_users_auth -> users;
+    t_users_auth -> auth;
+
+    t_users_db -> users;
+    t_users_db -> db;
+
+    t_db_users -> db;
+    t_db_users -> users;
+
+    t_db_events -> db;
+    t_db_events -> events;
+
+    t_events_db -> events;
+    t_events_db -> db;
+
+    t_db_apps -> db;
+    t_db_apps -> applications;
+
+    t_apps_db -> applications;
+    t_apps_db -> db;
+
+    t_events_apps -> events;
+    t_events_apps -> applications;
+
+    t_apps_events -> applications;
+    t_apps_events -> events;
+
+    t_auth_apps -> auth;
+    t_auth_apps -> applications;
+}

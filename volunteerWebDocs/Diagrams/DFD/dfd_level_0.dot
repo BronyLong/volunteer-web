@@ -4,8 +4,8 @@ digraph DFD_Level0 {
         splines=polyline,
         bgcolor="white",
         pad=0.5,
-        nodesep=1.2,
-        ranksep=1.3,
+        nodesep=3.2,
+        ranksep=3.3,
         fontname="Segoe UI",
         fontsize=18
     ];
