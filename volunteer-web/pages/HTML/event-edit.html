@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Изменить мероприятие</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/event-edit.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+        <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+      </a>
+
+      <nav class="header__nav">
+        <a href="#" class="header__nav-link">Главная</a>
+        <a href="#" class="header__nav-link header__nav-link--active">Мероприятия</a>
+        <a href="#" class="header__nav-link">Профиль</a>
+      </nav>
+
+      <div class="header__user">
+        <a href="#" class="header__avatar-link" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="header__avatar-link header__avatar-link--mobile" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Главная</a>
+          <a href="#" class="mobile-menu__link">Мероприятия</a>
+          <a href="#" class="mobile-menu__link">Профиль</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="event-edit-page">
+    <section class="event-edit-section">
+      <div class="container">
+        <div class="event-edit-shell">
+          <form class="event-edit-card" action="#" method="post" enctype="multipart/form-data">
+            <h1 class="event-edit-card__title">Изменить мероприятие</h1>
+            <div class="event-edit-card__divider"></div>
+
+            <div class="event-edit-form">
+              <div class="event-edit-form__full">
+                <div class="form-field">
+                  <label for="eventTitle" class="form-field__label">Название мероприятия</label>
+                  <input
+                    id="eventTitle"
+                    name="eventTitle"
+                    type="text"
+                    class="form-field__input"
+                    value='Субботник в парке “Зеленый уголок”'
+                  />
+                </div>
+              </div>
+
+              <div class="event-edit-form__full">
+                <div class="form-field">
+                  <label for="eventDescription" class="form-field__label">Описание мероприятия</label>
+                  <textarea
+                    id="eventDescription"
+                    name="eventDescription"
+                    class="form-field__textarea form-field__textarea--description"
+                    rows="3"
+                  >Мы приглашаем вас принять участие в субботнике по уборке парка “Зеленый уголок”. Наша цель - сделать парк чистым, удобным и более веселым местом для всех жителей города.</textarea>
+                </div>
+              </div>
+
+              <div class="event-edit-form__left">
+                <div class="form-field">
+                  <label for="eventCategory" class="form-field__label">Категория</label>
+
+                  <div class="select-wrap" id="categoryWrap">
+                    <select id="eventCategory" name="eventCategory" class="form-field__select">
+                      <option value="eco" data-icon="../../SVG/leaf_category.svg" selected>Экология</option>
+                      <option value="children" data-icon="../../SVG/childern_category.svg">Детям</option>
+                      <option value="animals" data-icon="../../SVG/animals_category.svg">Животным</option>
+                      <option value="elderly" data-icon="../../SVG/elderly_category.svg">Пожилым</option>
+                    </select>
+
+                    <span class="select-wrap__arrow" aria-hidden="true"></span>
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label for="eventPlaces" class="form-field__label">Количество мест</label>
+                  <input
+                    id="eventPlaces"
+                    name="eventPlaces"
+                    type="number"
+                    class="form-field__input form-field__input--small"
+                    value="20"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label for="eventLocation" class="form-field__label">Место проведения</label>
+                  <textarea
+                    id="eventLocation"
+                    name="eventLocation"
+                    class="form-field__textarea form-field__textarea--location"
+                    rows="3"
+                  >г. Икс, неизвестная область, улица пушкина, парк “Зеленый уголок”</textarea>
+                </div>
+              </div>
+
+              <div class="event-edit-form__right">
+                <div class="form-field">
+                  <label for="eventImage" class="form-field__label">Загрузить изображение</label>
+
+                  <label for="eventImage" class="upload-box" id="uploadBox">
+                    <input
+                      id="eventImage"
+                      name="eventImage"
+                      type="file"
+                      class="upload-box__input"
+                      accept="image/*"
+                    />
+
+                    <img
+                      src=""
+                      alt="Превью изображения"
+                      class="upload-box__preview"
+                      id="uploadPreview"
+                    >
+
+                    <span class="upload-box__placeholder" id="uploadPlaceholder" aria-hidden="true">
+                      <img src="../../SVG/arrow.svg" alt="" class="upload-box__icon-svg">
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="event-edit-form__actions">
+                <button type="submit" class="event-edit-form__submit">
+                  Применить изменения
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col footer__col--cta">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials-block">
+        <h3 class="footer__socials-title">Мы в социальных сетях</h3>
+
+        <div class="footer__socials">
+          <a href="#" aria-label="Одноклассники">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="footer__social-icon">
+          </a>
+          <a href="#" aria-label="ВКонтакте">
+            <img src="../../SVG/vkontakte.svg" alt="ВКонтакте" class="footer__social-icon">
+          </a>
+          <a href="#" aria-label="MAX">
+            <img src="../../SVG/max.svg" alt="MAX" class="footer__social-icon">
+          </a>
+        </div>
+      </div>
+
+      <div class="footer__copyright">© Рука помощи.</div>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active', isOpen);
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+
+    const categorySelect = document.getElementById('eventCategory');
+    const categoryWrap = document.getElementById('categoryWrap');
+
+    function updateCategoryPreview() {
+      if (!categorySelect || !categoryWrap) return;
+      const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+      const icon = selectedOption.dataset.icon;
+      categoryWrap.style.setProperty('--category-icon', `url("${icon}")`);
+    }
+
+    if (categorySelect) {
+      categorySelect.addEventListener('change', updateCategoryPreview);
+      updateCategoryPreview();
+    }
+
+    const autoTextareas = document.querySelectorAll(
+      '.form-field__textarea--description, .form-field__textarea--location'
+    );
+
+    function autoResizeTextarea(textarea) {
+      if (!textarea) return;
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    autoTextareas.forEach((textarea) => {
+      autoResizeTextarea(textarea);
+      textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+    });
+
+    const imageInput = document.getElementById('eventImage');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadBox = document.getElementById('uploadBox');
+
+    if (imageInput && uploadPreview && uploadPlaceholder && uploadBox) {
+      imageInput.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadPreview.src = e.target.result;
+          uploadPreview.classList.add('is-visible');
+          uploadPlaceholder.classList.add('is-hidden');
+          uploadBox.classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>

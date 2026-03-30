@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Список мероприятий</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/events-list.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+        <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+      </a>
+
+      <nav class="header__nav">
+        <a href="#" class="header__nav-link">Главная</a>
+        <a href="#" class="header__nav-link header__nav-link--active">Мероприятия</a>
+        <a href="#" class="header__nav-link">Профиль</a>
+      </nav>
+
+      <div class="header__user">
+        <a href="#" class="header__avatar-link" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="header__avatar-link header__avatar-link--mobile" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Главная</a>
+          <a href="#" class="mobile-menu__link">Мероприятия</a>
+          <a href="#" class="mobile-menu__link">Профиль</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="events-page">
+    <section class="events-hero">
+      <div class="events-hero__background"></div>
+
+      <div class="container events-hero__inner">
+        <div class="events-hero__content">
+          <h1 class="events-hero__title">Доступные мероприятия</h1>
+          <p class="events-hero__subtitle">
+            Находите интересные задания, в которых можно принять участие и помочь местным
+          </p>
+        </div>
+
+        <div class="events-hero__people">
+          <img src="../../images/people.png" alt="Волонтеры" class="events-hero__people-image">
+        </div>
+      </div>
+    </section>
+
+    <section class="events-catalog">
+      <div class="container">
+        <div class="events-filters">
+          <button class="events-filters__button events-filters__button--active" type="button">
+            <span>Все категории</span>
+          </button>
+
+          <button class="events-filters__button" type="button">
+            <span class="events-filters__icon-wrap">
+              <!-- место под SVG иконку -->
+              <img src="../../SVG/leaf_category.svg" alt="" class="events-filters__icon">
+            </span>
+            <span>Экология</span>
+          </button>
+
+          <button class="events-filters__button events-filters__button--orange" type="button">
+            <span class="events-filters__icon-wrap">
+              <!-- место под SVG иконку -->
+              <img src="../../SVG/childern_category.svg" alt="" class="events-filters__icon">
+            </span>
+            <span>Детям</span>
+          </button>
+
+          <button class="events-filters__button" type="button">
+            <span class="events-filters__icon-wrap">
+              <!-- место под SVG иконку -->
+              <img src="../../SVG/animals_category.svg" alt="" class="events-filters__icon">
+            </span>
+            <span>Животным</span>
+          </button>
+
+          <button class="events-filters__button events-filters__button--orange" type="button">
+            <span class="events-filters__icon-wrap">
+              <!-- место под SVG иконку -->
+              <img src="../../SVG/elderly_category.svg" alt="" class="events-filters__icon">
+            </span>
+            <span>Пожилым</span>
+          </button>
+        </div>
+
+        <div class="events-divider"></div>
+
+        <div class="events-grid">
+          <article class="event-tile event-tile--green">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/animals_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/leaf_category.svg" alt="" class="event-tile__category-icon">
+                  Экология
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--green">Подробнее</a>
+            </div>
+          </article>
+
+          <article class="event-tile event-tile--green">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/animals_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/leaf_category.svg" alt="" class="event-tile__category-icon">
+                  Экология
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--green">Подробнее</a>
+            </div>
+          </article>
+
+          <article class="event-tile event-tile--orange">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/children_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place event-tile__place--orange">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots event-tile__spots--orange">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/childern_category.svg" alt="" class="event-tile__category-icon">
+                  Детям
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--orange">Подробнее</a>
+            </div>
+          </article>
+
+          <article class="event-tile event-tile--orange">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/children_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place event-tile__place--orange">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots event-tile__spots--orange">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/childern_category.svg" alt="" class="event-tile__category-icon">
+                  Детям
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--orange">Подробнее</a>
+            </div>
+          </article>
+
+          <article class="event-tile event-tile--green">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/animals_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/leaf_category.svg" alt="" class="event-tile__category-icon">
+                  Экология
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--green">Подробнее</a>
+            </div>
+          </article>
+
+          <article class="event-tile event-tile--orange">
+            <h2 class="event-tile__title">Название название название название</h2>
+            <p class="event-tile__date">Дата проведения: 1.01.1980</p>
+
+            <div class="event-tile__card">
+              <div class="event-tile__top">
+                <div class="event-tile__image-wrap">
+                  <img src="../../images/children_help.png" alt="Мероприятие" class="event-tile__image">
+                </div>
+
+                <div class="event-tile__place event-tile__place--orange">
+                  <span class="event-tile__label">
+                    МЕСТО
+                    <img src="../../SVG/location.svg" alt="" class="event-tile__inline-icon">
+                  </span>
+                  <p>Место проведения место место проведения</p>
+                </div>
+              </div>
+
+              <div class="event-tile__spots event-tile__spots--orange">
+                <span class="event-tile__label">
+                  СВОБОДНЫХ МЕСТ
+                  <img src="../../SVG/avalable_spaces.svg" alt="" class="event-tile__inline-icon">
+                </span>
+                <strong>20 из 20</strong>
+              </div>
+
+              <div class="event-tile__category-row">
+                <div class="event-tile__category-pill">
+                  <img src="../../SVG/childern_category.svg" alt="" class="event-tile__category-icon">
+                  Детям
+                </div>
+              </div>
+
+              <a href="#" class="event-tile__button event-tile__button--orange">Подробнее</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="events-pagination">
+          <a href="#" class="events-pagination__item events-pagination__item--active">1</a>
+          <a href="#" class="events-pagination__item">2</a>
+          <a href="#" class="events-pagination__item">3</a>
+          <a href="#" class="events-pagination__item">4</a>
+          <a href="#" class="events-pagination__item">5</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col footer__col--cta">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials">
+        <span class="footer__socials-title">Мы в социальных сетях</span>
+
+        <div class="footer__icons">
+          <a href="#" class="social">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/vkontakte.svg" alt="VK" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/max.svg" alt="Соцсеть" class="social-icon-svg">
+          </a>
+        </div>
+      </div>
+
+      <p class="footer__copy">© Рука помощи.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active');
+
+        const isOpen = mobileMenu.classList.contains('is-open');
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Вход</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/login.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <div class="header__left">
+        <a href="#" class="logo">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <nav class="header__menu">
+          <a href="#" class="btn btn--green">Хочу помочь</a>
+          <a href="#" class="btn btn--green">Нужна помощь</a>
+        </nav>
+      </div>
+
+      <div class="header__right">
+        <a href="#" class="btn btn--outline">Регистрация</a>
+
+        <a href="#" class="btn btn--green btn--icon btn--active-login">
+          <img src="../../SVG/accountOutline.svg" alt="" class="btn__icon">
+          <span>Войти</span>
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="btn btn--green btn--icon header__login-mobile">
+          <img src="../../SVG/accountOutline.svg" alt="" class="btn__icon">
+          <span>Войти</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Хочу помочь</a>
+          <a href="#" class="mobile-menu__link">Нужна помощь</a>
+          <a href="#" class="mobile-menu__link">Регистрация</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="login-hero">
+      <div class="container">
+        <div class="login-hero__head">
+          <h1 class="login-hero__title">Войдите в свой аккаунт</h1>
+          <p class="login-hero__subtitle">
+            Добро пожаловать! Войдите в свой аккаунт, чтобы продолжить
+          </p>
+        </div>
+
+        <div class="login-card">
+          <h2 class="login-card__title">Вход</h2>
+
+          <form class="login-form" action="#" method="post">
+            <div class="login-form__row">
+              <div class="form-field">
+                <label for="email" class="form-field__label">Email</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  class="form-field__input"
+                  placeholder="example@email.com"
+                />
+              </div>
+            </div>
+
+            <div class="login-form__row">
+              <div class="form-field">
+                <label for="password" class="form-field__label">Пароль</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  class="form-field__input"
+                  placeholder="********"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="login-form__submit">
+              Войти
+            </button>
+
+            <p class="login-form__register-text">
+              Нет аккаунта?
+              <a href="#" class="login-form__register-link">Зарегистрироваться</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col footer__col--cta">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials">
+        <span class="footer__socials-title">Мы в социальных сетях</span>
+
+        <div class="footer__icons">
+          <a href="#" class="social">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/vkontakte.svg" alt="VK" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/max.svg" alt="Соцсеть" class="social-icon-svg">
+          </a>
+        </div>
+      </div>
+
+      <p class="footer__copy">© Рука помощи.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active');
+
+        const isOpen = mobileMenu.classList.contains('is-open');
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+  </script>
+</body>
+</html>

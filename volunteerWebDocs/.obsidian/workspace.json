@@ -39,12 +39,14 @@
             "id": "2c1f96c7beab7c95",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "Diagrams/UML/state.png"
+                "file": "Выполненные задачи/30.03.2026.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "state"
+              "icon": "lucide-file",
+              "title": "30.03.2026"
             }
           }
         ],
@@ -212,6 +214,17 @@
   },
   "active": "2c1f96c7beab7c95",
   "lastOpenFiles": [
+    "Выполненные задачи/29.03.2026.md",
+    "Выполненные задачи/30.03.2026.md",
+    "Выполненные задачи/28.03.2026.md",
+    "Выполненные задачи/27.03.2026.md",
+    "Выполненные задачи/26.03.2026.md",
+    "Выполненные задачи/25.03.2026.md",
+    "Выполненные задачи/24.03.2026.md",
+    "Выполненные задачи/21.03.2026.md",
+    "Выполненные задачи/22.03.2026.md",
+    "Выполненные задачи/23.03.2026.md",
+    "Diagrams/UML/state.png",
     "Diagrams/UML/sequence.png",
     "Diagrams/UML/deployment.png",
     "Diagrams/UML/component.png",
@@ -232,33 +245,22 @@
     "Diagrams/Aris/Use Case/use_case_overall.dot",
     "Diagrams/Aris/Use Case/use_case_coordinator.dot",
     "Diagrams/Aris/Use Case",
-    "Выполненные задачи/24.03.2026.md",
     "Diagrams/Aris/Data Models/logical_data_model.dot",
     "Diagrams/Aris/Data Models/conceptual_data_model.png",
     "Diagrams/Aris/Data Models/conceptual_data_model.dot",
-    "Diagrams/Aris/Data Models/physical_data_model.png",
     "Diagrams/Aris/Data Models/physical_data_model.dot",
-    "Diagrams/Aris/Data Models/logical_data_model.png",
     "Diagrams/Aris/Data Models",
-    "Выполненные задачи/23.03.2026.md",
     "Необходимые данные для проекта/_Общий документ (Конкатенация всех файлов).md",
     "Необходимые данные для проекта/Список необходимых макетов.md",
     "Необходимые данные для проекта/Обоснование стека.md",
     "Необходимые данные для проекта/Цели создания проекта.md",
     "Необходимые данные для проекта/Бизнес процессы.md",
     "Необходимые данные для проекта/Функциональные требования к системе.md",
-    "Выполненные задачи/22.03.2026.md",
     "Выполненные задачи/17.03.2026.md",
     "Без названия.canvas",
     "Diagrams/Без названия.md",
     "Выполненные задачи/13.03.2026.md",
     "Выполненные задачи/14.03.2026.md",
-    "Выполненные задачи/15.03.2026.md",
-    "Выполненные задачи/16.03.2026.md",
-    "Выполненные задачи/12.03.2026.md",
-    "Выполненные задачи/11.03.2026.md",
-    "Выполненные задачи/10.03.2026.md",
-    "Выполненные задачи/08.03.2026.md",
     "Без названия 1.canvas"
   ]
 }

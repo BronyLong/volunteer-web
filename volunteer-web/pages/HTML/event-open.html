@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Мероприятие</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/event-open.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+        <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+      </a>
+
+      <nav class="header__nav">
+        <a href="#" class="header__nav-link">Главная</a>
+        <a href="#" class="header__nav-link header__nav-link--active">Мероприятия</a>
+        <a href="#" class="header__nav-link">Профиль</a>
+      </nav>
+
+      <div class="header__user">
+        <a href="#" class="header__avatar-link" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="header__avatar-link header__avatar-link--mobile" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Главная</a>
+          <a href="#" class="mobile-menu__link">Мероприятия</a>
+          <a href="#" class="mobile-menu__link">Профиль</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="event-page">
+    <section class="event-layout">
+      <div class="container">
+        <div class="event-shell">
+          <article class="event-card">
+            <div class="event-card__header">
+              <div class="event-card__header-content">
+                <h1 class="event-card__title">Субботник в парке “Зеленый уголок”</h1>
+                <p class="event-card__description">
+                  Мы приглашаем вас принять участие в субботнике по уборке парка
+                  “Зеленый уголок”. Наша цель - сделать парк чистым, удобным и более
+                  веселым местом для всех жителей города.
+                </p>
+              </div>
+
+              <a href="#" class="event-card__settings" aria-label="Редактировать мероприятие">
+                <img src="../../SVG/cog.svg" alt="" class="event-card__settings-icon">
+              </a>
+            </div>
+
+            <div class="event-card__top-grid">
+              <div class="event-card__image-box">
+                <img src="../../images/animals_help.png" alt="Субботник в парке" class="event-card__image">
+              </div>
+
+              <div class="event-card__tasks-box">
+                <h2 class="event-card__section-title">Что предстоит сделать</h2>
+
+                <ul class="event-card__tasks-list">
+                  <li class="event-card__task-item">
+                    <img src="../../SVG/checkmark.svg" alt="" class="event-card__task-icon">
+                    <span>Уборка мусора, сортировка отходов</span>
+                  </li>
+                  <li class="event-card__task-item">
+                    <img src="../../SVG/checkmark.svg" alt="" class="event-card__task-icon">
+                    <span>Посадка новых деревьев и кустарников</span>
+                  </li>
+                  <li class="event-card__task-item">
+                    <img src="../../SVG/checkmark.svg" alt="" class="event-card__task-icon">
+                    <span>Обустройство зоны отдыха новыми лавочками и урнами</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="event-card__meta-grid">
+              <div class="event-card__meta-left">
+                <div class="event-card__category-pill">
+                  <img src="../../SVG/leaf_category.svg" alt="" class="event-card__category-icon">
+                  <span>Экология</span>
+                </div>
+
+                <div class="event-card__places-box">
+                  <span class="event-card__meta-label">
+                    СВОБОДНЫХ МЕСТ
+                    <img src="../../SVG/avalable_spaces.svg" alt="" class="event-card__meta-inline-icon">
+                  </span>
+                  <strong>20 из 20</strong>
+                </div>
+              </div>
+
+              <div class="event-card__location-box">
+                <span class="event-card__meta-label">
+                  МЕСТО ПРОВЕДЕНИЯ
+                  <img src="../../SVG/location.svg" alt="" class="event-card__meta-inline-icon">
+                </span>
+                <p>г. Икс, неизвестная область, улица пушкина, парк “Зеленый уголок”</p>
+              </div>
+            </div>
+
+            <div class="event-card__divider"></div>
+
+            <div class="event-card__bottom">
+              <div class="coordinator-card">
+                <div class="coordinator-card__label">КООРДИНАТОР</div>
+
+                <div class="coordinator-card__body">
+                  <div class="coordinator-card__avatar-wrap">
+                    <img src="../../images/avatar_woman.png" alt="Координатор" class="coordinator-card__avatar">
+                  </div>
+
+                  <div class="coordinator-card__info">
+                    <h3 class="coordinator-card__name">Ксения Михайловна</h3>
+
+                    <p class="coordinator-card__line">
+                      <img src="../../SVG/email_footer.svg" alt="" class="coordinator-card__icon">
+                      <span>example@mail.ru</span>
+                    </p>
+
+                    <p class="coordinator-card__line">
+                      <img src="../../SVG/phone_footer.svg" alt="" class="coordinator-card__icon">
+                      <span>8 (800) 555-35-35</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <a href="#" class="event-card__join-button">Принять участие</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col footer__col--cta">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials">
+        <span class="footer__socials-title">Мы в социальных сетях</span>
+
+        <div class="footer__icons">
+          <a href="#" class="social">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/vkontakte.svg" alt="VK" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/max.svg" alt="Соцсеть" class="social-icon-svg">
+          </a>
+        </div>
+      </div>
+
+      <p class="footer__copy">© Рука помощи.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active');
+
+        const isOpen = mobileMenu.classList.contains('is-open');
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+  </script>
+</body>
+</html>

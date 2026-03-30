@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рука Помощи — Профиль</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../CSS/profile.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+        <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+      </a>
+
+      <nav class="header__nav">
+        <a href="#" class="header__nav-link">Главная</a>
+        <a href="#" class="header__nav-link">Мероприятия</a>
+        <a href="#" class="header__nav-link header__nav-link--active">Профиль</a>
+      </nav>
+
+      <div class="header__user">
+        <a href="#" class="header__avatar-link" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+      </div>
+
+      <div class="header__mobile">
+        <a href="#" class="header__avatar-link header__avatar-link--mobile" aria-label="Открыть профиль">
+          <img src="../../images/avatar_woman.png" alt="Аватар пользователя" class="header__avatar">
+        </a>
+
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="menu-toggle__icon" aria-hidden="true">
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+            <span class="menu-toggle__line"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container mobile-menu__inner">
+        <nav class="mobile-menu__nav">
+          <a href="#" class="mobile-menu__link">Главная</a>
+          <a href="#" class="mobile-menu__link">Мероприятия</a>
+          <a href="#" class="mobile-menu__link">Профиль</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="profile-page">
+    <section class="profile-cover">
+      <!-- Фон секции задаётся в profile.css через background-image -->
+    </section>
+
+    <section class="profile-summary">
+      <div class="container">
+        <div class="profile-summary__avatar-wrap">
+          <img src="../../images/avatar_man.png" alt="Аватар пользователя" class="profile-summary__avatar">
+        </div>
+
+        <h1 class="profile-summary__name">Иван Иванов</h1>
+
+        <div class="profile-summary__role">Волонтер</div>
+      </div>
+    </section>
+
+    <section class="profile-info">
+      <div class="container">
+        <div class="profile-card">
+          <div class="profile-card__column profile-card__column--left">
+            <h2 class="profile-card__title">Основная информация</h2>
+
+            <div class="profile-card__divider"></div>
+
+            <ul class="profile-contacts">
+              <li class="profile-contacts__item">
+                <img src="../../SVG/phone_footer.svg" alt="" class="profile-contacts__icon">
+                <span>8 (800) 555-35-35</span>
+              </li>
+
+              <li class="profile-contacts__item">
+                <img src="../../SVG/email_footer.svg" alt="" class="profile-contacts__icon">
+                <span>ivanov@mail.com</span>
+              </li>
+
+              <li class="profile-contacts__item">
+                <img src="../../SVG/location_footer.svg" alt="" class="profile-contacts__icon">
+                <span>г. Икс</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="profile-card__column profile-card__column--right">
+            <h2 class="profile-card__title profile-card__title--center">Bio</h2>
+
+            <div class="profile-card__divider"></div>
+
+            <div class="profile-bio">
+              Помогаю в организации мероприятий и координирую волонтеров для помощи местным сообществам!
+            </div>
+
+            <div class="profile-socials">
+              <a href="#" class="profile-socials__link" aria-label="Одноклассники">
+                <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="profile-socials__icon">
+              </a>
+              <a href="#" class="profile-socials__link" aria-label="VK">
+                <img src="../../SVG/vkontakte.svg" alt="VK" class="profile-socials__icon">
+              </a>
+              <a href="#" class="profile-socials__link" aria-label="Соцсеть">
+                <img src="../../SVG/max.svg" alt="Соцсеть" class="profile-socials__icon">
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <div class="footer__col footer__col--brand">
+        <a href="#" class="logo logo--footer">
+          <img src="../../SVG/logoHeart.svg" alt="Логотип" class="logo__icon-img">
+          <img src="../../SVG/logoText.svg" alt="Рука Помощи" class="logo__text-img">
+        </a>
+
+        <p class="footer__description">
+          Платформа волонтёрской помощи людям и организациям, оказавшимся
+          в сложной жизненной ситуации.
+        </p>
+      </div>
+
+      <div class="footer__col footer__col--cta">
+        <h3 class="footer__title">Хотите сделать доброе дело?</h3>
+        <div class="footer__buttons">
+          <a href="#" class="btn btn--green btn--small">Хочу помочь</a>
+          <a href="#" class="btn btn--green btn--small">Нужна помощь</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Аккаунт</h3>
+        <ul class="footer__list">
+          <li><a href="#">Регистрация</a></li>
+          <li><a href="#">Войти</a></li>
+          <li><a href="#">Личный кабинет</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__title footer__title--green">Контакты</h3>
+        <ul class="footer__list footer__list--contacts">
+          <li>
+            <img src="../../SVG/email_footer.svg" alt="" class="footer-icon-svg">
+            example@mail.ru
+          </li>
+          <li>
+            <img src="../../SVG/phone_footer.svg" alt="" class="footer-icon-svg">
+            8 (800) 555-35-35
+          </li>
+          <li>
+            <img src="../../SVG/location_footer.svg" alt="" class="footer-icon-svg">
+            ул. Пушкина, д. Колотушкина
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer__bottom">
+      <div class="footer__socials">
+        <span class="footer__socials-title">Мы в социальных сетях</span>
+
+        <div class="footer__icons">
+          <a href="#" class="social">
+            <img src="../../SVG/odnoklassnini.svg" alt="Одноклассники" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/vkontakte.svg" alt="VK" class="social-icon-svg">
+          </a>
+          <a href="#" class="social">
+            <img src="../../SVG/max.svg" alt="Соцсеть" class="social-icon-svg">
+          </a>
+        </div>
+      </div>
+
+      <p class="footer__copy">© Рука помощи.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('is-open');
+        menuToggle.classList.toggle('is-active');
+
+        const isOpen = mobileMenu.classList.contains('is-open');
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+  </script>
+</body>
+</html>
