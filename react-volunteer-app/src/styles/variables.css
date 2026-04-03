@@ -1,0 +1,13 @@
+:root {
+  --green: #2f8f2f;
+  --green-dark: #257425;
+  --green-soft: #d2ddd1;
+  --orange: #f57c00;
+  --orange-dark: #de7100;
+  --text: #111111;
+  --muted: #6e6e6e;
+  --white: #ffffff;
+  --footer-bg: #e5e7eb;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --container-width: 1120px;
+}

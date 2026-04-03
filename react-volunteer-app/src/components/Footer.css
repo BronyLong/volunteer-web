@@ -1,0 +1,139 @@
+.footer {
+  background: var(--footer-bg);
+}
+
+.footer__top {
+  padding: 38px 0 26px;
+  display: grid;
+  grid-template-columns: 1.35fr 1.3fr 0.8fr 0.9fr;
+  gap: 28px;
+}
+
+.footer__description {
+  margin: 14px 0 0;
+  max-width: 280px;
+  color: #4d4d4d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer__title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #111111;
+}
+
+.footer__title--green {
+  color: var(--green);
+}
+
+.footer__buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.footer__list li {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.footer__list a:hover {
+  text-decoration: underline;
+}
+
+.footer__list--contacts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.footer-icon-svg {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex: 0 0 16px;
+  margin-top: 3px;
+}
+
+.footer__bottom {
+  padding: 20px 0 28px;
+}
+
+.footer__socials {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.footer__socials-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.footer__icons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.social {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+
+.social-icon-svg {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.footer__copy {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: #505050;
+}
+
+@media (max-width: 992px) {
+  .footer__top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer__socials {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer__top {
+    grid-template-columns: 1fr;
+  }
+
+  .footer__icons {
+    gap: 12px;
+  }
+
+  .social {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+}
