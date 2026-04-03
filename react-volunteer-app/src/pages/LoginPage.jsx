@@ -1,15 +1,66 @@
-import PageHero from '../components/PageHero';
-import PlaceholderCard from '../components/PlaceholderCard';
+import { Link } from "react-router-dom";
+import "./LoginPage.css";
 
 export default function LoginPage() {
   return (
-    <>
-      <PageHero title="Вход" subtitle="Страница-заготовка под твой login-компонент." />
-      <section className="section">
-        <div className="container single-column">
-          <PlaceholderCard title="LoginForm" text="Сюда можно вставить твой JSX из страницы входа и подключить login.css." />
+    <main>
+      <section className="login-hero">
+        <div className="container">
+          <div className="login-hero__head">
+            <h1 className="login-hero__title">Войдите в свой аккаунт</h1>
+            <p className="login-hero__subtitle">
+              Добро пожаловать! Войдите в свой аккаунт, чтобы продолжить
+            </p>
+          </div>
+
+          <div className="login-card">
+            <h2 className="login-card__title">Вход</h2>
+
+            <form className="login-form" action="#" method="post">
+              <div className="login-form__row">
+                <div className="form-field">
+                  <label htmlFor="email" className="form-field__label">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    className="form-field__input"
+                    placeholder="example@email.com"
+                  />
+                </div>
+              </div>
+
+              <div className="login-form__row">
+                <div className="form-field">
+                  <label htmlFor="password" className="form-field__label">
+                    Пароль
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    className="form-field__input"
+                    placeholder="********"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="login-form__submit">
+                Войти
+              </button>
+
+              <p className="login-form__register-text">
+                Нет аккаунта?{" "}
+                <Link to="/registration" className="login-form__register-link">
+                  Зарегистрироваться
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

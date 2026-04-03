@@ -98,7 +98,7 @@
 
 .event-preview {
   border-radius: 14px;
-  background: #f1efef;
+  background: #ffffff;
   padding: 10px;
 }
 
@@ -118,7 +118,7 @@
   height: 92px;
   border-radius: 10px;
   overflow: hidden;
-  background: #dce4da;
+  background: #ffffff;
   box-shadow: var(--shadow);
 }
 
@@ -197,7 +197,7 @@
   height: 48px;
   border-radius: 10px;
   background: var(--green);
-  color: #fff;
+  color: #FFFFFF;
   font-size: 16px;
   font-weight: 800;
   display: inline-flex;
@@ -303,7 +303,7 @@
   max-width: 640px;
   min-height: 56px;
   border-radius: 18px;
-  background: #f8f7f2;
+  background: #ffffff;
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
@@ -323,7 +323,7 @@
   height: 40px;
   border-radius: 12px;
   background: #f0ca85;
-  color: #111111;
+  color: #000000;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -346,7 +346,7 @@
 .step-card {
   min-height: 168px;
   border-radius: 18px;
-  background: #f8f8f8;
+  background: #ffffff;
   box-shadow: var(--shadow);
   padding: 14px 12px;
 }
@@ -368,7 +368,7 @@
 
 .step-card__text {
   margin: 0;
-  color: #666;
+  color: #464646;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -386,7 +386,7 @@
 }
 
 .event-card {
-  background: #f8f8f8;
+  background: #ffffff;
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 16px 16px 18px;
@@ -435,7 +435,7 @@
 
 .event-card__spots {
   font-size: 13px;
-  color: #666;
+  color: #464646;
 }
 
 .event-card__title {
@@ -453,7 +453,7 @@
 
 .event-card__meta p {
   margin: 0;
-  color: #666;
+  color: #464646;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
@@ -475,7 +475,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 800;
 }
@@ -489,46 +489,42 @@
 }
 
 .cta {
-  padding: 40px 0 48px;
+  padding: 48px 0;
   background: linear-gradient(90deg, #f4f0eb 0%, #eee7de 100%);
 }
 
 .cta__box {
-  min-height: 150px;
+  min-height: 146px;
   border-radius: 18px;
   background: #f68b00;
   color: #ffffff;
-  padding: 18px 18px 18px 18px;
+  padding: 48px 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: 24px;
 }
 
 .cta__content {
-  max-width: 640px;
+  max-width: 560px;
 }
 
 .cta__title {
-  margin: 0 0 8px;
-  font-size: 31px;
-  line-height: 1.08;
+  margin: 0 0 10px;
+  font-size: 36px;
+  line-height: 1.1;
   font-weight: 900;
-  letter-spacing: -0.02em;
 }
 
 .cta__text {
   margin: 0;
-  max-width: 560px;
-  font-size: 15px;
-  line-height: 1.5;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .cta__actions {
-  width: 410px;
-  min-width: 410px;
+  width: 320px;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -538,29 +534,23 @@
   width: 100%;
   min-width: 100%;
   height: 32px;
-  border-radius: 9px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 800;
   font-size: 14px;
-  font-weight: 900;
-  line-height: 1;
-  transition: 0.2s ease;
+  flex: 1 1 auto;
 }
 
 .cta__button--light {
-  background: #f6f2eb;
+  background: #ffffff;
   color: #f57c00;
 }
 
 .cta__button--solid {
-  background: #ee8400;
+  background: #e07f00;
   color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-}
-
-.cta__button--solid:hover {
-  background: #e27d00;
 }
 
 @media (max-width: 1100px) {
@@ -735,18 +725,10 @@
     padding: 20px 18px;
     position: relative;
     overflow: hidden;
-    gap: 18px;
   }
 
   .cta__title {
-    font-size: 27px;
-    line-height: 1.08;
-  }
-
-  .cta__text {
-    font-size: 13px;
-    line-height: 1.5;
-    font-weight: 700;
+    font-size: 28px;
   }
 
   .cta__actions {
@@ -758,8 +740,7 @@
   .cta__button {
     width: 100%;
     min-width: 0;
-    height: 32px;
-    font-size: 13px;
+    height: 40px;
   }
 }
 
@@ -812,11 +793,9 @@
 
   .cta__title {
     font-size: 24px;
-    line-height: 1.08;
   }
 
   .cta__text {
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 15px;
   }
 }

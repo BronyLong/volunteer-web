@@ -1,0 +1,137 @@
+.login-hero {
+  min-height: calc(100vh - 75px);
+  padding: 48px 0 72px;
+  background:
+    radial-gradient(circle at left top, rgba(184, 204, 184, 0.52) 0%, rgba(184, 204, 184, 0.18) 28%, transparent 60%),
+    linear-gradient(90deg, #d7e2d8 0%, #eef2ee 100%);
+}
+
+.login-hero__head {
+  text-align: center;
+  margin-bottom: 38px;
+}
+
+.login-hero__title {
+  margin: 0;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.login-hero__subtitle {
+  margin: 18px auto 0;
+  max-width: 760px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.login-card {
+  width: min(100%, 700px);
+  margin: 0 auto;
+  padding: 44px 44px 34px;
+  border-radius: 42px;
+  background: rgba(245, 243, 242, 0.94);
+  box-shadow:
+    0 20px 50px rgba(46, 67, 49, 0.08),
+    0 4px 14px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.login-card__title {
+  margin: 0 0 34px;
+  text-align: center;
+  font-size: clamp(34px, 4vw, 54px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.login-form {
+  display: grid;
+  gap: 22px;
+}
+
+.login-form__row {
+  display: block;
+}
+
+.login-form__submit {
+  outline: none;
+  border: none;
+}
+
+.login-form__submit:focus {
+  outline: none;
+}
+
+.form-field {
+  display: grid;
+  gap: 10px;
+}
+
+.form-field__label {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1d1d1d;
+}
+
+.form-field__input {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1.5px solid #d9d9d9;
+  background: #fbfbfb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-size: 18px;
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.form-field__input::placeholder {
+  color: #7a7a7a;
+}
+
+.form-field__input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
+}
+
+.login-form__submit {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 2px;
+  border-radius: 14px;
+  background: var(--green);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(47, 143, 47, 0.2);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.login-form__submit:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.login-form__register-text {
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #2f2f2f;
+}
+
+.login-form__register-link {
+  color: #f57c00;
+  font-weight: 800;
+}
+
+.login-form__register-link:hover {
+  text-decoration: underline;
+}

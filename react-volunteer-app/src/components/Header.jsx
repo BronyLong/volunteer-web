@@ -111,7 +111,7 @@ export default function Header({
             </div>
 
             <div className="header__right">
-              <Link to="/registration" className="btn btn--outline">
+              <Link to="/register" className="btn btn--outline">
                 Регистрация
               </Link>
 

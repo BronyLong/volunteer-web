@@ -87,11 +87,7 @@ export default function HomePage() {
 
                 <div className="event-preview__category-row">
                   <div className="event-preview__category-pill">
-                    <img
-                      src={leafCategoryIcon}
-                      alt=""
-                      className="inline-icon-svg"
-                    />
+                    <img src={leafCategoryIcon} alt="" className="inline-icon-svg" />
                     Экология
                   </div>
                 </div>
@@ -246,10 +242,7 @@ export default function HomePage() {
                   15 июня 2026
                 </p>
               </div>
-              <Link
-                to="/event"
-                className="event-card__button event-card__button--green"
-              >
+              <Link to="/event" className="event-card__button event-card__button--green">
                 Подробнее
               </Link>
             </article>
@@ -273,10 +266,7 @@ export default function HomePage() {
                   15 августа 2026
                 </p>
               </div>
-              <Link
-                to="/event"
-                className="event-card__button event-card__button--orange"
-              >
+              <Link to="/event" className="event-card__button event-card__button--orange">
                 Подробнее
               </Link>
             </article>
@@ -300,10 +290,7 @@ export default function HomePage() {
                   20 октября 2026
                 </p>
               </div>
-              <Link
-                to="/event"
-                className="event-card__button event-card__button--green"
-              >
+              <Link to="/event" className="event-card__button event-card__button--green">
                 Подробнее
               </Link>
             </article>
@@ -327,10 +314,7 @@ export default function HomePage() {
                   2 ноября 2026
                 </p>
               </div>
-              <Link
-                to="/event"
-                className="event-card__button event-card__button--orange"
-              >
+              <Link to="/event" className="event-card__button event-card__button--orange">
                 Подробнее
               </Link>
             </article>
@@ -344,8 +328,8 @@ export default function HomePage() {
             <div className="cta__content">
               <h2 className="cta__title">Станьте частью волонтерского сообщества</h2>
               <p className="cta__text">
-                Присоединяйтесь к платформе, выбирайте мероприятия, отслеживайте свою
-                активность и помогайте тем, кому это действительно нужно.
+                Присоединяйтесь к платформе, выбирайте мероприятия, отслеживайте
+                свою активность и помогайте тем, кому это действительно нужно.
               </p>
             </div>
 
