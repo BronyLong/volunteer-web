@@ -35,7 +35,7 @@ digraph PhysicalDataModel {
 
     categories [label="{categories|id SERIAL PK\lname VARCHAR(100) UNIQUE NOT NULL\l}"];
 
-    events [label="{events|id UUID PK\ltitle VARCHAR(255) NOT NULL\ldescription TEXT NOT NULL\lstart_at TIMESTAMP NOT NULL\llocation VARCHAR(255) NOT NULL\lparticipant_limit INTEGER NOT NULL\lavailable_slots INTEGER NOT NULL\lcategory_id INTEGER FK categories.id\lcreated_by UUID FK users.id\lcreated_at TIMESTAMP NOT NULL\lupdated_at TIMESTAMP NOT NULL\l}"];
+    events [label="{events|id UUID PK\ltitle VARCHAR(255) NOT NULL\ldescription TEXT NOT NULL\lstart_at TIMESTAMP NOT NULL\llocation VARCHAR(255) NOT NULL\ltasks TEXT[] NOT NULL DEFAULT '{}'\lparticipant_limit INTEGER NOT NULL\lavailable_slots INTEGER NOT NULL\lcategory_id INTEGER FK categories.id\lcreated_by UUID FK users.id\lcreated_at TIMESTAMP NOT NULL\lupdated_at TIMESTAMP NOT NULL\l}"];
 
     applications [label="{applications|id BIGSERIAL PK\luser_id UUID FK users.id\levent_id UUID FK events.id\lstatus VARCHAR(20) DEFAULT 'active'\lcreated_at TIMESTAMP NOT NULL\l}"];
 
