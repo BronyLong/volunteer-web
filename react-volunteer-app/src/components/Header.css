@@ -1,15 +1,3 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-:root {
-  --green: #2f8f2f;
-  --green-dark: #257425;
-  --light-card: #f5f3f2;
-}
-
 .header {
   position: sticky;
   top: 0;

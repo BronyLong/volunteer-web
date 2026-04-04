@@ -1,0 +1,134 @@
+.help-page {
+  background: linear-gradient(90deg, #d7e2d8 0%, #eef2ee 100%);
+}
+
+.help-section {
+  padding: 48px 0 72px;
+  min-height: calc(100vh - 75px);
+}
+
+.help-card {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 44px 40px 34px;
+  border-radius: 42px;
+  background: rgba(245, 243, 242, 0.94);
+  box-shadow:
+    0 20px 50px rgba(46, 67, 49, 0.08),
+    0 4px 14px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.help-card__title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(34px, 4vw, 54px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.help-card__subtitle {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.help-card__divider {
+  width: 100%;
+  height: 1px;
+  margin: 28px 0;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.help-contacts {
+  list-style: none;
+  display: grid;
+  gap: 18px;
+}
+
+.help-contacts__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.help-contacts__icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex: 0 0 24px;
+}
+
+.help-socials__title {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.help-socials__list {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.help-socials__link {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-socials__icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .help-section {
+    padding: 32px 0 48px;
+  }
+
+  .help-card {
+    padding: 30px 22px 24px;
+    border-radius: 28px;
+  }
+
+  .help-contacts__item {
+    align-items: flex-start;
+    font-size: 16px;
+  }
+
+  .help-socials__title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .help-card {
+    padding: 24px 16px 20px;
+    border-radius: 22px;
+  }
+
+  .help-socials__link {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .help-socials__icon {
+    width: 22px;
+    height: 22px;
+  }
+}

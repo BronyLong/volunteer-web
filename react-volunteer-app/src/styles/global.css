@@ -1,7 +1,8 @@
 body {
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   color: var(--text);
   background: #f6f6f6;
+  line-height: 1.4;
 }
 
 #root,
@@ -19,7 +20,7 @@ body {
 }
 
 .container {
-  width: min(var(--container-width), calc(100% - 48px));
+  width: min(var(--container-width), calc(100% - var(--container-padding)));
   margin: 0 auto;
 }
 
@@ -52,6 +53,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
+  transition: var(--transition-fast);
 }
 
 .button--primary {
@@ -63,6 +65,23 @@ body {
   background: transparent;
   color: var(--green);
   border: 1.5px solid var(--green);
+}
+
+.button:focus,
+.button:focus-visible {
+  outline: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .not-found {
@@ -86,8 +105,18 @@ body {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --container-padding: 32px;
+  }
+
   .grid--2,
   .grid--3 {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 24px;
   }
 }

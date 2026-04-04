@@ -56,15 +56,6 @@
   display: block;
 }
 
-.login-form__submit {
-  outline: none;
-  border: none;
-}
-
-.login-form__submit:focus {
-  outline: none;
-}
-
 .form-field {
   display: grid;
   gap: 10px;
@@ -94,7 +85,6 @@
 }
 
 .form-field__input:focus {
-  outline: none;
   border-color: var(--green);
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
@@ -134,4 +124,110 @@
 
 .login-form__register-link:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .login-card {
+    padding: 38px 30px 30px;
+    border-radius: 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .container {
+    width: min(100% - 32px, 1120px);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: min(100% - 24px, 1120px);
+  }
+
+  .login-hero {
+    padding: 34px 0 48px;
+  }
+
+  .login-hero__head {
+    margin-bottom: 26px;
+  }
+
+  .login-hero__subtitle {
+    margin-top: 14px;
+    font-size: 16px;
+  }
+
+  .login-card {
+    padding: 28px 18px 24px;
+    border-radius: 26px;
+  }
+
+  .login-card__title {
+    margin-bottom: 24px;
+  }
+
+  .login-form {
+    gap: 18px;
+  }
+
+  .form-field__label {
+    font-size: 17px;
+  }
+
+  .form-field__input {
+    height: 52px;
+    font-size: 16px;
+    padding: 0 16px;
+  }
+
+  .login-form__submit {
+    min-height: 54px;
+    font-size: 17px;
+  }
+
+  .login-form__register-text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-hero {
+    padding: 24px 0 38px;
+  }
+
+  .login-hero__title {
+    font-size: 34px;
+    line-height: 1.1;
+  }
+
+  .login-hero__subtitle {
+    font-size: 15px;
+  }
+
+  .login-card {
+    border-radius: 22px;
+    padding: 24px 14px 20px;
+  }
+
+  .login-card__title {
+    font-size: 30px;
+  }
+
+  .form-field {
+    gap: 8px;
+  }
+
+  .form-field__label {
+    font-size: 16px;
+  }
+
+  .form-field__input {
+    height: 50px;
+    border-radius: 12px;
+  }
+
+  .login-form__submit {
+    min-height: 52px;
+    border-radius: 12px;
+  }
 }

@@ -1,4 +1,3 @@
-// src/components/Header/Header.jsx
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import "./Header.css";
@@ -268,7 +267,7 @@ export default function Header({
                 </div>
               )}
 
-              <Link to="/registration" className="mobile-menu__link" onClick={closeMenu}>
+              <Link to="/register" className="mobile-menu__link" onClick={closeMenu}>
                 Регистрация
               </Link>
             </nav>

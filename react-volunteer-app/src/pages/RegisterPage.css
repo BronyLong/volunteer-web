@@ -97,8 +97,6 @@
 }
 
 .register-form__submit {
-  outline: none;
-  border: none;
   width: 100%;
   min-height: 58px;
   margin-top: 2px;
@@ -110,14 +108,6 @@
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(47, 143, 47, 0.2);
   transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.register-form__submit:focus {
-  outline: none;
-}
-
-.register-form__submit:focus-visible {
-  outline: none;
 }
 
 .register-form__submit:hover {
@@ -140,4 +130,113 @@
 
 .register-form__login-link:hover {
   text-decoration: underline;
+}
+
+/* ---------- ADAPTIVE ---------- */
+
+@media (max-width: 980px) {
+  .register-card {
+    padding: 38px 30px 30px;
+    border-radius: 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .container {
+    width: min(100% - 32px, 1120px);
+  }
+}
+
+@media (max-width: 768px) {
+  .register-hero {
+    padding: 34px 0 48px;
+  }
+
+  .register-hero__head {
+    margin-bottom: 26px;
+  }
+
+  .register-hero__subtitle {
+    margin-top: 14px;
+    font-size: 16px;
+  }
+
+  .register-card {
+    padding: 28px 18px 24px;
+    border-radius: 26px;
+  }
+
+  .register-card__title {
+    margin-bottom: 24px;
+  }
+
+  .register-form {
+    gap: 18px;
+  }
+
+  .register-form__row--two {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .form-field__label {
+    font-size: 17px;
+  }
+
+  .form-field__input {
+    height: 52px;
+    font-size: 16px;
+    padding: 0 16px;
+  }
+
+  .register-form__submit {
+    min-height: 54px;
+    font-size: 17px;
+  }
+
+  .register-form__login-text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-hero {
+    padding: 24px 0 38px;
+  }
+
+  .register-hero__title {
+    font-size: 34px;
+    line-height: 1.1;
+  }
+
+  .register-hero__subtitle {
+    font-size: 15px;
+  }
+
+  .register-card {
+    border-radius: 22px;
+    padding: 24px 14px 20px;
+  }
+
+  .register-card__title {
+    font-size: 30px;
+  }
+
+  .form-field {
+    gap: 8px;
+  }
+
+  .form-field__label {
+    font-size: 16px;
+  }
+
+  .form-field__input {
+    height: 50px;
+    border-radius: 12px;
+  }
+
+  .register-form__submit {
+    min-height: 52px;
+    border-radius: 12px;
+  }
 }

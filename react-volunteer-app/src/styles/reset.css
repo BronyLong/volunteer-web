@@ -6,15 +6,25 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-width: 320px;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 img {
-  max-width: 100%;
-  display: block;
+  height: auto;
 }
 
 a {
@@ -27,4 +37,49 @@ input,
 textarea,
 select {
   font: inherit;
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  border: none;
+  outline: none;
+  background: none;
+}
+
+button {
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+figure,
+blockquote {
+  margin: 0;
 }
