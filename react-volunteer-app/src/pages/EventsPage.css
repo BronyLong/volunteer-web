@@ -145,8 +145,9 @@
 }
 
 .events-pagination__item {
-  width: 42px;
+  min-width: 42px;
   height: 42px;
+  padding: 0 14px;
   border: 2px solid #79aa79;
   border-radius: 12px;
   background: #ffffff;
@@ -156,6 +157,7 @@
   justify-content: center;
   font-size: 22px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .events-pagination__item--active {
@@ -256,8 +258,9 @@
   }
 
   .events-pagination__item {
-    width: 38px;
+    min-width: 38px;
     height: 38px;
+    padding: 0 10px;
     font-size: 20px;
     border-radius: 10px;
   }

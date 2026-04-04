@@ -13,8 +13,6 @@ DROP TABLE IF EXISTS users CASCADE;
 
 -- =========================================
 -- 1. USERS
--- По data model:
--- id, email, password, role, is_active, created_at
 -- =========================================
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -27,9 +25,6 @@ CREATE TABLE users (
 
 -- =========================================
 -- 2. PROFILES
--- По data model:
--- user_id, first_name, last_name, phone, city,
--- avatar_url, bio, social_vk, social_ok, social_max
 -- =========================================
 CREATE TABLE profiles (
     user_id UUID PRIMARY KEY,
@@ -58,16 +53,11 @@ CREATE TABLE categories (
 
 -- =========================================
 -- 4. EVENTS
--- По data model:
--- id, title, description, start_at, location,
--- participant_limit, available_slots, category_id,
--- created_by, created_at, updated_at
---
--- Дополнительно оставлено поле tasks по твоему запросу
 -- =========================================
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
+	image_url TEXT,
     description TEXT NOT NULL,
     start_at TIMESTAMP NOT NULL,
     location VARCHAR(255) NOT NULL,
@@ -101,8 +91,6 @@ CREATE TABLE events (
 
 -- =========================================
 -- 5. APPLICATIONS
--- По data model:
--- id, user_id, event_id, status, created_at
 -- =========================================
 CREATE TABLE applications (
     id BIGSERIAL PRIMARY KEY,
@@ -127,7 +115,6 @@ CREATE TABLE applications (
 
 -- =========================================
 -- ИНДЕКСЫ
--- По data model
 -- =========================================
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email
     ON users(email);
@@ -504,6 +491,252 @@ VALUES (
     (SELECT id FROM users WHERE email = 'volunteer@example.com'),
     (SELECT id FROM events WHERE title = 'Экологическая акция в городском парке'),
     'active'
+);
+
+-- =========================================
+-- ДОПОЛНИТЕЛЬНЫЕ МЕРОПРИЯТИЯ
+-- =========================================
+
+INSERT INTO events (
+    id,
+    title,
+    description,
+    start_at,
+    location,
+    tasks,
+    participant_limit,
+    available_slots,
+    category_id,
+    created_by
+)
+VALUES
+
+-- Экология
+(
+    gen_random_uuid(),
+    'Посадка кустарников в сквере',
+    'Озеленение общественного пространства.',
+    '2026-06-21 10:00:00',
+    'Городской сквер',
+    ARRAY['Подготовка почвы', 'Посадка кустарников', 'Полив'],
+    16, 16,
+    (SELECT id FROM categories WHERE name = 'Экология'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Сбор пластика на набережной',
+    'Очистка прогулочной зоны от отходов.',
+    '2026-06-22 09:30:00',
+    'Набережная',
+    ARRAY['Сбор пластика', 'Сортировка мусора'],
+    14, 14,
+    (SELECT id FROM categories WHERE name = 'Экология'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Уборка территории у озера',
+    'Экологическая акция по очистке территории.',
+    '2026-06-23 10:00:00',
+    'Озеро Лесное',
+    ARRAY['Сбор мусора', 'Очистка берега', 'Вывоз мешков'],
+    20, 20,
+    (SELECT id FROM categories WHERE name = 'Экология'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Высадка цветов у школы',
+    'Благоустройство школьной территории.',
+    '2026-06-24 11:00:00',
+    'Школа №7',
+    ARRAY['Подготовка клумб', 'Высадка цветов', 'Полив'],
+    12, 12,
+    (SELECT id FROM categories WHERE name = 'Экология'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Эко-субботник в лесопарке',
+    'Уборка природной зоны.',
+    '2026-06-25 10:00:00',
+    'Лесопарк',
+    ARRAY['Сбор мусора', 'Сортировка', 'Погрузка отходов'],
+    24, 24,
+    (SELECT id FROM categories WHERE name = 'Экология'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+
+-- Детям
+(
+    gen_random_uuid(),
+    'Творческий мастер-класс для детей',
+    'Проведение занятия по рисованию и поделкам.',
+    '2026-06-26 12:00:00',
+    'Центр детского творчества',
+    ARRAY['Подготовка материалов', 'Проведение занятия', 'Помощь детям'],
+    10, 10,
+    (SELECT id FROM categories WHERE name = 'Детям'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Спортивный день в детском центре',
+    'Организация активных игр и эстафет.',
+    '2026-06-27 11:00:00',
+    'Детский центр',
+    ARRAY['Подготовка инвентаря', 'Проведение игр', 'Поддержка детей'],
+    14, 14,
+    (SELECT id FROM categories WHERE name = 'Детям'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Час настольных игр для детей',
+    'Организация развивающего досуга.',
+    '2026-06-28 13:00:00',
+    'Библиотека',
+    ARRAY['Подготовка игр', 'Объяснение правил', 'Сопровождение детей'],
+    8, 8,
+    (SELECT id FROM categories WHERE name = 'Детям'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Помощь в проведении детского праздника',
+    'Участие в организации праздничной программы.',
+    '2026-06-29 12:00:00',
+    'Дом культуры',
+    ARRAY['Украшение зала', 'Помощь ведущему', 'Сопровождение детей'],
+    12, 12,
+    (SELECT id FROM categories WHERE name = 'Детям'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Занятие по чтению для младших школьников',
+    'Помощь детям в развитии навыков чтения.',
+    '2026-06-30 10:30:00',
+    'Образовательный центр',
+    ARRAY['Чтение вслух', 'Помощь с упражнениями', 'Поддержка детей'],
+    9, 9,
+    (SELECT id FROM categories WHERE name = 'Детям'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+
+-- Животным
+(
+    gen_random_uuid(),
+    'Кормление животных в приюте',
+    'Помощь персоналу приюта.',
+    '2026-07-01 09:00:00',
+    'Приют "Верный друг"',
+    ARRAY['Подготовка корма', 'Кормление животных', 'Уборка мисок'],
+    10, 10,
+    (SELECT id FROM categories WHERE name = 'Животным'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Помощь в уходе за щенками',
+    'Забота о животных в приюте.',
+    '2026-07-02 10:00:00',
+    'Приют для собак',
+    ARRAY['Кормление', 'Уборка зоны', 'Игры со щенками'],
+    8, 8,
+    (SELECT id FROM categories WHERE name = 'Животным'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Уборка территории приюта',
+    'Благоустройство территории для животных.',
+    '2026-07-03 09:30:00',
+    'Приют "Лапа помощи"',
+    ARRAY['Уборка территории', 'Сбор мусора', 'Дезинфекция'],
+    12, 12,
+    (SELECT id FROM categories WHERE name = 'Животным'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Социализация собак',
+    'Помощь животным адаптироваться к общению.',
+    '2026-07-04 10:00:00',
+    'Кинологический центр',
+    ARRAY['Прогулка', 'Игры', 'Наблюдение за поведением'],
+    6, 6,
+    (SELECT id FROM categories WHERE name = 'Животным'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Помощь в перевозке кормов для приюта',
+    'Организация доставки необходимых материалов.',
+    '2026-07-05 11:00:00',
+    'Склад приюта',
+    ARRAY['Погрузка кормов', 'Перенос коробок', 'Разгрузка'],
+    10, 10,
+    (SELECT id FROM categories WHERE name = 'Животным'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+
+-- Пожилым
+(
+    gen_random_uuid(),
+    'Уборка квартиры пожилого человека',
+    'Бытовая помощь пожилым людям.',
+    '2026-07-06 09:00:00',
+    'Городской район',
+    ARRAY['Сухая уборка', 'Влажная уборка', 'Помощь по дому'],
+    6, 6,
+    (SELECT id FROM categories WHERE name = 'Пожилым'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Сопровождение в поликлинику',
+    'Помощь пожилым людям в посещении врача.',
+    '2026-07-07 08:30:00',
+    'Поликлиника №3',
+    ARRAY['Встреча', 'Сопровождение', 'Помощь с документами'],
+    5, 5,
+    (SELECT id FROM categories WHERE name = 'Пожилым'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Помощь с покупкой бытовых товаров',
+    'Социальная поддержка пожилых людей.',
+    '2026-07-08 10:00:00',
+    'Город',
+    ARRAY['Покупка товаров', 'Доставка', 'Передача покупок'],
+    7, 7,
+    (SELECT id FROM categories WHERE name = 'Пожилым'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Общение и чтение книг пожилым',
+    'Организация досуга и поддержки.',
+    '2026-07-09 11:00:00',
+    'Дом престарелых',
+    ARRAY['Чтение книг', 'Беседа', 'Поддержка общения'],
+    8, 8,
+    (SELECT id FROM categories WHERE name = 'Пожилым'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+),
+(
+    gen_random_uuid(),
+    'Помощь в освоении электронных услуг',
+    'Обучение пожилых людей базовым цифровым навыкам.',
+    '2026-07-10 12:00:00',
+    'Социальный центр',
+    ARRAY['Объяснение интерфейса', 'Помощь с телефоном', 'Ответы на вопросы'],
+    8, 8,
+    (SELECT id FROM categories WHERE name = 'Пожилым'),
+    (SELECT id FROM users WHERE email = 'coordinator@example.com')
 );
 
 -- =========================================

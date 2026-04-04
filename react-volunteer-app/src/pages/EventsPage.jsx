@@ -1,136 +1,185 @@
-import "./EventsPage.css"
+import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "../api";
+import "./EventsPage.css";
 
 import EventCard from "../components/EventCard";
-import animalsHelpImage from "../assets/images/animals_help.png";
 import childrenHelpImage from "../assets/images/children_help.png";
-import peopleImage from "../assets/images/people.png"
+import peopleImage from "../assets/images/people.png";
 import leafCategoryIcon from "../assets/SVG/leaf_category.svg";
 import elderlyCategoryIcon from "../assets/SVG/elderly_category.svg";
 import animalsCategoryIcon from "../assets/SVG/animals_category.svg";
 import childrenCategoryIcon from "../assets/SVG/childern_category.svg";
 
+const EVENTS_PER_PAGE = 6;
+const VISIBLE_PAGES = 5;
+
 export default function EventsPage() {
+  const [events, setEvents] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    apiFetch("/events")
+      .then((data) => {
+        const sorted = [...data].sort(
+          (a, b) => new Date(b.start_at) - new Date(a.start_at)
+        );
+        setEvents(sorted);
+        console.log("events length:", data.length);
+      })
+      .catch((error) => console.error(error.message));
+  }, []);
+
+  const totalPages = Math.ceil(events.length / EVENTS_PER_PAGE);
+
+  const paginatedEvents = useMemo(() => {
+    const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
+    const endIndex = startIndex + EVENTS_PER_PAGE;
+    return events.slice(startIndex, endIndex);
+  }, [events, currentPage]);
+
+  const currentGroup = Math.floor((currentPage - 1) / VISIBLE_PAGES);
+  const startPage = currentGroup * VISIBLE_PAGES + 1;
+  const endPage = Math.min(startPage + VISIBLE_PAGES - 1, totalPages);
+
+  const visiblePages = [];
+  for (let page = startPage; page <= endPage; page += 1) {
+    visiblePages.push(page);
+  }
+
+  function goToPage(page) {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goToNextGroup() {
+    if (endPage < totalPages) {
+      goToPage(endPage + 1);
+    }
+  }
+
+  const getCategoryType = (categoryName) => {
+    if (categoryName === "Экология") return "ecology";
+    if (categoryName === "Детям") return "children";
+    if (categoryName === "Животным") return "animals";
+    return "elderly";
+  };
+
+  
+
   return (
     <main className="events-page">
-    <section className="events-hero">
-      <div className="events-hero__background"></div>
+      <section className="events-hero">
+        <div className="events-hero__background"></div>
 
-      <div className="container events-hero__inner">
-        <div className="events-hero__content">
-          <h1 className="events-hero__title">Доступные мероприятия</h1>
-          <p className="events-hero__subtitle">
-            Находите интересные задания, в которых можно принять участие и помочь местным
-          </p>
+        <div className="container events-hero__inner">
+          <div className="events-hero__content">
+            <h1 className="events-hero__title">Доступные мероприятия</h1>
+            <p className="events-hero__subtitle">
+              Находите интересные задания, в которых можно принять участие и помочь местным
+            </p>
+          </div>
+
+          <div className="events-hero__people">
+            <img
+              src={peopleImage}
+              alt="Волонтеры"
+              className="events-hero__people-image"
+            />
+          </div>
         </div>
+      </section>
 
-        <div className="events-hero__people">
-          <img src={peopleImage} alt="Волонтеры" className="events-hero__people-image" />
+      <section className="events-catalog">
+        <div className="container">
+          <div className="events-filters">
+            <button className="events-filters__button events-filters__button--active" type="button">
+              <span>Все категории</span>
+            </button>
+
+            <button className="events-filters__button" type="button">
+              <span className="events-filters__icon-wrap">
+                <img src={leafCategoryIcon} alt="" className="events-filters__icon" />
+              </span>
+              <span>Экология</span>
+            </button>
+
+            <button className="events-filters__button events-filters__button--orange" type="button">
+              <span className="events-filters__icon-wrap">
+                <img src={childrenCategoryIcon} alt="" className="events-filters__icon" />
+              </span>
+              <span>Детям</span>
+            </button>
+
+            <button className="events-filters__button" type="button">
+              <span className="events-filters__icon-wrap">
+                <img src={animalsCategoryIcon} alt="" className="events-filters__icon" />
+              </span>
+              <span>Животным</span>
+            </button>
+
+            <button className="events-filters__button events-filters__button--orange" type="button">
+              <span className="events-filters__icon-wrap">
+                <img src={elderlyCategoryIcon} alt="" className="events-filters__icon" />
+              </span>
+              <span>Пожилым</span>
+            </button>
+          </div>
+
+          <div className="events-divider"></div>
+
+          <div className="events-grid">
+            {paginatedEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                title={event.title}
+                date={new Date(event.start_at).toLocaleDateString("ru-RU")}
+                location={event.location}
+                places={`${event.available_slots} из ${event.participant_limit}`}
+                image={childrenHelpImage}
+                category={getCategoryType(event.category_name)}
+                link={`/events/${event.id}`}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="events-pagination">
+              {startPage > 1 && (
+                <button
+                  type="button"
+                  className="events-pagination__item"
+                  onClick={() => goToPage(1)}
+                >
+                  В начало
+                </button>
+              )}
+
+              {visiblePages.map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  className={`events-pagination__item ${
+                    currentPage === page ? "events-pagination__item--active" : ""
+                  }`}
+                  onClick={() => goToPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {endPage < totalPages && (
+                <button
+                  type="button"
+                  className="events-pagination__item"
+                  onClick={goToNextGroup}
+                >
+                  дальше →
+                </button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
-    </section>
-
-    <section className="events-catalog">
-      <div className="container">
-        <div className="events-filters">
-          <button className="events-filters__button events-filters__button--active" type="button">
-            <span>Все категории</span>
-          </button>
-
-          <button className="events-filters__button" type="button">
-            <span className="events-filters__icon-wrap">
-              <img src={leafCategoryIcon} alt="" className="events-filters__icon" />
-            </span>
-            <span>Экология</span>
-          </button>
-
-          <button className="events-filters__button events-filters__button--orange" type="button">
-            <span className="events-filters__icon-wrap">
-              <img src={childrenCategoryIcon} alt="" className="events-filters__icon" />
-            </span>
-            <span>Детям</span>
-          </button>
-
-          <button className="events-filters__button" type="button">
-            <span className="events-filters__icon-wrap">
-              <img src={animalsCategoryIcon} alt="" className="events-filters__icon" />
-            </span>
-            <span>Животным</span>
-          </button>
-
-          <button className="events-filters__button events-filters__button--orange" type="button">
-            <span className="events-filters__icon-wrap">
-              <img src={elderlyCategoryIcon} alt="" className="events-filters__icon" />
-            </span>
-            <span>Пожилым</span>
-          </button>
-        </div>
-
-        <div className="events-divider"></div>
-
-        <div className="events-grid">
-          <EventCard
-            title="Экологическая акция в городском мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу  парке"
-            date="12.05.2026"
-            location="г. Икс, городской парк"
-            places="20 из 20"
-            image={animalsHelpImage}
-            category="ecology"
-          />
-
-          <EventCard
-            title="Помощь детям"
-            date="15.05.2026"
-            location="г. Икс, детский центр"
-            places="12 из 20"
-            image={childrenHelpImage}
-            category="children"
-            link="/events/1"
-          />
-          <EventCard
-            title="Помощь детям"
-            date="15.05.2026"
-            location="г. Икс, детский центр"
-            places="12 из 20"
-            image={childrenHelpImage}
-            category="animals"
-            link="/events/1"
-          />
-          <EventCard
-            title="Экологическая акция в городском мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу  парке"
-            date="12.05.2026"
-            location="г. Икс, городской парк"
-            places="20 из 20"
-            image={animalsHelpImage}
-            category="elderly"
-          />
-          <EventCard
-            title="Помощь детям"
-            date="15.05.2026"
-            location="г. Икс, детский центр"
-            places="12 из 20"
-            image={childrenHelpImage}
-            category="children"
-            link="/events/1"
-          />
-          <EventCard
-            title="Экологическая акция в городском мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу  парке"
-            date="12.05.2026"
-            location="г. Икс, городской парк"
-            places="20 из 20"
-            image={animalsHelpImage}
-            category="ecology"
-          />
-        </div>
-
-        <div className="events-pagination">
-          <a href="#" className="events-pagination__item events-pagination__item--active">1</a>
-          <a href="#" className="events-pagination__item">2</a>
-          <a href="#" className="events-pagination__item">3</a>
-          <a href="#" className="events-pagination__item">4</a>
-          <a href="#" className="events-pagination__item">5</a>
-        </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
   );
 }
