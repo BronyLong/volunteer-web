@@ -44,7 +44,7 @@ export default function Footer() {
           <h3 className="footer__title footer__title--green">Аккаунт</h3>
           <ul className="footer__list">
             <li>
-              <Link to="/registration">Регистрация</Link>
+              <Link to="/register">Регистрация</Link>
             </li>
             <li>
               <Link to="/login">Войти</Link>

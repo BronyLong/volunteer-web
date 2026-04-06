@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./RegisterPage.css";
 
-export default function RegistrationPage() {
+export default function RegisterPage() {
   return (
     <main>
       <section className="register-hero">
