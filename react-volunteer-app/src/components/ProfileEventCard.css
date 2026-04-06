@@ -1,0 +1,87 @@
+.profile-event-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #fbfbfb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.profile-event-card__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-event-card__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #222222;
+}
+
+.profile-event-card__meta {
+  display: grid;
+  gap: 6px;
+}
+
+.profile-event-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 14px;
+  line-height: 1.35;
+  color: #3f3f3f;
+}
+
+.profile-event-card__icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  object-fit: contain;
+}
+
+.profile-event-card__action {
+  flex: 0 0 auto;
+}
+
+.profile-event-card__button {
+  min-width: 194px;
+  min-height: 58px;
+  padding: 0 24px;
+  border-radius: 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--green);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-event-card__button:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .profile-event-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .profile-event-card__button {
+    width: 100%;
+    min-width: 0;
+  }
+}

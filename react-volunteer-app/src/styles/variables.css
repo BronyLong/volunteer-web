@@ -2,11 +2,11 @@
   --green: #2f8f2f;
   --green-dark: #257425;
   --green-soft: #d2ddd1;
-  --green-soft-2: #b8ccb8;
+  --green-soft-2: #c5dac8;
   --green-soft-3: #d9e3da;
   --green-soft-4: #eef4ef;
 
-  --orange: #ff9800;
+  --orange: #f58600;
   --orange-dark: #ff8f00;
   --orange-soft: #f2cf99;
   --orange-soft-2: #fff8ef;
@@ -21,8 +21,8 @@
   --light-card: #f5f3f2;
   --light-card-2: #f8f7f2;
 
-  --text: #111111;
-  --muted: #6e6e6e;
+  --text: #000000;
+  --muted: #626262;
   --footer-bg: #e5e7eb;
   --white: #ffffff;
   --border: #d5d5d5;

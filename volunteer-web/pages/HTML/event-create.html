@@ -91,6 +91,49 @@
                 </div>
               </div>
 
+              <div class="event-edit-form__full">
+                <div class="form-field">
+                  <label class="form-field__label">Задачи</label>
+                
+                  <div class="tasks-box" id="tasksBox">
+                    <div class="tasks-list" id="tasksList">
+                      <div class="task-item">
+                        <input type="text" class="task-input" value="Собрать мусор">
+                        <button type="button" class="task-remove">
+                          <img src= "../../SVG/minus.svg" alt="Удалить задачу">
+                        </button>
+                      </div>
+                    
+                      <div class="task-item">
+                        <input type="text" class="task-input" value="Постричь кусты">
+                        <button type="button" class="task-remove">
+                          <img src= "../../SVG/minus.svg" alt="Удалить задачу">
+                        </button>
+                      </div>
+                    
+                      <div class="task-item">
+                        <input type="text" class="task-input" value="Отчитаться о выполненных действиях">
+                        <button type="button" class="task-remove">
+                          <img src= "../../SVG/minus.svg" alt="Удалить задачу">
+                        </button>
+                      </div>
+                    </div>
+                  
+                    <div class="task-add">
+                      <input
+                        type="text"
+                        id="taskNewInput"
+                        class="task-input"
+                        placeholder="Новая задача"
+                      >
+                      <button type="button" id="taskAddBtn" class="task-add-btn">
+                        <img src= "../../SVG/plus.svg" alt="Удалить задачу">
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="event-edit-form__left">
                 <div class="form-field">
                   <label for="eventCategory" class="form-field__label">Категория</label>
@@ -301,6 +344,55 @@
         reader.readAsDataURL(file);
       });
     }
+
+    const tasksList = document.getElementById('tasksList');
+    const taskInput = document.getElementById('taskNewInput');
+    const taskAddBtn = document.getElementById('taskAddBtn');
+
+    function createTask(value = '') {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+    
+      item.innerHTML = `
+        <input type="text" class="task-input" value="${value}">
+        <button type="button" class="task-remove">
+          <img src="../../SVG/minus.svg" alt="Удалить">
+        </button>
+      `;
+    
+      item.querySelector('.task-remove').addEventListener('click', () => {
+        item.remove();
+      });
+    
+      return item;
+    }
+
+    function addTask() {
+      const value = taskInput.value.trim();
+      if (!value) return;
+    
+      const newTask = createTask(value);
+      tasksList.appendChild(newTask);
+    
+      taskInput.value = '';
+      taskInput.focus();
+    }
+
+    taskAddBtn.addEventListener('click', addTask);
+
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTask();
+      }
+    });
+
+    // удаление для стартовых задач
+    document.querySelectorAll('.task-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.target.closest('.task-item').remove();
+      });
+    });
   </script>
 </body>
 </html>

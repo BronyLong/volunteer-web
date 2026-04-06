@@ -12,6 +12,8 @@
   --green-soft-3: #d9e3da;
   --green-soft-4: #eef4ef;
 
+  --red: #ea2b23;
+
   --orange: #f57c00;
   --orange-dark: #de7100;
   --orange-soft: #f2cf99;
@@ -368,7 +370,76 @@ select {
   box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
 }
 
+/* ---------- TASKS ---------- */
 
+.tasks-box {
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fbfbfb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-input {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: #ffffff;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+.task-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(47, 143, 47, 0.12);
+}
+
+.task-remove,
+.task-add-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-remove img,
+.task-add-btn img {
+  width: 20px;
+  height: 20px;
+  pointer-events: none; /* чтобы клик шёл по кнопке */
+}
+
+.task-remove:hover {
+  background: var(--red);
+}
+
+.task-add {
+  display: flex;
+  gap: 10px;
+}
+
+.task-add-btn:hover {
+  background: var(--green-dark);
+}
 
 /* ---------- CUSTOM SELECT ---------- */
 
@@ -404,7 +475,6 @@ select {
   border-color: var(--green);
   background-color: #ffffff;
 
-  /* ВАЖНО — дублируем иконку */
   background-image: var(--category-icon);
   background-repeat: no-repeat;
   background-position: 18px center;

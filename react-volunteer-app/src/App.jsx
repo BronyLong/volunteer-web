@@ -9,6 +9,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import HelpPage from './pages/HelpPage';
 import EventOpenPage from './pages/EventOpenPage';
 import ProfileSettings from './pages/ProfileSettings';
+import EventEditPage from './pages/EventEditPage';
+import EventCreatePage from './pages/EventCreatePage';
 
 import "./styles/reset.css";
 import "./styles/variables.css";
@@ -26,6 +28,9 @@ export default function App() {
         <Route path="/settings" element={<ProfileSettings />} />
         <Route path='/help' element={<HelpPage />} />
         <Route path='/events/1' element={<EventOpenPage />} />
+        <Route path='/events/1/edit' element={<EventEditPage />} />
+        <Route path='/create' element={<EventCreatePage />} />
+        
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

@@ -7,14 +7,17 @@ import phoneIcon from "../assets/SVG/phone_footer.svg";
 import okIcon from "../assets/SVG/odnoklassnini.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
+import backgroundImage from "../assets/SVG/background.svg"
 
 import manAvatar from "../assets/images/avatar_man.png"
+
+import ProfileEventCard from "../components/ProfileEventCard";
 
 export default function ProfilePage() {
   return (
     <>
       <main className="profile-page">
-        <section className="profile-cover"></section>
+        <section className="profile-cover" style={{ backgroundImage: `url(${backgroundImage})` }}></section>
       
         <section className="profile-summary">
           <div className="container">
@@ -88,6 +91,19 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            <div className="profile-events">
+              <h2 className="profile-events__title">Мои мероприятия</h2>
+
+              <div className="profile-events__divider"></div>
+
+              <div className="profile-events__list">
+                <ProfileEventCard />
+                <ProfileEventCard />
+                <ProfileEventCard />
+              </div>
+            </div>
+
           </div>
         </section>
       </main>

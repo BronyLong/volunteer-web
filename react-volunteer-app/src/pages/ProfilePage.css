@@ -5,7 +5,6 @@
 .profile-cover {
   width: 100%;
   min-height: 240px;
-  background-image: url("../assets/SVG/background.svg");
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
@@ -190,6 +189,32 @@
   transform: translateY(-1px);
 }
 
+.profile-events {
+  margin-top: 42px;
+  padding: 36px 42px;
+  border-radius: 42px;
+  background: #f8f8f8;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+}
+
+.profile-events__title {
+  text-align: center;
+  font-size: clamp(28px, 3vw, 46px);
+  font-weight: 900;
+}
+
+.profile-events__divider {
+  width: 100%;
+  height: 1px;
+  margin: 18px 0 28px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.profile-events__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 @media (max-width: 980px) {
   .profile-summary__avatar-wrap {

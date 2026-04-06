@@ -1,13 +1,6 @@
 import "./ProfileSettings.css"
 import { Link } from "react-router-dom";
 
-import locationIcon from "../assets/SVG/location_footer.svg";
-import emailIcon from "../assets/SVG/email_footer.svg";
-import phoneIcon from "../assets/SVG/phone_footer.svg";
-import okIcon from "../assets/SVG/odnoklassnini.svg";
-import vkIcon from "../assets/SVG/vkontakte.svg";
-import maxIcon from "../assets/SVG/max.svg";
-
 import manAvatar from "../assets/images/avatar_man.png"
 
 export default function ProfileSettings() {

@@ -13,29 +13,71 @@ import childrenCategoryIcon from "../assets/SVG/childern_category.svg";
 const EVENTS_PER_PAGE = 6;
 const VISIBLE_PAGES = 5;
 
+const FILTERS = [
+  {
+    key: "all",
+    label: "Все категории",
+    theme: "all",
+  },
+  {
+    key: "Экология",
+    label: "Экология",
+    icon: leafCategoryIcon,
+    theme: "green",
+  },
+  {
+    key: "Детям",
+    label: "Детям",
+    icon: childrenCategoryIcon,
+    theme: "orange",
+  },
+  {
+    key: "Животным",
+    label: "Животным",
+    icon: animalsCategoryIcon,
+    theme: "green",
+  },
+  {
+    key: "Пожилым",
+    label: "Пожилым",
+    icon: elderlyCategoryIcon,
+    theme: "orange",
+  },
+];
+
+function parseEventDate(dateString) {
+  const date = new Date(dateString);
+  return Number.isNaN(date.getTime()) ? Number.POSITIVE_INFINITY : date.getTime();
+}
+
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState("all");
 
   useEffect(() => {
     apiFetch("/events")
       .then((data) => {
         const sorted = [...data].sort(
-          (a, b) => new Date(b.start_at) - new Date(a.start_at)
+          (a, b) => parseEventDate(a.start_at) - parseEventDate(b.start_at)
         );
         setEvents(sorted);
-        console.log("events length:", data.length);
       })
       .catch((error) => console.error(error.message));
   }, []);
 
-  const totalPages = Math.ceil(events.length / EVENTS_PER_PAGE);
+  const filteredEvents = useMemo(() => {
+    if (activeCategory === "all") return events;
+    return events.filter((event) => event.category_name === activeCategory);
+  }, [events, activeCategory]);
+
+  const totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
 
   const paginatedEvents = useMemo(() => {
     const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
     const endIndex = startIndex + EVENTS_PER_PAGE;
-    return events.slice(startIndex, endIndex);
-  }, [events, currentPage]);
+    return filteredEvents.slice(startIndex, endIndex);
+  }, [filteredEvents, currentPage]);
 
   const currentGroup = Math.floor((currentPage - 1) / VISIBLE_PAGES);
   const startPage = currentGroup * VISIBLE_PAGES + 1;
@@ -57,14 +99,17 @@ export default function EventsPage() {
     }
   }
 
+  function handleFilterChange(categoryKey) {
+    setActiveCategory(categoryKey);
+    setCurrentPage(1);
+  }
+
   const getCategoryType = (categoryName) => {
     if (categoryName === "Экология") return "ecology";
     if (categoryName === "Детям") return "children";
     if (categoryName === "Животным") return "animals";
     return "elderly";
   };
-
-  
 
   return (
     <main className="events-page">
@@ -92,37 +137,27 @@ export default function EventsPage() {
       <section className="events-catalog">
         <div className="container">
           <div className="events-filters">
-            <button className="events-filters__button events-filters__button--active" type="button">
-              <span>Все категории</span>
-            </button>
+            {FILTERS.map((filter) => {
+              const isActive = activeCategory === filter.key;
 
-            <button className="events-filters__button" type="button">
-              <span className="events-filters__icon-wrap">
-                <img src={leafCategoryIcon} alt="" className="events-filters__icon" />
-              </span>
-              <span>Экология</span>
-            </button>
-
-            <button className="events-filters__button events-filters__button--orange" type="button">
-              <span className="events-filters__icon-wrap">
-                <img src={childrenCategoryIcon} alt="" className="events-filters__icon" />
-              </span>
-              <span>Детям</span>
-            </button>
-
-            <button className="events-filters__button" type="button">
-              <span className="events-filters__icon-wrap">
-                <img src={animalsCategoryIcon} alt="" className="events-filters__icon" />
-              </span>
-              <span>Животным</span>
-            </button>
-
-            <button className="events-filters__button events-filters__button--orange" type="button">
-              <span className="events-filters__icon-wrap">
-                <img src={elderlyCategoryIcon} alt="" className="events-filters__icon" />
-              </span>
-              <span>Пожилым</span>
-            </button>
+              return (
+                <button
+                  key={filter.key}
+                  type="button"
+                  className={`events-filters__button events-filters__button--${filter.theme} ${
+                    isActive ? "events-filters__button--active" : ""
+                  }`}
+                  onClick={() => handleFilterChange(filter.key)}
+                >
+                  {filter.icon && (
+                    <span className="events-filters__icon-wrap">
+                      <img src={filter.icon} alt="" className="events-filters__icon" />
+                    </span>
+                  )}
+                  <span>{filter.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="events-divider"></div>
@@ -141,6 +176,12 @@ export default function EventsPage() {
               />
             ))}
           </div>
+
+          {!paginatedEvents.length && (
+            <div className="events-empty">
+              По выбранной категории мероприятий пока нет.
+            </div>
+          )}
 
           {totalPages > 1 && (
             <div className="events-pagination">

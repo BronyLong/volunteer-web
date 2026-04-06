@@ -10,6 +10,8 @@ import locationIcon from "../assets/SVG/location.svg";
 import availableSpacesIcon from "../assets/SVG/avalable_spaces.svg";
 import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
+import dateIcon from "../assets/SVG/calendar_card.svg"
+import timeIcon from "../assets/SVG/clock.svg"
 
 import eventImage from "../assets/images/animals_help.png";
 import womanAvatar from "../assets/images/avatar_woman.png";
@@ -115,9 +117,61 @@ export default function EventOpenPage() {
                           Обустройство зоны отдыха новыми лавочками и урнами
                         </span>
                       </li>
+                      <li className="event-card__task-item">
+                        <img
+                          src={eventCheckmark}
+                          alt=""
+                          className="event-card__task-icon"
+                        />
+                        <span>
+                          Обустройство зоны отдыха новыми лавочками и урнами
+                        </span>
+                      </li>
+                      <li className="event-card__task-item">
+                        <img
+                          src={eventCheckmark}
+                          alt=""
+                          className="event-card__task-icon"
+                        />
+                        <span>
+                          Обустройство зоны отдыха новыми лавочками и урнами
+                        </span>
+                      </li>
+                      <li className="event-card__task-item">
+                        <img
+                          src={eventCheckmark}
+                          alt=""
+                          className="event-card__task-icon"
+                        />
+                        <span>
+                          Обустройство зоны отдыха новыми лавочками и урнами
+                        </span>
+                      </li>
+                      <li className="event-card__task-item">
+                        <img
+                          src={eventCheckmark}
+                          alt=""
+                          className="event-card__task-icon"
+                        />
+                        <span>
+                          Обустройство зоны отдыха новыми лавочками и урнами
+                        </span>
+                      </li>
+                      <li className="event-card__task-item">
+                        <img
+                          src={eventCheckmark}
+                          alt=""
+                          className="event-card__task-icon"
+                        />
+                        <span>
+                          Обустройство зоны отдыха новыми лавочками и урнами
+                        </span>
+                      </li>
                     </ul>
                   </div>
                 </div>
+
+                <div className="event-card__divider"></div>
 
                 <div className="event-card__meta-grid">
                   <div className="event-card__meta-left">
@@ -161,6 +215,26 @@ export default function EventOpenPage() {
 
                 <div className="event-card__divider"></div>
 
+                <div className="event-card__date-time-grid">
+                  <div className="event-card__info-box">
+                    <span className="event-card__meta-label">
+                      ДАТА ПРОВЕДЕНИЯ
+                      <img src={dateIcon} className="event-card__meta-inline-icon" />
+                    </span>
+                    <strong>1.01.1980</strong>
+                  </div>
+
+                  <div className="event-card__info-box">
+                    <span className="event-card__meta-label">
+                      ВРЕМЯ ПРОВЕДЕНИЯ
+                      <img src={timeIcon} className="event-card__meta-inline-icon" />
+                    </span>
+                    <strong>11:00</strong>
+                  </div>
+                </div>
+
+                <div className="event-card__divider"></div>
+
                 <div className="event-card__bottom">
                   <div className="coordinator-card">
                     <div className="coordinator-card__label">КООРДИНАТОР</div>
@@ -199,6 +273,10 @@ export default function EventOpenPage() {
                       </div>
                     </div>
                   </div>
+
+                  <a href="#" className="event-card__join-button">
+                    Принять участие
+                  </a>
                 </div>
               </article>
             </div>
