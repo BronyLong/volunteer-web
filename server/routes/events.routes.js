@@ -62,8 +62,11 @@ router.get("/:id", async (req, res) => {
         c.id AS category_id,
         c.name AS category_name,
         u.id AS creator_id,
+        u.email,
         p.first_name,
-        p.last_name
+        p.last_name,
+        p.phone,
+        p.avatar_url
       FROM events e
       JOIN categories c ON c.id = e.category_id
       JOIN users u ON u.id = e.created_by

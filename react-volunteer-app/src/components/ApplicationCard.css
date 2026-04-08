@@ -66,12 +66,27 @@
   flex: 0 0 16px;
 }
 
+.application-item__status {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.application-item__status--active {
+  color: var(--green);
+}
+
+.application-item__status--rejected {
+  color: var(--red);
+}
+
+.application-item__restore,
 .application-item__reject {
   width: 228px;
   min-width: 228px;
   min-height: 56px;
   border-radius: 14px;
-  background: var(--red);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -79,12 +94,33 @@
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+  border: none;
+}
+
+.application-item__reject {
+  background: var(--red);
 }
 
 .application-item__reject:hover {
   background: var(--red-dark);
   transform: translateY(-1px);
+}
+
+.application-item__restore {
+  background: var(--green);
+}
+
+.application-item__restore:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.application-item__restore:disabled,
+.application-item__reject:disabled {
+  opacity: 0.7;
+  cursor: default;
+  transform: none;
 }
 
 @media (max-width: 980px) {
@@ -93,7 +129,8 @@
     align-items: stretch;
   }
 
-  .application-item__reject {
+  .application-item__reject,
+  .application-item__restore {
     width: 100%;
     min-width: 0;
   }
@@ -108,7 +145,8 @@
     font-size: 16px;
   }
 
-  .application-item__reject {
+  .application-item__reject,
+  .application-item__restore {
     min-height: 50px;
     font-size: 16px;
   }

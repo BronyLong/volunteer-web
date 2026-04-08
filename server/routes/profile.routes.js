@@ -1,8 +1,29 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
+dotenv.config();
+
 const router = Router();
+
+function getOptionalUserId(req) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    return payload.id;
+  } catch {
+    return null;
+  }
+}
 
 router.get("/me", authMiddleware, async (req, res) => {
   try {
@@ -36,7 +57,51 @@ router.get("/me", authMiddleware, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error("Get profile error:", error);
+    console.error("Get my profile error:", error);
+    res.status(500).json({ message: "Ошибка при получении профиля" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const viewerId = getOptionalUserId(req);
+
+    const result = await pool.query(
+      `
+      SELECT
+        u.id,
+        u.email,
+        u.role,
+        u.is_active,
+        u.created_at,
+        p.first_name,
+        p.last_name,
+        p.phone,
+        p.city,
+        p.avatar_url,
+        p.bio,
+        p.social_vk,
+        p.social_ok,
+        p.social_max
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE u.id = $1
+      `,
+      [req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Профиль не найден" });
+    }
+
+    const profile = result.rows[0];
+
+    res.json({
+      ...profile,
+      is_owner: viewerId === profile.id,
+    });
+  } catch (error) {
+    console.error("Get profile by id error:", error);
     res.status(500).json({ message: "Ошибка при получении профиля" });
   }
 });

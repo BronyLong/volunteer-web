@@ -464,6 +464,46 @@
   object-fit: contain;
 }
 
+.header__logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.header__logout-button:hover {
+  background: rgba(234, 43, 35, 0.1);
+}
+
+.header__logout-button:active {
+  transform: scale(0.96);
+}
+
+.header__logout-button:focus-visible {
+  outline: none;
+  background: rgba(234, 43, 35, 0.12);
+  box-shadow: 0 0 0 3px rgba(234, 43, 35, 0.18);
+}
+
+.header__logout-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(3820%)
+    hue-rotate(351deg) brightness(97%) contrast(94%);
+}
+
 @media (max-width: 992px) {
   .header-help {
     display: none;

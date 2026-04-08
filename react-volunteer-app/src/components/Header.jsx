@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./Header.css";
 
 import logoHeart from "../assets/SVG/logoHeart.svg";
 import logoText from "../assets/SVG/logoText.svg";
 import accountOutline from "../assets/SVG/accountOutline.svg";
 import defaultAvatar from "../assets/images/avatar_woman.png";
+import exitIcon from "../assets/SVG/exit.svg";
 
 import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
@@ -15,13 +16,34 @@ import okIcon from "../assets/SVG/odnoklassnini.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 
+import { getMyProfile, getToken, removeToken } from "../api";
+
+function getUserIdFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.id || null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Header({
-  variant = "public",
+  variant: variantProp,
   avatar = defaultAvatar,
 }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
   const helpMenuRef = useRef(null);
+
+  const [authVariant, setAuthVariant] = useState("public");
+  const [userId, setUserId] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(avatar);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
@@ -40,6 +62,49 @@ export default function Header({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    async function syncHeaderAuth() {
+      const token = getToken();
+
+      if (!token) {
+        setAuthVariant("public");
+        setUserId(null);
+        setUserAvatar(avatar);
+        return;
+      }
+
+      const tokenUserId = getUserIdFromToken();
+
+      try {
+        const profile = await getMyProfile();
+
+        setAuthVariant("private");
+        setUserId(profile?.id || tokenUserId);
+        setUserAvatar(profile?.avatar_url || avatar);
+      } catch {
+        removeToken();
+        setAuthVariant("public");
+        setUserId(null);
+        setUserAvatar(avatar);
+      }
+    }
+
+    syncHeaderAuth();
+  }, [location.pathname, avatar]);
+
+  function handleLogout() {
+    removeToken();
+    closeMenu();
+    closeHelpMenu();
+    setAuthVariant("public");
+    setUserId(null);
+    setUserAvatar(avatar);
+    navigate("/");
+  }
+
+  const variant = variantProp || authVariant;
+  const profileLink = userId ? `/profiles/${userId}` : "/login";
+
   return (
     <header className="header">
       <div className="container header__inner">
@@ -52,7 +117,7 @@ export default function Header({
               </Link>
 
               <nav className="header__menu">
-                <Link to="/events" className="btn btn--green">
+                <Link to="/events" className="btn btn--green" onClick={closeMenu}>
                   Хочу помочь
                 </Link>
 
@@ -173,9 +238,11 @@ export default function Header({
               </NavLink>
 
               <NavLink
-                to="/profile"
-                className={({ isActive }) =>
-                  `header__nav-link ${isActive ? "header__nav-link--active" : ""}`
+                to={profileLink}
+                className={() =>
+                  `header__nav-link ${
+                    location.pathname.startsWith("/profiles/") ? "header__nav-link--active" : ""
+                  }`
                 }
               >
                 Профиль
@@ -184,21 +251,30 @@ export default function Header({
 
             <div className="header__user">
               <Link
-                to="/profile"
+                to={profileLink}
                 className="header__avatar-link"
                 aria-label="Открыть профиль"
               >
-                <img src={avatar} alt="Аватар пользователя" className="header__avatar" />
+                <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
               </Link>
+
+              <button
+                type="button"
+                className="header__button-reset header__logout-button"
+                onClick={handleLogout}
+                aria-label="Выйти"
+              >
+                <img src={exitIcon} alt="" className="header__logout-icon" />
+              </button>
             </div>
 
             <div className="header__mobile">
               <Link
-                to="/profile"
+                to={profileLink}
                 className="header__avatar-link header__avatar-link--mobile"
                 aria-label="Открыть профиль"
               >
-                <img src={avatar} alt="Аватар пользователя" className="header__avatar" />
+                <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
               </Link>
 
               <button
@@ -270,6 +346,10 @@ export default function Header({
               <Link to="/register" className="mobile-menu__link" onClick={closeMenu}>
                 Регистрация
               </Link>
+
+              <Link to="/login" className="mobile-menu__link" onClick={closeMenu}>
+                Войти
+              </Link>
             </nav>
           </div>
         </div>
@@ -280,12 +360,22 @@ export default function Header({
               <Link to="/" className="mobile-menu__link" onClick={closeMenu}>
                 Главная
               </Link>
+
               <Link to="/events" className="mobile-menu__link" onClick={closeMenu}>
                 Мероприятия
               </Link>
-              <Link to="/profile" className="mobile-menu__link" onClick={closeMenu}>
+
+              <Link to={profileLink} className="mobile-menu__link" onClick={closeMenu}>
                 Профиль
               </Link>
+
+              <button
+                type="button"
+                className="mobile-menu__link mobile-menu__link--button"
+                onClick={handleLogout}
+              >
+                Выйти
+              </button>
             </nav>
           </div>
         </div>

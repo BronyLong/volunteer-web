@@ -5,12 +5,20 @@ import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
 
 export default function ApplicationCard({
+  id,
   avatar = womanAvatar,
   email = "example@mail.ru",
   phone = "8 (800) 555-35-35",
   name = "Ксения",
   secondName = "Михайловна",
+  status = "active",
+  onReject,
+  onRestore,
+  isRejecting = false,
+  isRestoring = false,
 }) {
+  const isRejected = status === "rejected";
+
   return (
     <article className="application-item">
       <div className="application-item__person">
@@ -32,12 +40,38 @@ export default function ApplicationCard({
             <img src={phoneIcon} alt="" className="application-item__icon" />
             <span>{phone}</span>
           </p>
+
+          <p
+            className={`application-item__status ${
+              isRejected
+                ? "application-item__status--rejected"
+                : "application-item__status--active"
+            }`}
+          >
+            {isRejected ? "Заявка отклонена" : "Заявка активна"}
+          </p>
         </div>
       </div>
 
-      <button type="button" className="application-item__reject">
-        Отклонить заявку
-      </button>
+      {isRejected ? (
+        <button
+          type="button"
+          className="application-item__restore"
+          onClick={() => onRestore?.(id)}
+          disabled={isRestoring}
+        >
+          {isRestoring ? "Восстанавливаем..." : "Восстановить заявку"}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="application-item__reject"
+          onClick={() => onReject?.(id)}
+          disabled={isRejecting}
+        >
+          {isRejecting ? "Отклоняем..." : "Отклонить заявку"}
+        </button>
+      )}
     </article>
   );
 }

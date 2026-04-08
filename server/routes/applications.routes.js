@@ -128,7 +128,11 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    if (eventCheck.rows[0].created_by !== req.user.id) {
+    if (
+      req.user.role !== "admin" &&
+      req.user.role !== "coordinator" &&
+      eventCheck.rows[0].created_by !== req.user.id
+    ) {
       return res.status(403).json({ message: "Нет доступа к заявкам этого мероприятия" });
     }
 
@@ -149,7 +153,9 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       JOIN users u ON u.id = a.user_id
       LEFT JOIN profiles p ON p.user_id = u.id
       WHERE a.event_id = $1
-      ORDER BY a.created_at DESC
+      ORDER BY
+        CASE WHEN a.status = 'active' THEN 0 ELSE 1 END,
+        a.created_at DESC
       `,
       [req.params.eventId]
     );
@@ -161,57 +167,220 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-router.patch("/:id/status", authMiddleware, async (req, res) => {
-  const { status } = req.body;
-
-  if (!status) {
-    return res.status(400).json({ message: "status обязателен" });
-  }
-
-  if (!["active", "approved", "rejected", "cancelled"].includes(status)) {
-    return res.status(400).json({ message: "Некорректный статус" });
-  }
+router.patch("/:id/reject", authMiddleware, async (req, res) => {
+  const client = await pool.connect();
 
   try {
-    const appResult = await pool.query(
+    await client.query("BEGIN");
+
+    const appResult = await client.query(
       `
       SELECT
         a.id,
+        a.user_id,
         a.event_id,
-        a.status AS current_status,
-        e.created_by
+        a.status,
+        e.created_by,
+        e.available_slots,
+        e.participant_limit
       FROM applications a
       JOIN events e ON e.id = a.event_id
       WHERE a.id = $1
+      FOR UPDATE
       `,
       [req.params.id]
     );
 
     if (appResult.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ message: "Заявка не найдена" });
     }
 
-    if (appResult.rows[0].created_by !== req.user.id) {
+    const application = appResult.rows[0];
+
+    if (
+      req.user.role !== "admin" &&
+      req.user.role !== "coordinator" &&
+      application.created_by !== req.user.id
+    ) {
+      await client.query("ROLLBACK");
       return res.status(403).json({ message: "Нет доступа к изменению этой заявки" });
     }
 
-    const result = await pool.query(
+    if (application.status === "rejected") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Заявка уже отклонена" });
+    }
+
+    await client.query(
       `
       UPDATE applications
-      SET status = $1
-      WHERE id = $2
-      RETURNING *
+      SET status = 'rejected'
+      WHERE id = $1
       `,
-      [status, req.params.id]
+      [req.params.id]
     );
 
-    res.json({
-      message: "Статус заявки обновлён",
-      application: result.rows[0],
-    });
+    await client.query(
+      `
+      UPDATE events
+      SET available_slots = available_slots + 1
+      WHERE id = $1
+      `,
+      [application.event_id]
+    );
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Заявка отклонена" });
   } catch (error) {
-    console.error("Update application status error:", error);
-    res.status(500).json({ message: "Ошибка при обновлении статуса заявки" });
+    await client.query("ROLLBACK");
+    console.error("Reject application error:", error);
+    res.status(500).json({ message: "Ошибка при отклонении заявки" });
+  } finally {
+    client.release();
+  }
+});
+
+router.patch("/:id/restore", authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const appResult = await client.query(
+      `
+      SELECT
+        a.id,
+        a.user_id,
+        a.event_id,
+        a.status,
+        e.created_by,
+        e.available_slots,
+        e.participant_limit
+      FROM applications a
+      JOIN events e ON e.id = a.event_id
+      WHERE a.id = $1
+      FOR UPDATE
+      `,
+      [req.params.id]
+    );
+
+    if (appResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Заявка не найдена" });
+    }
+
+    const application = appResult.rows[0];
+
+    if (
+      req.user.role !== "admin" &&
+      req.user.role !== "coordinator" &&
+      application.created_by !== req.user.id
+    ) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ message: "Нет доступа к изменению этой заявки" });
+    }
+
+    if (application.status !== "rejected") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Восстановить можно только отклонённую заявку" });
+    }
+
+    if (Number(application.available_slots) <= 0) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Нет свободных мест для восстановления заявки" });
+    }
+
+    await client.query(
+      `
+      UPDATE applications
+      SET status = 'active'
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    await client.query(
+      `
+      UPDATE events
+      SET available_slots = available_slots - 1
+      WHERE id = $1
+      `,
+      [application.event_id]
+    );
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Заявка восстановлена" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Restore application error:", error);
+    res.status(500).json({ message: "Ошибка при восстановлении заявки" });
+  } finally {
+    client.release();
+  }
+});
+
+router.delete("/:id", authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const appResult = await client.query(
+      `
+      SELECT id, user_id, event_id, status
+      FROM applications
+      WHERE id = $1
+      FOR UPDATE
+      `,
+      [req.params.id]
+    );
+
+    if (appResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Заявка не найдена" });
+    }
+
+    const application = appResult.rows[0];
+
+    if (application.user_id !== req.user.id) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ message: "Нельзя отозвать чужую заявку" });
+    }
+
+    if (application.status === "rejected") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Отклонённую заявку нельзя отозвать" });
+    }
+
+    await client.query(
+      `
+      DELETE FROM applications
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    await client.query(
+      `
+      UPDATE events
+      SET available_slots = available_slots + 1
+      WHERE id = $1
+      `,
+      [application.event_id]
+    );
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Заявка отозвана" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Delete application error:", error);
+    res.status(500).json({ message: "Ошибка при отзыве заявки" });
+  } finally {
+    client.release();
   }
 });
 
