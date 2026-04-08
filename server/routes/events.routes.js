@@ -1,14 +1,8 @@
-
 import { Router } from "express";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
-
-const dbInfo = await pool.query(`
-  SELECT current_database(), current_user, inet_server_addr(), inet_server_port()
-`);
-const countResult = await pool.query(`SELECT COUNT(*) FROM events`);
 
 router.get("/", async (req, res) => {
   const { category } = req.query;
@@ -19,6 +13,7 @@ router.get("/", async (req, res) => {
       SELECT
         e.id,
         e.title,
+        e.image_url,
         e.description,
         e.start_at,
         e.location,
@@ -55,6 +50,7 @@ router.get("/:id", async (req, res) => {
       SELECT
         e.id,
         e.title,
+        e.image_url,
         e.description,
         e.start_at,
         e.location,
@@ -91,6 +87,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   const {
     title,
+    image_url,
     description,
     start_at,
     location,
@@ -108,6 +105,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `
       INSERT INTO events (
         title,
+        image_url,
         description,
         start_at,
         location,
@@ -117,11 +115,12 @@ router.post("/", authMiddleware, async (req, res) => {
         category_id,
         created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $7, $8, $9)
       RETURNING *
       `,
       [
         title,
+        image_url || null,
         description,
         start_at,
         location,
@@ -139,6 +138,113 @@ router.post("/", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Create event error:", error);
     res.status(500).json({ message: "Ошибка при создании мероприятия" });
+  }
+});
+
+router.put("/:id", authMiddleware, async (req, res) => {
+  const {
+    title,
+    image_url,
+    description,
+    start_at,
+    location,
+    tasks = [],
+    participant_limit,
+    category_id,
+  } = req.body;
+
+  if (!title || !description || !start_at || !location || !participant_limit || !category_id) {
+    return res.status(400).json({ message: "Не все обязательные поля заполнены" });
+  }
+
+  try {
+    const existing = await pool.query(
+      `
+      SELECT id, created_by
+      FROM events
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ message: "Мероприятие не найдено" });
+    }
+
+    if (existing.rows[0].created_by !== req.user.id) {
+      return res.status(403).json({ message: "Нельзя редактировать чужое мероприятие" });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE events
+      SET
+        title = $1,
+        image_url = $2,
+        description = $3,
+        start_at = $4,
+        location = $5,
+        tasks = $6,
+        participant_limit = $7,
+        available_slots = LEAST(available_slots, $7),
+        category_id = $8
+      WHERE id = $9
+      RETURNING *
+      `,
+      [
+        title,
+        image_url || null,
+        description,
+        start_at,
+        location,
+        tasks,
+        participant_limit,
+        category_id,
+        req.params.id,
+      ]
+    );
+
+    res.json({
+      message: "Мероприятие обновлено",
+      event: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Update event error:", error);
+    res.status(500).json({ message: "Ошибка при обновлении мероприятия" });
+  }
+});
+
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const existing = await pool.query(
+      `
+      SELECT id, created_by
+      FROM events
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ message: "Мероприятие не найдено" });
+    }
+
+    if (existing.rows[0].created_by !== req.user.id) {
+      return res.status(403).json({ message: "Нельзя удалить чужое мероприятие" });
+    }
+
+    await pool.query(
+      `
+      DELETE FROM events
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    res.json({ message: "Мероприятие удалено" });
+  } catch (error) {
+    console.error("Delete event error:", error);
+    res.status(500).json({ message: "Ошибка при удалении мероприятия" });
   }
 });
 
