@@ -15,8 +15,22 @@ import arrowIcon from "../assets/SVG/arrow.svg";
 import backgroundImage from "../assets/SVG/background.svg";
 import manAvatar from "../assets/images/avatar_man.png";
 
-function getPlaceholder(value) {
-  return value && String(value).trim() ? value : "Замените в настройках";
+function getTextValue(value, fallback = "Не указано") {
+  return value && String(value).trim() ? value : fallback;
+}
+
+function getContactPlaceholder(profile) {
+  if (!profile) return "Недоступно";
+
+  if (profile.access_level === "public") {
+    if (profile.role === "coordinator") {
+      return "Контактные данные скрыты";
+    }
+
+    return "Контактные данные скрыты";
+  }
+
+  return "Не указано";
 }
 
 function normalizeLink(value) {
@@ -48,7 +62,9 @@ function getEventsTitle(role, isOwner) {
     return isOwner ? "Мои мероприятия" : "Мероприятия координатора";
   }
 
-  return isOwner ? "Мероприятия, в которых я участвую" : "Мероприятия пользователя";
+  return isOwner
+    ? "Мероприятия, в которых я участвую"
+    : "Мероприятия пользователя";
 }
 
 function formatEventDate(value) {
@@ -58,6 +74,34 @@ function formatEventDate(value) {
   if (Number.isNaN(date.getTime())) return "Дата не указана";
 
   return date.toLocaleDateString("ru-RU");
+}
+
+function getAccessMessage(profile) {
+  if (!profile) return "";
+
+  if (profile.access_level === "private") {
+    return "Это ваш приватный профиль. Здесь доступны редактирование и все контактные данные.";
+  }
+
+  if (profile.access_level === "contact") {
+    return "Контактные данные доступны.";
+  }
+
+  if (profile.access_level === "public") {
+    if (profile.role === "coordinator") {
+      return "Контактные данные скрыты. Доступ появится после участия в мероприятии этого координатора.";
+    }
+
+    return "Контактные данные скрыты.";
+  }
+
+  return "";
+}
+
+function getAccessClassName(profile) {
+  if (!profile) return "profile-summary__access-note";
+
+  return `profile-summary__access-note profile-summary__access-note--${profile.access_level}`;
 }
 
 function resizeImage(file, maxWidth = 600, maxHeight = 600, quality = 0.8) {
@@ -135,11 +179,13 @@ export default function ProfilePage() {
     const lastName = profile.last_name?.trim() || "";
     const combined = `${firstName} ${lastName}`.trim();
 
-    return combined || "Замените в настройках";
+    return combined || "Пользователь";
   }, [profile]);
 
+  const canViewContacts = Boolean(profile?.can_view_contacts || profile?.is_owner);
+
   const socials = useMemo(() => {
-    if (!profile) return [];
+    if (!profile || !canViewContacts) return [];
 
     const items = [
       {
@@ -163,7 +209,7 @@ export default function ProfilePage() {
     ];
 
     return items.filter((item) => item.href);
-  }, [profile]);
+  }, [profile, canViewContacts]);
 
   const profileEvents = useMemo(() => {
     if (!profile) return [];
@@ -318,6 +364,10 @@ export default function ProfilePage() {
             {getRoleLabel(profile.role)}
           </div>
 
+          <div className={getAccessClassName(profile)}>
+            {getAccessMessage(profile)}
+          </div>
+
           {error ? (
             <div className="profile-page__inline-error">{error}</div>
           ) : null}
@@ -335,12 +385,20 @@ export default function ProfilePage() {
               <ul className="profile-contacts">
                 <li className="profile-contacts__item">
                   <img src={phoneIcon} alt="" className="profile-contacts__icon" />
-                  <span>{getPlaceholder(profile.phone)}</span>
+                  <span>
+                    {canViewContacts
+                      ? getTextValue(profile.phone)
+                      : getContactPlaceholder(profile)}
+                  </span>
                 </li>
 
                 <li className="profile-contacts__item">
                   <img src={emailIcon} alt="" className="profile-contacts__icon" />
-                  <span>{getPlaceholder(profile.email)}</span>
+                  <span>
+                    {canViewContacts
+                      ? getTextValue(profile.email)
+                      : getContactPlaceholder(profile)}
+                  </span>
                 </li>
 
                 <li className="profile-contacts__item">
@@ -349,7 +407,11 @@ export default function ProfilePage() {
                     alt=""
                     className="profile-contacts__icon"
                   />
-                  <span>{getPlaceholder(profile.city)}</span>
+                  <span>
+                    {canViewContacts
+                      ? getTextValue(profile.city)
+                      : getContactPlaceholder(profile)}
+                  </span>
                 </li>
               </ul>
 
@@ -376,7 +438,7 @@ export default function ProfilePage() {
 
               <div className="profile-card__divider"></div>
 
-              <div className="profile-bio">{getPlaceholder(profile.bio)}</div>
+              <div className="profile-bio">{getTextValue(profile.bio, "Пока не заполнено")}</div>
 
               {socials.length > 0 ? (
                 <div className="profile-socials">
@@ -397,7 +459,13 @@ export default function ProfilePage() {
                     </a>
                   ))}
                 </div>
-              ) : null}
+              ) : (
+                <div className="profile-socials__empty">
+                  {canViewContacts
+                    ? "Социальные сети не указаны"
+                    : "Социальные сети скрыты"}
+                </div>
+              )}
 
               {profile.is_owner ? (
                 <>

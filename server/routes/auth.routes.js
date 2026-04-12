@@ -8,21 +8,43 @@ dotenv.config();
 
 const router = Router();
 
+function validateEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
 router.post("/register", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  let { firstName, lastName, email, password } = req.body;
+
+  firstName = firstName ? String(firstName).trim() : "";
+  lastName = lastName ? String(lastName).trim() : "";
+  email = email ? String(email).trim().toLowerCase() : "";
+  password = password ? String(password) : "";
 
   if (!firstName || !lastName || !email || !password) {
     return res.status(400).json({ message: "Заполни все обязательные поля" });
   }
 
+  if (!validateEmail(email)) {
+    return res.status(400).json({
+      message: "Введите корректный email, например example@mail.com",
+    });
+  }
+
   try {
     const existingUser = await pool.query(
-      "SELECT id FROM users WHERE email = $1",
+      `
+      SELECT id
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      `,
       [email]
     );
 
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({ message: "Пользователь с таким email уже существует" });
+      return res.status(409).json({
+        message: "Пользователь с таким email уже существует",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -64,7 +86,10 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  let { email, password } = req.body;
+
+  email = email ? String(email).trim().toLowerCase() : "";
+  password = password ? String(password) : "";
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email и пароль обязательны" });
@@ -72,7 +97,11 @@ router.post("/login", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "SELECT id, email, password, role, is_active FROM users WHERE email = $1",
+      `
+      SELECT id, email, password, role, is_active
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      `,
       [email]
     );
 

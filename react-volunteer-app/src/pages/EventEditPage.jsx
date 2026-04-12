@@ -109,7 +109,10 @@ export default function EventEditPage() {
   const locationRef = useRef(null);
 
   const selectedCategory = useMemo(() => {
-    const found = categories.find((option) => String(option.id) === String(formData.category));
+    const found = categories.find(
+      (option) => String(option.id) === String(formData.category)
+    );
+
     return (
       found || {
         id: "",
@@ -141,6 +144,16 @@ export default function EventEditPage() {
           getCategories(),
           getEventById(id),
         ]);
+
+        const isAdmin = currentUser.role === "admin";
+        const isOwnerCoordinator =
+          currentUser.role === "coordinator" &&
+          String(currentUser.id) === String(eventData.creator_id);
+
+        if (!isAdmin && !isOwnerCoordinator) {
+          navigate(`/events/${id}`, { replace: true });
+          return;
+        }
 
         const preparedCategories = categoriesData.map((category) => ({
           ...category,

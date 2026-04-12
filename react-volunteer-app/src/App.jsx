@@ -29,8 +29,6 @@ export default function App() {
         <Route path="/profiles/:id/settings" element={<ProfileSettings />} />
 
         <Route path="/help" element={<HelpPage />} />
-        <Route path="/events/1" element={<EventOpenPage />} />
-        <Route path="/events/1/edit" element={<EventEditPage />} />
         <Route path="/create" element={<EventCreatePage />} />
         <Route path="/events/:id" element={<EventOpenPage />} />
         <Route path="/events/:id/edit" element={<EventEditPage />} />

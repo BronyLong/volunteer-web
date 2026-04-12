@@ -1,8 +1,62 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
+dotenv.config();
+
 const router = Router();
+
+function canManageEvent(user, eventCreatorId) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return user.role === "coordinator" && String(eventCreatorId) === String(user.id);
+}
+
+function getOptionalViewer(req) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return null;
+  }
+}
+
+async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
+  if (!viewer) return false;
+
+  if (viewer.role === "admin") return true;
+
+  if (String(viewer.id) === String(creatorId)) {
+    return true;
+  }
+
+  if (viewer.role !== "volunteer") {
+    return false;
+  }
+
+  const applicationResult = await pool.query(
+    `
+    SELECT 1
+    FROM applications
+    WHERE user_id = $1
+      AND event_id = $2
+      AND status = 'active'
+    LIMIT 1
+    `,
+    [viewer.id, eventId]
+  );
+
+  return applicationResult.rows.length > 0;
+}
 
 router.get("/", async (req, res) => {
   const { category } = req.query;
@@ -54,6 +108,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
+    const viewer = getOptionalViewer(req);
+
     const result = await pool.query(
       `
       SELECT
@@ -98,7 +154,19 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    res.json(result.rows[0]);
+    const event = result.rows[0];
+
+    const canViewContacts = await canViewCoordinatorContacts(
+      viewer,
+      event.id,
+      event.creator_id
+    );
+
+    res.json({
+      ...event,
+      email: canViewContacts ? event.email : null,
+      phone: canViewContacts ? event.phone : null,
+    });
   } catch (error) {
     console.error("Get event by id error:", error);
     res.status(500).json({ message: "Ошибка при получении мероприятия" });
@@ -117,8 +185,23 @@ router.post("/", authMiddleware, async (req, res) => {
     category_id,
   } = req.body;
 
-  if (!title || !description || !start_at || !location || !participant_limit || !category_id) {
-    return res.status(400).json({ message: "Не все обязательные поля заполнены" });
+  if (req.user.role !== "coordinator" && req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Только координатор или администратор может создавать мероприятия",
+    });
+  }
+
+  if (
+    !title ||
+    !description ||
+    !start_at ||
+    !location ||
+    !participant_limit ||
+    !category_id
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Не все обязательные поля заполнены" });
   }
 
   try {
@@ -174,8 +257,23 @@ router.put("/:id", authMiddleware, async (req, res) => {
     category_id,
   } = req.body;
 
-  if (!title || !description || !start_at || !location || !participant_limit || !category_id) {
-    return res.status(400).json({ message: "Не все обязательные поля заполнены" });
+  if (req.user.role !== "coordinator" && req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Только координатор или администратор может редактировать мероприятия",
+    });
+  }
+
+  if (
+    !title ||
+    !description ||
+    !start_at ||
+    !location ||
+    !participant_limit ||
+    !category_id
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Не все обязательные поля заполнены" });
   }
 
   const client = await pool.connect();
@@ -198,9 +296,11 @@ router.put("/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    if (existing.rows[0].created_by !== req.user.id) {
+    if (!canManageEvent(req.user, existing.rows[0].created_by)) {
       await client.query("ROLLBACK");
-      return res.status(403).json({ message: "Нельзя редактировать чужое мероприятие" });
+      return res.status(403).json({
+        message: "Нет доступа к редактированию этого мероприятия",
+      });
     }
 
     const activeApplications = await client.query(
@@ -270,6 +370,12 @@ router.put("/:id", authMiddleware, async (req, res) => {
 });
 
 router.delete("/:id", authMiddleware, async (req, res) => {
+  if (req.user.role !== "coordinator" && req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Только координатор или администратор может удалять мероприятия",
+    });
+  }
+
   try {
     const existing = await pool.query(
       `
@@ -284,8 +390,10 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    if (existing.rows[0].created_by !== req.user.id) {
-      return res.status(403).json({ message: "Нельзя удалить чужое мероприятие" });
+    if (!canManageEvent(req.user, existing.rows[0].created_by)) {
+      return res.status(403).json({
+        message: "Нет доступа к удалению этого мероприятия",
+      });
     }
 
     await pool.query(

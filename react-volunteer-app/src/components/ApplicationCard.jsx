@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./ApplicationCard.css";
 
 function getStatusLabel(status) {
@@ -24,6 +25,7 @@ function getStatusClass(status) {
 
 export default function ApplicationCard({
   id,
+  userId,
   avatar,
   name,
   secondName,
@@ -38,20 +40,35 @@ export default function ApplicationCard({
   canRestore = true,
 }) {
   const isRejected = status === "rejected";
+  const fullName = `${name} ${secondName}`.trim() || "Пользователь";
+  const profileLink = userId ? `/profiles/${userId}` : null;
 
   return (
     <article className="application-card">
       <div className="application-card__user">
-        <img
-          src={avatar}
-          alt={`${name} ${secondName}`}
-          className="application-card__avatar"
-        />
+        {profileLink ? (
+          <Link
+            to={profileLink}
+            className="application-card__avatar-link"
+            aria-label={`Перейти в профиль пользователя ${fullName}`}
+            title="Открыть профиль"
+          >
+            <img
+              src={avatar}
+              alt={fullName}
+              className="application-card__avatar"
+            />
+          </Link>
+        ) : (
+          <img
+            src={avatar}
+            alt={fullName}
+            className="application-card__avatar"
+          />
+        )}
 
         <div className="application-card__info">
-          <h3 className="application-card__name">
-            {name} {secondName}
-          </h3>
+          <h3 className="application-card__name">{fullName}</h3>
 
           <span className={getStatusClass(status)}>
             {getStatusLabel(status)}

@@ -17,6 +17,12 @@ router.post("/", authMiddleware, async (req, res) => {
     return res.status(400).json({ message: "event_id обязателен" });
   }
 
+  if (req.user.role !== "volunteer") {
+    return res.status(403).json({
+      message: "Подавать заявки на мероприятия может только волонтёр",
+    });
+  }
+
   const client = await pool.connect();
 
   try {
@@ -24,7 +30,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const eventResult = await client.query(
       `
-      SELECT id, participant_limit, start_at
+      SELECT id, created_by, participant_limit, start_at
       FROM events
       WHERE id = $1
       FOR UPDATE
@@ -39,9 +45,18 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const event = eventResult.rows[0];
 
+    if (String(event.created_by) === String(req.user.id)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Нельзя подать заявку на собственное мероприятие",
+      });
+    }
+
     if (isPastEvent(event.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Нельзя подать заявку на завершённое мероприятие" });
+      return res.status(400).json({
+        message: "Нельзя подать заявку на завершённое мероприятие",
+      });
     }
 
     const activeApplicationsResult = await client.query(
@@ -156,7 +171,9 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
     const isOwner = eventCheck.rows[0].created_by === req.user.id;
 
     if (!isAdmin && !isOwner) {
-      return res.status(403).json({ message: "Нет доступа к заявкам этого мероприятия" });
+      return res.status(403).json({
+        message: "Нет доступа к заявкам этого мероприятия",
+      });
     }
 
     const result = await pool.query(
@@ -228,7 +245,9 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
 
     if (isPastEvent(application.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Нельзя изменять заявки завершённого мероприятия" });
+      return res.status(400).json({
+        message: "Нельзя изменять заявки завершённого мероприятия",
+      });
     }
 
     if (application.status !== "active") {
@@ -318,12 +337,16 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
 
     if (isPastEvent(application.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Нельзя изменять заявки завершённого мероприятия" });
+      return res.status(400).json({
+        message: "Нельзя изменять заявки завершённого мероприятия",
+      });
     }
 
     if (application.status !== "rejected") {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Восстановить можно только отклонённую заявку" });
+      return res.status(400).json({
+        message: "Восстановить можно только отклонённую заявку",
+      });
     }
 
     const activeApplicationsResult = await client.query(
@@ -340,7 +363,9 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
 
     if (availableSlots <= 0) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Нет свободных мест для восстановления заявки" });
+      return res.status(400).json({
+        message: "Нет свободных мест для восстановления заявки",
+      });
     }
 
     await client.query(
@@ -410,7 +435,9 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     if (isPastEvent(application.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Нельзя отзывать заявку завершённого мероприятия" });
+      return res.status(400).json({
+        message: "Нельзя отзывать заявку завершённого мероприятия",
+      });
     }
 
     await client.query(

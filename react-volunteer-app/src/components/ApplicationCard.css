@@ -17,12 +17,27 @@
   flex: 1;
 }
 
+.application-card__avatar-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .application-card__avatar {
   width: 72px;
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.application-card__avatar-link:hover .application-card__avatar,
+.application-card__avatar-link:focus-visible .application-card__avatar {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 4px rgba(75, 181, 67, 0.14);
 }
 
 .application-card__info {

@@ -114,7 +114,7 @@
 
 .event-card__task-item {
   display: flex;
-  align-items: flex-start; 
+  align-items: flex-start;
   gap: 10px;
   font-size: 15px;
   line-height: 1.4;
@@ -176,11 +176,11 @@
 }
 
 .event-card__category-pill--green {
-  box-shadow: 0 8px 18px rgba(47, 143, 70, 0.10);
+  box-shadow: 0 8px 18px rgba(47, 143, 70, 0.1);
 }
 
 .event-card__category-pill--orange {
-  box-shadow: 0 8px 18px rgba(220, 122, 32, 0.10);
+  box-shadow: 0 8px 18px rgba(220, 122, 32, 0.1);
 }
 
 .event-card__places-box,
@@ -284,6 +284,14 @@
   gap: 14px;
 }
 
+.coordinator-card__avatar-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .coordinator-card__avatar-wrap {
   width: 64px;
   height: 64px;
@@ -291,6 +299,13 @@
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--green);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.coordinator-card__avatar-link:hover .coordinator-card__avatar-wrap,
+.coordinator-card__avatar-link:focus-visible .coordinator-card__avatar-wrap {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 4px rgba(75, 181, 67, 0.14);
 }
 
 .coordinator-card__avatar {
@@ -319,11 +334,26 @@
   margin-top: 6px;
 }
 
+.coordinator-card__line--muted {
+  color: #8a8a8a;
+}
+
 .coordinator-card__icon {
   width: 16px;
   height: 16px;
   object-fit: contain;
   flex: 0 0 16px;
+}
+
+.coordinator-card__hint {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ececec;
+  color: #666666;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 700;
 }
 
 .event-card__join-button {
@@ -594,6 +624,11 @@
 
   .coordinator-card__line {
     font-size: 13px;
+  }
+
+  .coordinator-card__hint {
+    font-size: 12px;
+    padding: 9px 10px;
   }
 
   .applications-empty {

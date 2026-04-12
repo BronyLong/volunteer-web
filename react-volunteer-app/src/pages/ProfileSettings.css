@@ -150,6 +150,19 @@
   box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
 }
 
+.form-field__input--error {
+  border-color: #d92d20;
+  background: #fff7f7;
+  box-shadow: 0 0 0 4px rgba(217, 45, 32, 0.08);
+}
+
+.form-field__error {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #d92d20;
+}
+
 .profile-settings-card__button {
   width: 100%;
   min-height: 58px;
@@ -197,7 +210,7 @@
 }
 
 .profile-page__state--error {
-  color: var(red);
+  color: #d92d20;
 }
 
 @media (max-width: 980px) {
@@ -258,103 +271,5 @@
   .profile-summary__role {
     min-width: 156px;
     min-height: 52px;
-    font-size: 18px;
-    border-radius: 16px;
-  }
-
-  .profile-settings {
-    padding-bottom: 34px;
-  }
-
-  .profile-settings-card {
-    padding: 24px 18px 22px;
-    border-radius: 26px;
-  }
-
-  .profile-settings-card__divider {
-    margin: 14px 0 18px;
-  }
-
-  .form-field__label {
-    font-size: 17px;
-  }
-
-  .form-field__input {
-    height: 52px;
-    font-size: 16px;
-  }
-
-  .form-field__textarea {
-    min-height: 84px;
-    font-size: 16px;
-  }
-
-  .profile-settings-card__button {
-    min-height: 54px;
-    font-size: 17px;
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-cover {
-    min-height: 150px;
-  }
-
-  .profile-summary {
-    margin-top: -76px;
-  }
-
-  .profile-summary__avatar-wrap {
-    width: 148px;
-    height: 148px;
-  }
-
-  .profile-summary__name {
-    font-size: 30px;
-    line-height: 1.1;
-  }
-
-  .profile-summary__role {
-    min-width: 138px;
-    min-height: 46px;
-    padding: 0 18px;
-    font-size: 16px;
-    border-radius: 14px;
-  }
-
-  .profile-settings-card {
-    border-radius: 22px;
-    padding: 22px 14px 18px;
-  }
-
-  .profile-settings-card__title {
-    font-size: 26px;
-  }
-
-  .form-field {
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .form-field__label {
-    font-size: 16px;
-  }
-
-  .form-field__input {
-    height: 50px;
-    border-radius: 12px;
-  }
-
-  .form-field__textarea {
-    min-height: 82px;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 15px;
-  }
-
-  .profile-settings-card__button {
-    min-height: 52px;
-    border-radius: 12px;
-    font-size: 16px;
   }
 }

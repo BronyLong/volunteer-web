@@ -134,12 +134,12 @@ export default function EventOpenPage() {
       const user = getUserFromToken();
       if (!user) return;
 
-      const role = user.role;
+      const currentRole = user.role;
 
       try {
         setApplicationsLoading(true);
 
-        if (role === "volunteer") {
+        if (currentRole === "volunteer") {
           const myApps = await apiFetch("/applications/my");
           const filtered = myApps.filter(
             (application) => String(application.event_id) === String(eventId)
@@ -147,7 +147,7 @@ export default function EventOpenPage() {
           setMyApplications(filtered);
         }
 
-        if (role === "coordinator" || role === "admin") {
+        if (currentRole === "coordinator" || currentRole === "admin") {
           const eventApps = await apiFetch(`/applications/event/${eventId}`);
           setApplications(eventApps);
         }
@@ -169,7 +169,7 @@ export default function EventOpenPage() {
     role === "coordinator" &&
     currentUser &&
     eventData &&
-    currentUser.id === eventData.creator_id;
+    String(currentUser.id) === String(eventData.creator_id);
 
   const eventIsPast = useMemo(() => isEventPast(eventData?.start_at), [eventData]);
 
@@ -180,6 +180,35 @@ export default function EventOpenPage() {
 
   const categoryIcon = useMemo(() => {
     return getCategoryIcon(eventData?.category_name);
+  }, [eventData]);
+
+  const hasCoordinatorContactAccess = useMemo(() => {
+    if (!eventData) return false;
+    return Boolean(eventData.email);
+  }, [eventData]);
+
+  const coordinatorContactsHidden = useMemo(() => {
+    if (!eventData) return false;
+    return !hasCoordinatorContactAccess;
+  }, [eventData, hasCoordinatorContactAccess]);
+
+  const coordinatorContactHint = useMemo(() => {
+    if (!coordinatorContactsHidden) return "";
+
+    if (isGuest) {
+      return "Войдите в аккаунт и подайте заявку на это мероприятие, чтобы увидеть контакты координатора";
+    }
+
+    if (isVolunteer) {
+      return "Контактные данные откроются после подачи заявки на это мероприятие";
+    }
+
+    return "Контактные данные скрыты";
+  }, [coordinatorContactsHidden, isGuest, isVolunteer]);
+
+  const coordinatorProfileLink = useMemo(() => {
+    if (!eventData?.creator_id) return null;
+    return `/profiles/${eventData.creator_id}`;
   }, [eventData]);
 
   async function refreshVolunteerApplicationData() {
@@ -460,36 +489,81 @@ export default function EventOpenPage() {
                   <div className="coordinator-card__label">КООРДИНАТОР</div>
 
                   <div className="coordinator-card__body">
-                    <div className="coordinator-card__avatar-wrap">
-                      <img
-                        src={eventData.avatar_url || womanAvatar}
-                        alt="Координатор"
-                        className="coordinator-card__avatar"
-                      />
-                    </div>
+                    {coordinatorProfileLink ? (
+                      <Link
+                        to={coordinatorProfileLink}
+                        className="coordinator-card__avatar-link"
+                        aria-label={`Перейти в профиль координатора ${getCoordinatorName(
+                          eventData
+                        )}`}
+                        title="Открыть профиль координатора"
+                      >
+                        <div className="coordinator-card__avatar-wrap">
+                          <img
+                            src={eventData.avatar_url || womanAvatar}
+                            alt="Координатор"
+                            className="coordinator-card__avatar"
+                          />
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="coordinator-card__avatar-wrap">
+                        <img
+                          src={eventData.avatar_url || womanAvatar}
+                          alt="Координатор"
+                          className="coordinator-card__avatar"
+                        />
+                      </div>
+                    )}
 
                     <div className="coordinator-card__info">
                       <h3 className="coordinator-card__name">
                         {getCoordinatorName(eventData)}
                       </h3>
 
-                      <p className="coordinator-card__line">
+                      <p
+                        className={`coordinator-card__line ${
+                          coordinatorContactsHidden
+                            ? "coordinator-card__line--muted"
+                            : ""
+                        }`}
+                      >
                         <img
                           src={emailIcon}
                           alt=""
                           className="coordinator-card__icon"
                         />
-                        <span>{getDisplayValue(eventData.email)}</span>
+                        <span>
+                          {coordinatorContactsHidden
+                            ? "Контактные данные скрыты"
+                            : getDisplayValue(eventData.email)}
+                        </span>
                       </p>
 
-                      <p className="coordinator-card__line">
+                      <p
+                        className={`coordinator-card__line ${
+                          coordinatorContactsHidden
+                            ? "coordinator-card__line--muted"
+                            : ""
+                        }`}
+                      >
                         <img
                           src={phoneIcon}
                           alt=""
                           className="coordinator-card__icon"
                         />
-                        <span>{getDisplayValue(eventData.phone)}</span>
+                        <span>
+                          {coordinatorContactsHidden
+                            ? "Контактные данные скрыты"
+                            : getDisplayValue(eventData.phone)}
+                        </span>
                       </p>
+
+                      {coordinatorContactsHidden && coordinatorContactHint ? (
+                        <div className="coordinator-card__hint">
+                          {coordinatorContactHint}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -550,7 +624,8 @@ export default function EventOpenPage() {
 
                 {eventIsPast ? (
                   <div className="applications-empty">
-                    Мероприятие завершено. Просмотр заявок доступен, изменение статусов отключено.
+                    Мероприятие завершено. Просмотр заявок доступен, изменение
+                    статусов отключено.
                   </div>
                 ) : null}
 
@@ -562,6 +637,7 @@ export default function EventOpenPage() {
                       <ApplicationCard
                         key={application.id}
                         id={application.id}
+                        userId={application.user_id}
                         avatar={application.avatar_url || womanAvatar}
                         name={application.first_name || "Имя не указано"}
                         secondName={application.last_name || ""}

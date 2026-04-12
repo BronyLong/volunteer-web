@@ -19,6 +19,16 @@ const INITIAL_FORM = {
   social_max: "",
 };
 
+const INITIAL_FIELD_ERRORS = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  social_vk: "",
+  social_ok: "",
+  social_max: "",
+};
+
 function getRoleLabel(role) {
   switch (role) {
     case "admin":
@@ -46,12 +56,133 @@ function mapProfileToForm(profile) {
   };
 }
 
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function validateEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function formatRussianPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+
+  if (!digits) return "";
+
+  let normalized = digits;
+
+  if (normalized.startsWith("8")) {
+    normalized = `7${normalized.slice(1)}`;
+  }
+
+  if (!normalized.startsWith("7")) {
+    normalized = `7${normalized}`;
+  }
+
+  normalized = normalized.slice(0, 11);
+
+  const country = normalized[0] || "7";
+  const part1 = normalized.slice(1, 4);
+  const part2 = normalized.slice(4, 7);
+  const part3 = normalized.slice(7, 9);
+  const part4 = normalized.slice(9, 11);
+
+  let result = `+${country}`;
+
+  if (part1) result += ` (${part1}`;
+  if (part1.length === 3) result += `)`;
+  if (part2) result += ` ${part2}`;
+  if (part3) result += `-${part3}`;
+  if (part4) result += `-${part4}`;
+
+  return result;
+}
+
+function validateRussianPhone(value) {
+  if (!value) return true;
+  return /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(value);
+}
+
+function validateVkLink(value) {
+  if (!value) return true;
+  return /^(https?:\/\/)?(www\.)?(vk\.com|vkontakte\.ru)\/[A-Za-z0-9_.-]+\/?$/i.test(
+    value
+  );
+}
+
+function validateOkLink(value) {
+  if (!value) return true;
+  return /^(https?:\/\/)?(www\.)?(ok\.ru|odnoklassniki\.ru)\/[A-Za-z0-9_.\/-]+\/?$/i.test(
+    value
+  );
+}
+
+function validateMaxLink(value) {
+  if (!value) return true;
+  return /^(https?:\/\/)?(www\.)?max\.ru\/[A-Za-z0-9_.\/-]+\/?$/i.test(value);
+}
+
+function getFieldClassName(hasError) {
+  return hasError
+    ? "form-field__input form-field__input--error"
+    : "form-field__input";
+}
+
+function buildValidationErrors(formData) {
+  const errors = { ...INITIAL_FIELD_ERRORS };
+
+  const firstName = formData.first_name.trim();
+  const lastName = formData.last_name.trim();
+  const email = normalizeEmail(formData.email);
+  const phone = formData.phone.trim();
+  const socialVk = formData.social_vk.trim();
+  const socialOk = formData.social_ok.trim();
+  const socialMax = formData.social_max.trim();
+
+  if (!firstName) {
+    errors.first_name = "Введите имя";
+  }
+
+  if (!lastName) {
+    errors.last_name = "Введите фамилию";
+  }
+
+  if (!email) {
+    errors.email = "Введите email";
+  } else if (!validateEmail(email)) {
+    errors.email = "Введите корректный email, например example@mail.com";
+  }
+
+  if (phone && !validateRussianPhone(phone)) {
+    errors.phone = "Введите телефон в формате +7 (900) 000-00-00";
+  }
+
+  if (socialVk && !validateVkLink(socialVk)) {
+    errors.social_vk = "Укажите корректную ссылку VK";
+  }
+
+  if (socialOk && !validateOkLink(socialOk)) {
+    errors.social_ok = "Укажите корректную ссылку Одноклассников";
+  }
+
+  if (socialMax && !validateMaxLink(socialMax)) {
+    errors.social_max = "Укажите корректную ссылку MAX";
+  }
+
+  return errors;
+}
+
+function hasValidationErrors(errors) {
+  return Object.values(errors).some(Boolean);
+}
+
 export default function ProfileSettings() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [fieldErrors, setFieldErrors] = useState(INITIAL_FIELD_ERRORS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -81,6 +212,7 @@ export default function ProfileSettings() {
         const data = await getMyProfile();
         setProfile(data);
         setFormData(mapProfileToForm(data));
+        setFieldErrors(INITIAL_FIELD_ERRORS);
       } catch (err) {
         setError(err.message || "Не удалось загрузить настройки профиля");
       } finally {
@@ -102,9 +234,20 @@ export default function ProfileSettings() {
   function handleChange(event) {
     const { name, value } = event.target;
 
+    let nextValue = value;
+
+    if (name === "phone") {
+      nextValue = formatRussianPhone(value);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: nextValue,
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: "",
     }));
 
     if (error) setError("");
@@ -116,8 +259,24 @@ export default function ProfileSettings() {
 
     if (saving) return;
 
-    if (!formData.first_name.trim() || !formData.last_name.trim() || !formData.email.trim()) {
-      setError("Заполните имя, фамилию и email");
+    const preparedFormData = {
+      ...formData,
+      first_name: formData.first_name.trim(),
+      last_name: formData.last_name.trim(),
+      email: normalizeEmail(formData.email),
+      phone: formData.phone.trim(),
+      city: formData.city.trim(),
+      bio: formData.bio.trim(),
+      social_vk: formData.social_vk.trim(),
+      social_ok: formData.social_ok.trim(),
+      social_max: formData.social_max.trim(),
+    };
+
+    const validationErrors = buildValidationErrors(preparedFormData);
+    setFieldErrors(validationErrors);
+
+    if (hasValidationErrors(validationErrors)) {
+      setError("Исправьте ошибки в форме");
       return;
     }
 
@@ -127,16 +286,16 @@ export default function ProfileSettings() {
       setSuccessMessage("");
 
       const payload = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        city: formData.city.trim(),
+        first_name: preparedFormData.first_name,
+        last_name: preparedFormData.last_name,
+        email: preparedFormData.email,
+        phone: preparedFormData.phone,
+        city: preparedFormData.city,
         avatar_url: profile?.avatar_url || "",
-        bio: formData.bio.trim(),
-        social_vk: formData.social_vk.trim(),
-        social_ok: formData.social_ok.trim(),
-        social_max: formData.social_max.trim(),
+        bio: preparedFormData.bio,
+        social_vk: preparedFormData.social_vk,
+        social_ok: preparedFormData.social_ok,
+        social_max: preparedFormData.social_max,
       };
 
       await updateMyProfile(payload);
@@ -145,6 +304,7 @@ export default function ProfileSettings() {
 
       setProfile(freshProfile);
       setFormData(mapProfileToForm(freshProfile));
+      setFieldErrors(INITIAL_FIELD_ERRORS);
       setSuccessMessage("Изменения сохранены");
     } catch (err) {
       setError(err.message || "Не удалось сохранить изменения");
@@ -201,63 +361,85 @@ export default function ProfileSettings() {
               <div className="profile-settings-card__divider"></div>
 
               <div className="form-field">
-                <label htmlFor="firstName" className="form-field__label">Имя</label>
+                <label htmlFor="firstName" className="form-field__label">
+                  Имя
+                </label>
                 <input
                   id="firstName"
                   name="first_name"
                   type="text"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.first_name))}
                   placeholder="Введите имя"
                   value={formData.first_name}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.first_name ? (
+                  <div className="form-field__error">{fieldErrors.first_name}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="lastName" className="form-field__label">Фамилия</label>
+                <label htmlFor="lastName" className="form-field__label">
+                  Фамилия
+                </label>
                 <input
                   id="lastName"
                   name="last_name"
                   type="text"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.last_name))}
                   placeholder="Введите фамилию"
                   value={formData.last_name}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.last_name ? (
+                  <div className="form-field__error">{fieldErrors.last_name}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="email" className="form-field__label">Email</label>
+                <label htmlFor="email" className="form-field__label">
+                  Email
+                </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.email))}
                   placeholder="example@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.email ? (
+                  <div className="form-field__error">{fieldErrors.email}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="phone" className="form-field__label">Телефон</label>
+                <label htmlFor="phone" className="form-field__label">
+                  Телефон
+                </label>
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.phone))}
                   placeholder="+7 (900) 000-00-00"
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.phone ? (
+                  <div className="form-field__error">{fieldErrors.phone}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="city" className="form-field__label">Город</label>
+                <label htmlFor="city" className="form-field__label">
+                  Город
+                </label>
                 <input
                   id="city"
                   name="city"
@@ -280,11 +462,15 @@ export default function ProfileSettings() {
             </div>
 
             <div className="profile-settings-card__column profile-settings-card__column--right">
-              <h2 className="profile-settings-card__title profile-settings-card__title--center">Bio</h2>
+              <h2 className="profile-settings-card__title profile-settings-card__title--center">
+                Bio
+              </h2>
               <div className="profile-settings-card__divider"></div>
 
               <div className="form-field">
-                <label htmlFor="bio" className="form-field__label visually-hidden">Bio</label>
+                <label htmlFor="bio" className="form-field__label visually-hidden">
+                  Bio
+                </label>
                 <textarea
                   id="bio"
                   name="bio"
@@ -297,45 +483,60 @@ export default function ProfileSettings() {
               </div>
 
               <div className="form-field">
-                <label htmlFor="vk" className="form-field__label">Вконтакте</label>
+                <label htmlFor="vk" className="form-field__label">
+                  Вконтакте
+                </label>
                 <input
                   id="vk"
                   name="social_vk"
                   type="text"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.social_vk))}
                   placeholder="vk.com/example"
                   value={formData.social_vk}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.social_vk ? (
+                  <div className="form-field__error">{fieldErrors.social_vk}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="ok" className="form-field__label">Одноклассники</label>
+                <label htmlFor="ok" className="form-field__label">
+                  Одноклассники
+                </label>
                 <input
                   id="ok"
                   name="social_ok"
                   type="text"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.social_ok))}
                   placeholder="ok.ru/example"
                   value={formData.social_ok}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.social_ok ? (
+                  <div className="form-field__error">{fieldErrors.social_ok}</div>
+                ) : null}
               </div>
 
               <div className="form-field">
-                <label htmlFor="max" className="form-field__label">MAX</label>
+                <label htmlFor="max" className="form-field__label">
+                  MAX
+                </label>
                 <input
                   id="max"
                   name="social_max"
                   type="text"
-                  className="form-field__input"
+                  className={getFieldClassName(Boolean(fieldErrors.social_max))}
                   placeholder="max.ru/example"
                   value={formData.social_max}
                   onChange={handleChange}
                   disabled={saving}
                 />
+                {fieldErrors.social_max ? (
+                  <div className="form-field__error">{fieldErrors.social_max}</div>
+                ) : null}
               </div>
 
               <button type="submit" className="profile-settings-card__button" disabled={saving}>
