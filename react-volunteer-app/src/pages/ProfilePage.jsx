@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getProfileById, updateMyProfile } from "../api";
+import ProfileEventCard from "../components/ProfileEventCard";
 
 import locationIcon from "../assets/SVG/location_footer.svg";
 import emailIcon from "../assets/SVG/email_footer.svg";
@@ -40,6 +41,23 @@ function getRoleLabel(role) {
     default:
       return "Пользователь";
   }
+}
+
+function getEventsTitle(role, isOwner) {
+  if (role === "coordinator" || role === "admin") {
+    return isOwner ? "Мои мероприятия" : "Мероприятия координатора";
+  }
+
+  return isOwner ? "Мероприятия, в которых я участвую" : "Мероприятия пользователя";
+}
+
+function formatEventDate(value) {
+  if (!value) return "Дата не указана";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Дата не указана";
+
+  return date.toLocaleDateString("ru-RU");
 }
 
 function resizeImage(file, maxWidth = 600, maxHeight = 600, quality = 0.8) {
@@ -147,6 +165,20 @@ export default function ProfilePage() {
     return items.filter((item) => item.href);
   }, [profile]);
 
+  const profileEvents = useMemo(() => {
+    if (!profile) return [];
+
+    if (profile.role === "coordinator" || profile.role === "admin") {
+      return Array.isArray(profile.coordinator_events)
+        ? profile.coordinator_events
+        : [];
+    }
+
+    return Array.isArray(profile.volunteer_events)
+      ? profile.volunteer_events
+      : [];
+  }, [profile]);
+
   function handleAvatarClick() {
     if (!profile?.is_owner || avatarLoading) return;
     fileInputRef.current?.click();
@@ -171,6 +203,7 @@ export default function ProfilePage() {
       await updateMyProfile({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
+        email: profile.email || "",
         phone: profile.phone || "",
         city: profile.city || "",
         avatar_url: dataUrl,
@@ -382,6 +415,41 @@ export default function ProfilePage() {
               ) : null}
             </div>
           </div>
+
+          <section className="profile-events">
+            <div className="profile-events__header">
+              <h2 className="profile-events__title">
+                {getEventsTitle(profile.role, profile.is_owner)}
+              </h2>
+
+              {profile.is_owner && profile.role === "coordinator" ? (
+                <Link to="/create" className="profile-events__create-button">
+                  Добавить мероприятие
+                </Link>
+              ) : null}
+            </div>
+
+            <div className="profile-events__divider"></div>
+
+            {profileEvents.length > 0 ? (
+              <div className="profile-events__list">
+                {profileEvents.map((event) => (
+                  <ProfileEventCard
+                    key={event.id}
+                    title={event.title}
+                    location={event.location || "Не указано"}
+                    date={formatEventDate(event.start_at)}
+                    link={`/events/${event.id}`}
+                    buttonText="К мероприятию"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="profile-events__empty">
+                Здесь пока нет мероприятий
+              </div>
+            )}
+          </section>
         </div>
       </section>
     </main>

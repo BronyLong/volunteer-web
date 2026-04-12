@@ -26,9 +26,6 @@
   background: #efeee4;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
   border: 4px solid var(--green);
-}
-
-.profile-summary__avatar-wrap {
   position: relative;
 }
 
@@ -272,10 +269,38 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
 }
 
+.profile-events__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
 .profile-events__title {
-  text-align: center;
+  margin: 0;
   font-size: clamp(28px, 3vw, 46px);
   font-weight: 900;
+}
+
+.profile-events__create-button {
+  min-width: 220px;
+  min-height: 54px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: var(--green);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 900;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-events__create-button:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
 }
 
 .profile-events__divider {
@@ -289,6 +314,21 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.profile-events__empty {
+  min-height: 120px;
+  border-radius: 18px;
+  background: #fbfbfb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #666666;
 }
 
 @media (max-width: 980px) {
@@ -313,6 +353,21 @@
 
   .profile-card__column--right {
     padding-left: 0;
+  }
+
+  .profile-events {
+    padding: 30px 28px;
+    border-radius: 32px;
+  }
+
+  .profile-events__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-events__create-button {
+    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -387,5 +442,25 @@
   .profile-card__button {
     width: 100%;
     min-width: 0;
+  }
+
+  .profile-events {
+    margin-top: 26px;
+    padding: 24px 20px;
+    border-radius: 26px;
+  }
+
+  .profile-events__title {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .profile-events__divider {
+    margin: 14px 0 20px;
+  }
+
+  .profile-events__empty {
+    min-height: 96px;
+    font-size: 16px;
   }
 }

@@ -4,6 +4,12 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
+function isPastEvent(startAt) {
+  const eventDate = new Date(startAt);
+  if (Number.isNaN(eventDate.getTime())) return false;
+  return eventDate.getTime() < Date.now();
+}
+
 router.post("/", authMiddleware, async (req, res) => {
   const { event_id } = req.body;
 
@@ -18,7 +24,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const eventResult = await client.query(
       `
-      SELECT id, available_slots
+      SELECT id, participant_limit, start_at
       FROM events
       WHERE id = $1
       FOR UPDATE
@@ -33,7 +39,24 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const event = eventResult.rows[0];
 
-    if (event.available_slots <= 0) {
+    if (isPastEvent(event.start_at)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Нельзя подать заявку на завершённое мероприятие" });
+    }
+
+    const activeApplicationsResult = await client.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM applications
+      WHERE event_id = $1 AND status = 'active'
+      `,
+      [event_id]
+    );
+
+    const activeCount = activeApplicationsResult.rows[0]?.count || 0;
+    const availableSlots = Number(event.participant_limit) - activeCount;
+
+    if (availableSlots <= 0) {
       await client.query("ROLLBACK");
       return res.status(400).json({ message: "Свободных мест нет" });
     }
@@ -42,7 +65,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `
       SELECT id
       FROM applications
-      WHERE user_id = $1 AND event_id = $2
+      WHERE user_id = $1 AND event_id = $2 AND status = 'active'
       `,
       [req.user.id, event_id]
     );
@@ -64,10 +87,10 @@ router.post("/", authMiddleware, async (req, res) => {
     await client.query(
       `
       UPDATE events
-      SET available_slots = available_slots - 1
+      SET available_slots = $2
       WHERE id = $1
       `,
-      [event_id]
+      [event_id, availableSlots - 1]
     );
 
     await client.query("COMMIT");
@@ -101,6 +124,7 @@ router.get("/my", authMiddleware, async (req, res) => {
       FROM applications a
       JOIN events e ON e.id = a.event_id
       WHERE a.user_id = $1
+        AND a.status = 'active'
       ORDER BY a.created_at DESC
       `,
       [req.user.id]
@@ -128,11 +152,10 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    if (
-      req.user.role !== "admin" &&
-      req.user.role !== "coordinator" &&
-      eventCheck.rows[0].created_by !== req.user.id
-    ) {
+    const isAdmin = req.user.role === "admin";
+    const isOwner = eventCheck.rows[0].created_by === req.user.id;
+
+    if (!isAdmin && !isOwner) {
       return res.status(403).json({ message: "Нет доступа к заявкам этого мероприятия" });
     }
 
@@ -153,9 +176,7 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       JOIN users u ON u.id = a.user_id
       LEFT JOIN profiles p ON p.user_id = u.id
       WHERE a.event_id = $1
-      ORDER BY
-        CASE WHEN a.status = 'active' THEN 0 ELSE 1 END,
-        a.created_at DESC
+      ORDER BY a.created_at DESC
       `,
       [req.params.eventId]
     );
@@ -181,8 +202,8 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
         a.event_id,
         a.status,
         e.created_by,
-        e.available_slots,
-        e.participant_limit
+        e.participant_limit,
+        e.start_at
       FROM applications a
       JOIN events e ON e.id = a.event_id
       WHERE a.id = $1
@@ -197,19 +218,22 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
     }
 
     const application = appResult.rows[0];
+    const isAdmin = req.user.role === "admin";
+    const isOwner = application.created_by === req.user.id;
 
-    if (
-      req.user.role !== "admin" &&
-      req.user.role !== "coordinator" &&
-      application.created_by !== req.user.id
-    ) {
+    if (!isAdmin && !isOwner) {
       await client.query("ROLLBACK");
       return res.status(403).json({ message: "Нет доступа к изменению этой заявки" });
     }
 
-    if (application.status === "rejected") {
+    if (isPastEvent(application.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Заявка уже отклонена" });
+      return res.status(400).json({ message: "Нельзя изменять заявки завершённого мероприятия" });
+    }
+
+    if (application.status !== "active") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Отклонить можно только активную заявку" });
     }
 
     await client.query(
@@ -221,13 +245,25 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
       [req.params.id]
     );
 
+    const activeApplicationsResult = await client.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM applications
+      WHERE event_id = $1 AND status = 'active'
+      `,
+      [application.event_id]
+    );
+
+    const activeCount = activeApplicationsResult.rows[0]?.count || 0;
+    const newAvailableSlots = Number(application.participant_limit) - activeCount;
+
     await client.query(
       `
       UPDATE events
-      SET available_slots = available_slots + 1
+      SET available_slots = $2
       WHERE id = $1
       `,
-      [application.event_id]
+      [application.event_id, newAvailableSlots]
     );
 
     await client.query("COMMIT");
@@ -256,8 +292,8 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
         a.event_id,
         a.status,
         e.created_by,
-        e.available_slots,
-        e.participant_limit
+        e.participant_limit,
+        e.start_at
       FROM applications a
       JOIN events e ON e.id = a.event_id
       WHERE a.id = $1
@@ -272,14 +308,17 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
     }
 
     const application = appResult.rows[0];
+    const isAdmin = req.user.role === "admin";
+    const isOwner = application.created_by === req.user.id;
 
-    if (
-      req.user.role !== "admin" &&
-      req.user.role !== "coordinator" &&
-      application.created_by !== req.user.id
-    ) {
+    if (!isAdmin && !isOwner) {
       await client.query("ROLLBACK");
       return res.status(403).json({ message: "Нет доступа к изменению этой заявки" });
+    }
+
+    if (isPastEvent(application.start_at)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Нельзя изменять заявки завершённого мероприятия" });
     }
 
     if (application.status !== "rejected") {
@@ -287,7 +326,19 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Восстановить можно только отклонённую заявку" });
     }
 
-    if (Number(application.available_slots) <= 0) {
+    const activeApplicationsResult = await client.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM applications
+      WHERE event_id = $1 AND status = 'active'
+      `,
+      [application.event_id]
+    );
+
+    const activeCount = activeApplicationsResult.rows[0]?.count || 0;
+    const availableSlots = Number(application.participant_limit) - activeCount;
+
+    if (availableSlots <= 0) {
       await client.query("ROLLBACK");
       return res.status(400).json({ message: "Нет свободных мест для восстановления заявки" });
     }
@@ -304,10 +355,10 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
     await client.query(
       `
       UPDATE events
-      SET available_slots = available_slots - 1
+      SET available_slots = $2
       WHERE id = $1
       `,
-      [application.event_id]
+      [application.event_id, availableSlots - 1]
     );
 
     await client.query("COMMIT");
@@ -330,9 +381,16 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     const appResult = await client.query(
       `
-      SELECT id, user_id, event_id, status
-      FROM applications
-      WHERE id = $1
+      SELECT
+        a.id,
+        a.user_id,
+        a.event_id,
+        a.status,
+        e.participant_limit,
+        e.start_at
+      FROM applications a
+      JOIN events e ON e.id = a.event_id
+      WHERE a.id = $1
       FOR UPDATE
       `,
       [req.params.id]
@@ -350,9 +408,9 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Нельзя отозвать чужую заявку" });
     }
 
-    if (application.status === "rejected") {
+    if (isPastEvent(application.start_at)) {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Отклонённую заявку нельзя отозвать" });
+      return res.status(400).json({ message: "Нельзя отзывать заявку завершённого мероприятия" });
     }
 
     await client.query(
@@ -363,13 +421,25 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       [req.params.id]
     );
 
+    const activeApplicationsResult = await client.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM applications
+      WHERE event_id = $1 AND status = 'active'
+      `,
+      [application.event_id]
+    );
+
+    const activeCount = activeApplicationsResult.rows[0]?.count || 0;
+    const newAvailableSlots = Number(application.participant_limit) - activeCount;
+
     await client.query(
       `
       UPDATE events
-      SET available_slots = available_slots + 1
+      SET available_slots = $2
       WHERE id = $1
       `,
-      [application.event_id]
+      [application.event_id, newAvailableSlots]
     );
 
     await client.query("COMMIT");

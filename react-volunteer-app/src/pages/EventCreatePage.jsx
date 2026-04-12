@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./EventCreatePage.css";
 
 import leafCategoryIcon from "../assets/SVG/leaf_category.svg";
@@ -7,56 +8,139 @@ import animalsCategoryIcon from "../assets/SVG/animals_category.svg";
 import elderlyCategoryIcon from "../assets/SVG/elderly_category.svg";
 import uploadArrowIcon from "../assets/SVG/arrow.svg";
 
-const CATEGORY_OPTIONS = [
-  { value: "eco", label: "Экология", icon: leafCategoryIcon },
-  { value: "children", label: "Детям", icon: childrenCategoryIcon },
-  { value: "animals", label: "Животным", icon: animalsCategoryIcon },
-  { value: "elderly", label: "Пожилым", icon: elderlyCategoryIcon },
-];
+import { createEvent, getCategories, getUserFromToken } from "../api";
 
 const INITIAL_FORM = {
-  title: '',
-  description:
-    '',
-  category: "eco",
+  title: "",
+  description: "",
+  category: "",
   places: "20",
-  location:
-    '',
-  date: "1980-01-01",
-  time: "11:00",
+  location: "",
+  date: "",
+  time: "",
 };
 
-const INITIAL_TASKS = [
-];
+function getCategoryIconByName(name) {
+  const normalized = String(name || "").toLowerCase();
+
+  if (normalized.includes("эколог")) return leafCategoryIcon;
+  if (normalized.includes("дет")) return childrenCategoryIcon;
+  if (normalized.includes("живот")) return animalsCategoryIcon;
+  if (normalized.includes("пожил")) return elderlyCategoryIcon;
+
+  return leafCategoryIcon;
+}
+
+function resizeImage(file, maxWidth = 1200, maxHeight = 900, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const img = new Image();
+
+      img.onload = () => {
+        let { width, height } = img;
+
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Не удалось обработать изображение"));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+
+      img.onerror = () => reject(new Error("Не удалось загрузить изображение"));
+      img.src = reader.result;
+    };
+
+    reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function EventCreatePage() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState(INITIAL_FORM);
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [preview, setPreview] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const descriptionRef = useRef(null);
   const locationRef = useRef(null);
 
-  const selectedCategory = useMemo(
-    () =>
-      CATEGORY_OPTIONS.find((option) => option.value === formData.category) ||
-      CATEGORY_OPTIONS[0],
-    [formData.category]
-  );
+  const selectedCategory = useMemo(() => {
+    const found = categories.find((option) => String(option.id) === String(formData.category));
+    return (
+      found || {
+        id: "",
+        name: "Экология",
+        icon: leafCategoryIcon,
+      }
+    );
+  }, [categories, formData.category]);
+
+  useEffect(() => {
+    const currentUser = getUserFromToken();
+
+    if (!currentUser) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (currentUser.role !== "coordinator" && currentUser.role !== "admin") {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    async function loadCategories() {
+      try {
+        setLoadingCategories(true);
+        const data = await getCategories();
+        const prepared = data.map((category) => ({
+          ...category,
+          icon: getCategoryIconByName(category.name),
+        }));
+
+        setCategories(prepared);
+
+        if (prepared.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            category: String(prepared[0].id),
+          }));
+        }
+      } catch (err) {
+        setError(err.message || "Не удалось загрузить категории");
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+
+    loadCategories();
+  }, [navigate]);
 
   useEffect(() => {
     autoResize(descriptionRef.current);
     autoResize(locationRef.current);
   }, [formData.description, formData.location]);
-
-  useEffect(() => {
-    return () => {
-      if (preview) {
-        URL.revokeObjectURL(preview);
-      }
-    };
-  }, [preview]);
 
   function autoResize(textarea) {
     if (!textarea) return;
@@ -87,6 +171,8 @@ export default function EventCreatePage() {
       ...prev,
       [name]: value,
     }));
+
+    if (error) setError("");
   }
 
   function handlePlacesBlur() {
@@ -123,23 +209,76 @@ export default function EventCreatePage() {
     }
   }
 
-  function handleImageChange(event) {
+  async function handleImageChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
+    if (!file.type.startsWith("image/")) {
+      setError("Выберите изображение");
+      event.target.value = "";
+      return;
+    }
 
-    setPreview((prev) => {
-      if (prev) {
-        URL.revokeObjectURL(prev);
-      }
-      return imageUrl;
-    });
+    try {
+      const dataUrl = await resizeImage(file);
+      setPreview(dataUrl);
+      setImageDataUrl(dataUrl);
+    } catch (err) {
+      setError(err.message || "Не удалось загрузить изображение");
+    } finally {
+      event.target.value = "";
+    }
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    console.log("Создание мероприятия", { ...formData, tasks, preview });
+
+    if (saving) return;
+
+    if (
+      !formData.title.trim() ||
+      !formData.description.trim() ||
+      !formData.category ||
+      !formData.places ||
+      !formData.location.trim() ||
+      !formData.date ||
+      !formData.time
+    ) {
+      setError("Заполните все обязательные поля");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+
+      const payload = {
+        title: formData.title.trim(),
+        image_url: imageDataUrl || null,
+        description: formData.description.trim(),
+        start_at: `${formData.date}T${formData.time}:00`,
+        location: formData.location.trim(),
+        tasks: tasks
+          .map((task) => task.trim())
+          .filter(Boolean),
+        participant_limit: Number(formData.places),
+        category_id: formData.category,
+      };
+
+      const result = await createEvent(payload);
+      const createdId = result?.event?.id;
+
+      if (createdId) {
+        navigate(`/events/${createdId}`);
+        return;
+      }
+
+      navigate("/events");
+    } catch (err) {
+      setError(err.message || "Не удалось создать мероприятие");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -150,6 +289,10 @@ export default function EventCreatePage() {
             <form className="event-edit-card" onSubmit={handleSubmit}>
               <h1 className="event-edit-card__title">Новое мероприятие</h1>
               <div className="event-edit-card__divider"></div>
+
+              {error ? (
+                <p className="event-edit-form__status">{error}</p>
+              ) : null}
 
               <div className="event-edit-form">
                 <div className="event-edit-form__full">
@@ -165,6 +308,7 @@ export default function EventCreatePage() {
                       className="form-field__input"
                       value={formData.title}
                       onChange={handleChange}
+                      disabled={saving}
                     />
                   </div>
                 </div>
@@ -186,6 +330,7 @@ export default function EventCreatePage() {
                       rows="1"
                       value={formData.description}
                       onChange={handleChange}
+                      disabled={saving}
                     />
                   </div>
                 </div>
@@ -197,7 +342,7 @@ export default function EventCreatePage() {
                     <div className="tasks-box">
                       <div className="tasks-list">
                         {tasks.map((task, index) => (
-                          <div className="task-item" key={`${index}-${task}`}>
+                          <div className="task-item" key={index}>
                             <input
                               type="text"
                               className="task-input"
@@ -205,6 +350,7 @@ export default function EventCreatePage() {
                               onChange={(event) =>
                                 handleTaskChange(index, event.target.value)
                               }
+                              disabled={saving}
                             />
 
                             <button
@@ -212,6 +358,7 @@ export default function EventCreatePage() {
                               className="task-remove"
                               onClick={() => handleRemoveTask(index)}
                               aria-label="Удалить задачу"
+                              disabled={saving}
                             >
                               −
                             </button>
@@ -227,6 +374,7 @@ export default function EventCreatePage() {
                           value={newTask}
                           onChange={(event) => setNewTask(event.target.value)}
                           onKeyDown={handleTaskKeyDown}
+                          disabled={saving}
                         />
 
                         <button
@@ -234,6 +382,7 @@ export default function EventCreatePage() {
                           className="task-add-btn"
                           onClick={handleAddTask}
                           aria-label="Добавить задачу"
+                          disabled={saving}
                         >
                           +
                         </button>
@@ -250,7 +399,9 @@ export default function EventCreatePage() {
 
                     <div
                       className="select-wrap"
-                      style={{ "--category-icon": `url(${selectedCategory.icon})` }}
+                      style={{
+                        "--category-icon": `url(${selectedCategory.icon})`,
+                      }}
                     >
                       <select
                         id="eventCategory"
@@ -258,10 +409,11 @@ export default function EventCreatePage() {
                         className="form-field__select"
                         value={formData.category}
                         onChange={handleChange}
+                        disabled={saving || loadingCategories}
                       >
-                        {CATEGORY_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
+                        {categories.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.name}
                           </option>
                         ))}
                       </select>
@@ -283,6 +435,7 @@ export default function EventCreatePage() {
                       value={formData.places}
                       onChange={handleChange}
                       onBlur={handlePlacesBlur}
+                      disabled={saving}
                     />
                   </div>
 
@@ -299,6 +452,7 @@ export default function EventCreatePage() {
                       rows="1"
                       value={formData.location}
                       onChange={handleChange}
+                      disabled={saving}
                     />
                   </div>
 
@@ -314,6 +468,7 @@ export default function EventCreatePage() {
                         className="form-field__input"
                         value={formData.date}
                         onChange={handleChange}
+                        disabled={saving}
                       />
                     </div>
 
@@ -328,6 +483,7 @@ export default function EventCreatePage() {
                         className="form-field__input"
                         value={formData.time}
                         onChange={handleChange}
+                        disabled={saving}
                       />
                     </div>
                   </div>
@@ -347,6 +503,7 @@ export default function EventCreatePage() {
                         accept="image/*"
                         className="upload-box__input"
                         onChange={handleImageChange}
+                        disabled={saving}
                       />
 
                       {preview ? (
@@ -369,8 +526,8 @@ export default function EventCreatePage() {
                 </div>
 
                 <div className="event-edit-form__actions">
-                  <button type="submit" className="event-edit-form__submit">
-                    Создать мероприятие
+                  <button type="submit" className="event-edit-form__submit" disabled={saving}>
+                    {saving ? "Создаем..." : "Создать мероприятие"}
                   </button>
                 </div>
               </div>

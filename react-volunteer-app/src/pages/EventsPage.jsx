@@ -50,6 +50,13 @@ function parseEventDate(dateString) {
   return Number.isNaN(date.getTime()) ? Number.POSITIVE_INFINITY : date.getTime();
 }
 
+function isUpcomingEvent(dateString) {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return false;
+
+  return date.getTime() >= Date.now();
+}
+
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,9 +65,12 @@ export default function EventsPage() {
   useEffect(() => {
     apiFetch("/events")
       .then((data) => {
-        const sorted = [...data].sort(
+        const upcomingEvents = data.filter((event) => isUpcomingEvent(event.start_at));
+
+        const sorted = [...upcomingEvents].sort(
           (a, b) => parseEventDate(a.start_at) - parseEventDate(b.start_at)
         );
+
         setEvents(sorted);
       })
       .catch((error) => console.error(error.message));

@@ -1,75 +1,96 @@
 import "./ApplicationCard.css";
 
-import womanAvatar from "../assets/images/avatar_woman.png";
-import emailIcon from "../assets/SVG/email_footer.svg";
-import phoneIcon from "../assets/SVG/phone_footer.svg";
+function getStatusLabel(status) {
+  switch (status) {
+    case "rejected":
+      return "Отклонена";
+    case "active":
+      return "Подана";
+    default:
+      return "Неизвестно";
+  }
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case "rejected":
+      return "application-card__status application-card__status--rejected";
+    case "active":
+      return "application-card__status application-card__status--active";
+    default:
+      return "application-card__status";
+  }
+}
 
 export default function ApplicationCard({
   id,
-  avatar = womanAvatar,
-  email = "example@mail.ru",
-  phone = "8 (800) 555-35-35",
-  name = "Ксения",
-  secondName = "Михайловна",
+  avatar,
+  name,
+  secondName,
+  email,
+  phone,
   status = "active",
   onReject,
   onRestore,
   isRejecting = false,
   isRestoring = false,
+  canReject = true,
+  canRestore = true,
 }) {
   const isRejected = status === "rejected";
 
   return (
-    <article className="application-item">
-      <div className="application-item__person">
-        <div className="application-item__avatar-wrap">
-          <img src={avatar} alt="Заявитель" className="application-item__avatar" />
-        </div>
+    <article className="application-card">
+      <div className="application-card__user">
+        <img
+          src={avatar}
+          alt={`${name} ${secondName}`}
+          className="application-card__avatar"
+        />
 
-        <div className="application-item__info">
-          <h3 className="application-item__name">
+        <div className="application-card__info">
+          <h3 className="application-card__name">
             {name} {secondName}
           </h3>
 
-          <p className="application-item__line">
-            <img src={emailIcon} alt="" className="application-item__icon" />
-            <span>{email}</span>
-          </p>
+          <span className={getStatusClass(status)}>
+            {getStatusLabel(status)}
+          </span>
 
-          <p className="application-item__line">
-            <img src={phoneIcon} alt="" className="application-item__icon" />
-            <span>{phone}</span>
-          </p>
-
-          <p
-            className={`application-item__status ${
-              isRejected
-                ? "application-item__status--rejected"
-                : "application-item__status--active"
-            }`}
-          >
-            {isRejected ? "Заявка отклонена" : "Заявка активна"}
-          </p>
+          <p className="application-card__line">{email}</p>
+          <p className="application-card__line">{phone}</p>
         </div>
       </div>
 
       {isRejected ? (
         <button
           type="button"
-          className="application-item__restore"
+          className="application-card__restore"
           onClick={() => onRestore?.(id)}
-          disabled={isRestoring}
+          disabled={isRestoring || !canRestore}
+          aria-label="Восстановить заявку"
+          title={
+            !canRestore
+              ? "Нельзя изменять заявки завершённого мероприятия"
+              : "Восстановить заявку"
+          }
         >
-          {isRestoring ? "Восстанавливаем..." : "Восстановить заявку"}
+          {isRestoring ? "Восстановление..." : "Восстановить заявку"}
         </button>
       ) : (
         <button
           type="button"
-          className="application-item__reject"
+          className="application-card__reject"
           onClick={() => onReject?.(id)}
-          disabled={isRejecting}
+          disabled={isRejecting || !canReject}
+          aria-label="Отклонить заявку"
+          title={
+            !canReject
+              ? "Нельзя изменять заявки завершённого мероприятия"
+              : "Отклонить заявку"
+          }
         >
-          {isRejecting ? "Отклоняем..." : "Отклонить заявку"}
+          {isRejecting ? "Отклонение..." : "Отклонить заявку"}
         </button>
       )}
     </article>

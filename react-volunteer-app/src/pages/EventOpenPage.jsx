@@ -18,7 +18,7 @@ import dateIcon from "../assets/SVG/calendar_card.svg";
 import timeIcon from "../assets/SVG/clock.svg";
 
 import eventImage from "../assets/images/animals_help.png";
-import womanAvatar from "../assets/images/avatar_woman.png";
+import womanAvatar from "../assets/images/avatar_man.png";
 import {
   apiFetch,
   deleteApplication,
@@ -70,20 +70,6 @@ function getCategoryIcon(categoryName) {
   return leafCategoryIcon;
 }
 
-function getCategoryClass(categoryName) {
-  const normalized = String(categoryName || "").toLowerCase();
-
-  if (normalized.includes("дет") || normalized.includes("пожил")) {
-    return "event-card__category-pill--orange";
-  }
-
-  if (normalized.includes("эколог") || normalized.includes("живот")) {
-    return "event-card__category-pill--green";
-  }
-
-  return "event-card__category-pill--green";
-}
-
 function getCoordinatorName(eventData) {
   const firstName = eventData?.first_name?.trim() || "";
   const lastName = eventData?.last_name?.trim() || "";
@@ -94,6 +80,15 @@ function getCoordinatorName(eventData) {
 
 function getDisplayValue(value) {
   return value && String(value).trim() ? value : "Не указан";
+}
+
+function isEventPast(startAt) {
+  if (!startAt) return false;
+
+  const eventDate = new Date(startAt);
+  if (Number.isNaN(eventDate.getTime())) return false;
+
+  return eventDate.getTime() < Date.now();
 }
 
 export default function EventOpenPage() {
@@ -169,14 +164,22 @@ export default function EventOpenPage() {
   const role = currentUser?.role || "guest";
   const isGuest = !currentUser;
   const isVolunteer = role === "volunteer";
-  const canManage = role === "coordinator" || role === "admin";
+  const isAdmin = role === "admin";
+  const isOwnerCoordinator =
+    role === "coordinator" &&
+    currentUser &&
+    eventData &&
+    currentUser.id === eventData.creator_id;
+
+  const eventIsPast = useMemo(() => isEventPast(eventData?.start_at), [eventData]);
+
+  const canEditEvent = Boolean(eventData && (isAdmin || isOwnerCoordinator));
+  const canViewApplications = Boolean(eventData && (isAdmin || isOwnerCoordinator));
+  const canChangeApplications = Boolean(!eventIsPast && canViewApplications);
+  const canVolunteerInteract = Boolean(isVolunteer && !eventIsPast);
 
   const categoryIcon = useMemo(() => {
     return getCategoryIcon(eventData?.category_name);
-  }, [eventData]);
-
-  const categoryClassName = useMemo(() => {
-    return getCategoryClass(eventData?.category_name);
   }, [eventData]);
 
   async function refreshVolunteerApplicationData() {
@@ -199,7 +202,7 @@ export default function EventOpenPage() {
   }
 
   async function handleApply() {
-    if (!currentUser || !isVolunteer) return;
+    if (!currentUser || !isVolunteer || eventIsPast) return;
 
     try {
       setActionLoading(true);
@@ -221,6 +224,8 @@ export default function EventOpenPage() {
   }
 
   async function handleWithdrawApplication(applicationId) {
+    if (eventIsPast) return;
+
     try {
       setActionLoading(true);
       setError("");
@@ -235,6 +240,8 @@ export default function EventOpenPage() {
   }
 
   async function handleRejectApplication(applicationId) {
+    if (eventIsPast) return;
+
     try {
       setRejectingId(applicationId);
       setError("");
@@ -249,6 +256,8 @@ export default function EventOpenPage() {
   }
 
   async function handleRestoreApplication(applicationId) {
+    if (eventIsPast) return;
+
     try {
       setRestoringId(applicationId);
       setError("");
@@ -318,7 +327,7 @@ export default function EventOpenPage() {
                   </p>
                 </div>
 
-                {canManage ? (
+                {canEditEvent ? (
                   <Link
                     to={`/events/${eventId}/edit`}
                     className="event-card__settings"
@@ -379,7 +388,7 @@ export default function EventOpenPage() {
 
               <div className="event-card__meta-grid">
                 <div className="event-card__meta-left">
-                  <div className={`event-card__category-pill ${categoryClassName}`}>
+                  <div className="event-card__category-pill">
                     <img
                       src={categoryIcon}
                       alt=""
@@ -485,36 +494,34 @@ export default function EventOpenPage() {
                   </div>
                 </div>
 
-                {isGuest ? (
+                {eventIsPast ? (
+                  <div className="event-card__application-status">
+                    Мероприятие завершено
+                  </div>
+                ) : null}
+
+                {isGuest && !eventIsPast ? (
                   <Link to="/login" className="event-card__join-button">
                     Войти для участия
                   </Link>
                 ) : null}
 
-                {isVolunteer &&
+                {canVolunteerInteract &&
                   (myApplications.length > 0 ? (
-                    myApplications[0].status === "rejected" ? (
-                      <div className="event-card__application-actions">
-                        <div className="event-card__application-status event-card__application-status--rejected">
-                          Ваша заявка отклонена
-                        </div>
+                    <div className="event-card__application-actions">
+                      <div className="event-card__application-status">
+                        Вы подали заявку
                       </div>
-                    ) : (
-                      <div className="event-card__application-actions">
-                        <div className="event-card__application-status">
-                          Вы подали заявку
-                        </div>
 
-                        <button
-                          type="button"
-                          className="event-card__withdraw-button"
-                          onClick={() => handleWithdrawApplication(myApplications[0].id)}
-                          disabled={actionLoading}
-                        >
-                          {actionLoading ? "Отзываем..." : "Отозвать"}
-                        </button>
-                      </div>
-                    )
+                      <button
+                        type="button"
+                        className="event-card__withdraw-button"
+                        onClick={() => handleWithdrawApplication(myApplications[0].id)}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? "Отзываем..." : "Отозвать"}
+                      </button>
+                    </div>
                   ) : (
                     <button
                       type="button"
@@ -536,10 +543,16 @@ export default function EventOpenPage() {
             </article>
           </div>
 
-          {canManage ? (
+          {canViewApplications ? (
             <section className="applications-section">
               <div className="applications-card">
                 <h2 className="applications-card__title">Поданные заявки</h2>
+
+                {eventIsPast ? (
+                  <div className="applications-empty">
+                    Мероприятие завершено. Просмотр заявок доступен, изменение статусов отключено.
+                  </div>
+                ) : null}
 
                 {applicationsLoading ? (
                   <div className="applications-empty">Загрузка заявок...</div>
@@ -559,6 +572,8 @@ export default function EventOpenPage() {
                         onRestore={handleRestoreApplication}
                         isRejecting={rejectingId === application.id}
                         isRestoring={restoringId === application.id}
+                        canReject={canChangeApplications}
+                        canRestore={canChangeApplications}
                       />
                     ))}
                   </div>

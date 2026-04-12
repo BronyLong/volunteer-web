@@ -26,6 +26,7 @@
   font-size: clamp(30px, 4vw, 54px);
   line-height: 1.12;
   font-weight: 900;
+  word-break: break-word;
 }
 
 .event-edit-card__divider {
@@ -137,6 +138,8 @@
   outline: none;
 }
 
+/* tasks */
+
 .tasks-box {
   border: 1.5px solid var(--border);
   border-radius: 16px;
@@ -214,6 +217,8 @@
   background: rgba(47, 143, 47, 0.1);
 }
 
+/* select */
+
 .select-wrap {
   position: relative;
   max-width: 212px;
@@ -272,6 +277,8 @@
   pointer-events: none;
 }
 
+/* upload */
+
 .upload-box {
   width: 100%;
   height: 272px;
@@ -328,6 +335,8 @@
   display: block;
 }
 
+/* buttons */
+
 .event-edit-form__submit,
 .event-edit-form__delete {
   min-width: 286px;
@@ -360,9 +369,11 @@
 }
 
 .event-edit-form__delete:hover {
-  background: #c62828;
+  background: var(--red-dark);
   transform: translateY(-1px);
 }
+
+/* responsive */
 
 @media (max-width: 1024px) {
   .event-edit-form {
@@ -439,7 +450,46 @@
     background: linear-gradient(180deg, #e9dfd2 0 70%, #d8e3db 70% 100%);
   }
 
+  .event-edit-card {
+    padding: 24px 16px 22px;
+    border-radius: 24px;
+  }
+
   .event-edit-card__title {
     font-size: 30px;
+    line-height: 1.08;
+  }
+
+  .event-edit-card__divider {
+    margin: 14px 0 24px;
+  }
+
+  .event-edit-form {
+    gap: 18px;
+  }
+
+  .tasks-box {
+    padding: 12px;
+  }
+
+  .task-item,
+  .task-add {
+    gap: 8px;
+  }
+
+  .task-input {
+    min-width: 0;
+    font-size: 15px;
+  }
+
+  .task-remove,
+  .task-add-btn {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+  }
+
+  .upload-box {
+    height: 200px;
   }
 }

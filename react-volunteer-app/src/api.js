@@ -4,6 +4,7 @@ export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${API_URL}${path}`, {
+    cache: options.method === "GET" || !options.method ? "no-store" : "default",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -53,6 +54,34 @@ export async function updateMyProfile(payload) {
   });
 }
 
+export async function getCategories() {
+  return apiFetch("/categories");
+}
+
+export async function getEventById(id) {
+  return apiFetch(`/events/${id}`);
+}
+
+export async function createEvent(payload) {
+  return apiFetch("/events", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateEvent(id, payload) {
+  return apiFetch(`/events/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteEvent(id) {
+  return apiFetch(`/events/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export async function deleteApplication(id) {
   return apiFetch(`/applications/${id}`, {
     method: "DELETE",
@@ -90,6 +119,17 @@ export function getUserIdFromToken() {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return payload.id;
+  } catch {
+    return null;
+  }
+}
+
+export function getUserFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
   } catch {
     return null;
   }

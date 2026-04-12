@@ -5,7 +5,7 @@ import "./Header.css";
 import logoHeart from "../assets/SVG/logoHeart.svg";
 import logoText from "../assets/SVG/logoText.svg";
 import accountOutline from "../assets/SVG/accountOutline.svg";
-import defaultAvatar from "../assets/images/avatar_woman.png";
+import defaultAvatar from "../assets/images/avatar_man.png";
 import exitIcon from "../assets/SVG/exit.svg";
 
 import emailIcon from "../assets/SVG/email_footer.svg";

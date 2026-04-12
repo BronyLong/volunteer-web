@@ -19,13 +19,22 @@ router.get("/", async (req, res) => {
         e.location,
         e.tasks,
         e.participant_limit,
-        e.available_slots,
+        GREATEST(
+          e.participant_limit - COALESCE(active_applications.count, 0),
+          0
+        ) AS available_slots,
         e.created_at,
         e.updated_at,
         c.id AS category_id,
         c.name AS category_name
       FROM events e
       JOIN categories c ON c.id = e.category_id
+      LEFT JOIN (
+        SELECT event_id, COUNT(*)::int AS count
+        FROM applications
+        WHERE status = 'active'
+        GROUP BY event_id
+      ) AS active_applications ON active_applications.event_id = e.id
     `;
 
     if (category) {
@@ -56,7 +65,10 @@ router.get("/:id", async (req, res) => {
         e.location,
         e.tasks,
         e.participant_limit,
-        e.available_slots,
+        GREATEST(
+          e.participant_limit - COALESCE(active_applications.count, 0),
+          0
+        ) AS available_slots,
         e.created_at,
         e.updated_at,
         c.id AS category_id,
@@ -71,6 +83,12 @@ router.get("/:id", async (req, res) => {
       JOIN categories c ON c.id = e.category_id
       JOIN users u ON u.id = e.created_by
       LEFT JOIN profiles p ON p.user_id = u.id
+      LEFT JOIN (
+        SELECT event_id, COUNT(*)::int AS count
+        FROM applications
+        WHERE status = 'active'
+        GROUP BY event_id
+      ) AS active_applications ON active_applications.event_id = e.id
       WHERE e.id = $1
       `,
       [req.params.id]
@@ -128,7 +146,7 @@ router.post("/", authMiddleware, async (req, res) => {
         start_at,
         location,
         tasks,
-        participant_limit,
+        Number(participant_limit),
         category_id,
         req.user.id,
       ]
@@ -160,25 +178,53 @@ router.put("/:id", authMiddleware, async (req, res) => {
     return res.status(400).json({ message: "Не все обязательные поля заполнены" });
   }
 
+  const client = await pool.connect();
+
   try {
-    const existing = await pool.query(
+    await client.query("BEGIN");
+
+    const existing = await client.query(
       `
       SELECT id, created_by
       FROM events
       WHERE id = $1
+      FOR UPDATE
       `,
       [req.params.id]
     );
 
     if (existing.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
     if (existing.rows[0].created_by !== req.user.id) {
+      await client.query("ROLLBACK");
       return res.status(403).json({ message: "Нельзя редактировать чужое мероприятие" });
     }
 
-    const result = await pool.query(
+    const activeApplications = await client.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM applications
+      WHERE event_id = $1 AND status = 'active'
+      `,
+      [req.params.id]
+    );
+
+    const activeCount = activeApplications.rows[0]?.count || 0;
+    const newLimit = Number(participant_limit);
+
+    if (newLimit < activeCount) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: `Нельзя установить лимит меньше количества поданных заявок (${activeCount})`,
+      });
+    }
+
+    const newAvailableSlots = newLimit - activeCount;
+
+    const result = await client.query(
       `
       UPDATE events
       SET
@@ -189,9 +235,9 @@ router.put("/:id", authMiddleware, async (req, res) => {
         location = $5,
         tasks = $6,
         participant_limit = $7,
-        available_slots = LEAST(available_slots, $7),
-        category_id = $8
-      WHERE id = $9
+        available_slots = $8,
+        category_id = $9
+      WHERE id = $10
       RETURNING *
       `,
       [
@@ -201,19 +247,25 @@ router.put("/:id", authMiddleware, async (req, res) => {
         start_at,
         location,
         tasks,
-        participant_limit,
+        newLimit,
+        newAvailableSlots,
         category_id,
         req.params.id,
       ]
     );
+
+    await client.query("COMMIT");
 
     res.json({
       message: "Мероприятие обновлено",
       event: result.rows[0],
     });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Update event error:", error);
     res.status(500).json({ message: "Ошибка при обновлении мероприятия" });
+  } finally {
+    client.release();
   }
 });
 
