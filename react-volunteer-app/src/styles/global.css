@@ -1,7 +1,7 @@
 body {
   font-family: "Nunito Sans", sans-serif;
   color: var(--text);
-  background: #f6f6f6;
+  background: var(--page-bg);
   line-height: 1.4;
 }
 
@@ -20,8 +20,9 @@ body {
 }
 
 .container {
-  width: min(var(--container-width), calc(100% - var(--container-padding)));
+  width: min(var(--container-width), calc(100% - (var(--container-padding) * 2)));
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .section {

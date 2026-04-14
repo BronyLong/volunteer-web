@@ -1,5 +1,5 @@
 .event-page {
-  background: linear-gradient(90deg, #e9dfd2 0 72%, #d8e3db 72% 100%);
+  background: linear-gradient(90deg, var(--beige-250) 0 72%, var(--green-200) 72% 100%);
 }
 
 .event-layout {
@@ -14,9 +14,9 @@
 .event-card {
   width: 100%;
   max-width: 760px;
-  background: rgba(248, 248, 248, 0.96);
+  background: var(--overlay-surface-96);
   border-radius: 42px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 34px 32px 26px;
 }
 
@@ -49,9 +49,9 @@
 .event-card__settings {
   width: 42px;
   height: 42px;
-  border: 2px solid #8eb18f;
+  border: 2px solid var(--green-350);
   border-radius: 14px;
-  background: #f7faf7;
+  background: var(--green-050);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -82,7 +82,7 @@
 
 .event-card__image-box {
   overflow: hidden;
-  background: #f2f1f1;
+  background: var(--neutral-300);
 }
 
 .event-card__image {
@@ -92,9 +92,9 @@
 }
 
 .event-card__tasks-box {
-  background: #f6f6f6;
+  background: var(--page-bg);
   padding: 20px 18px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--shadow-black-04);
 }
 
 .event-card__section-title {
@@ -176,17 +176,17 @@
 }
 
 .event-card__category-pill--green {
-  box-shadow: 0 8px 18px rgba(47, 143, 70, 0.1);
+  box-shadow: 0 8px 18px var(--green-shadow-10-alt);
 }
 
 .event-card__category-pill--orange {
-  box-shadow: 0 8px 18px rgba(220, 122, 32, 0.1);
+  box-shadow: 0 8px 18px var(--orange-shadow-10);
 }
 
 .event-card__places-box,
 .event-card__location-box,
 .event-card__info-box {
-  background: #dce8de;
+  background: var(--green-175);
   border-radius: 14px;
   box-shadow: var(--shadow);
 }
@@ -213,7 +213,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #555;
+  color: var(--text-muted-9);
 }
 
 .event-card__meta-inline-icon {
@@ -253,7 +253,7 @@
   width: 100%;
   height: 1px;
   margin: 18px 0;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--shadow-black-08);
 }
 
 .event-card__bottom {
@@ -265,7 +265,7 @@
 
 .coordinator-card {
   min-height: 112px;
-  background: #f7f7f7;
+  background: var(--neutral-150);
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 12px 14px;
@@ -274,7 +274,7 @@
 
 .coordinator-card__label {
   font-size: 13px;
-  color: #4d4d4d;
+  color: var(--text-muted-10);
   margin-bottom: 10px;
 }
 
@@ -305,7 +305,7 @@
 .coordinator-card__avatar-link:hover .coordinator-card__avatar-wrap,
 .coordinator-card__avatar-link:focus-visible .coordinator-card__avatar-wrap {
   transform: scale(1.04);
-  box-shadow: 0 0 0 4px rgba(75, 181, 67, 0.14);
+  box-shadow: 0 0 0 4px var(--green-accent-14);
 }
 
 .coordinator-card__avatar {
@@ -335,7 +335,7 @@
 }
 
 .coordinator-card__line--muted {
-  color: #8a8a8a;
+  color: var(--text-muted-2);
 }
 
 .coordinator-card__icon {
@@ -349,8 +349,8 @@
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #ececec;
-  color: #666666;
+  background: var(--neutral-400);
+  color: var(--text-muted-5);
   font-size: 13px;
   line-height: 1.35;
   font-weight: 700;
@@ -363,7 +363,7 @@
   margin: 0 auto;
   border-radius: 14px;
   background: var(--orange);
-  color: #ffffff;
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -387,9 +387,9 @@
 }
 
 .applications-card {
-  background: rgba(248, 248, 248, 0.96);
+  background: var(--overlay-surface-96);
   border-radius: 42px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 28px 38px 38px;
 }
 
@@ -411,8 +411,8 @@
   margin-top: 26px;
   min-height: 150px;
   border-radius: 22px;
-  background: linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(180deg, var(--white) 0%, var(--neutral-250) 100%);
+  box-shadow: 0 6px 18px var(--shadow-black-08);
   padding: 24px;
   display: flex;
   align-items: center;
@@ -421,7 +421,7 @@
   font-size: 20px;
   line-height: 1.4;
   font-weight: 800;
-  color: #6b6b6b;
+  color: var(--text-muted-4);
 }
 
 .event-card__application-actions {
@@ -435,8 +435,8 @@
 .event-card__application-status {
   min-height: 46px;
   border-radius: 14px;
-  background: rgba(75, 181, 67, 0.15);
-  color: #2f7d2b;
+  background: var(--green-accent-15);
+  color: var(--green-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -451,7 +451,7 @@
   min-height: 46px;
   border-radius: 14px;
   background: var(--red);
-  color: #ffffff;
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -477,7 +477,7 @@
 }
 
 .event-card__application-status--rejected {
-  background: #f3d9d7;
+  background: var(--red-100);
   color: var(--red);
 }
 
@@ -523,7 +523,7 @@
 
 @media (max-width: 640px) {
   .event-page {
-    background: linear-gradient(180deg, #e9dfd2 0 58%, #d8e3db 58% 100%);
+    background: linear-gradient(180deg, var(--beige-250) 0 58%, var(--green-200) 58% 100%);
   }
 
   .event-card__header {

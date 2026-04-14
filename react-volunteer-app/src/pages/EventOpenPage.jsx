@@ -19,6 +19,7 @@ import timeIcon from "../assets/SVG/clock.svg";
 
 import eventImage from "../assets/images/animals_help.png";
 import womanAvatar from "../assets/images/avatar_man.png";
+
 import {
   apiFetch,
   deleteApplication,
@@ -26,6 +27,14 @@ import {
   rejectApplication,
   restoreApplication,
 } from "../api";
+
+import {
+  formatDate,
+  formatTime,
+  getCoordinatorName,
+  getDisplayValue,
+  isEventPast,
+} from "../utils/eventUtils";
 
 function getUserFromToken() {
   const token = getToken();
@@ -36,27 +45,6 @@ function getUserFromToken() {
   } catch {
     return null;
   }
-}
-
-function formatDate(value) {
-  if (!value) return "Не указано";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Не указано";
-
-  return date.toLocaleDateString("ru-RU");
-}
-
-function formatTime(value) {
-  if (!value) return "Не указано";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Не указано";
-
-  return date.toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function getCategoryIcon(categoryName) {
@@ -70,26 +58,6 @@ function getCategoryIcon(categoryName) {
   return leafCategoryIcon;
 }
 
-function getCoordinatorName(eventData) {
-  const firstName = eventData?.first_name?.trim() || "";
-  const lastName = eventData?.last_name?.trim() || "";
-  const fullName = `${firstName} ${lastName}`.trim();
-
-  return fullName || "Координатор не указан";
-}
-
-function getDisplayValue(value) {
-  return value && String(value).trim() ? value : "Не указан";
-}
-
-function isEventPast(startAt) {
-  if (!startAt) return false;
-
-  const eventDate = new Date(startAt);
-  if (Number.isNaN(eventDate.getTime())) return false;
-
-  return eventDate.getTime() < Date.now();
-}
 
 export default function EventOpenPage() {
   const params = useParams();

@@ -1,6 +1,31 @@
 :root {
+  --black: #000000;
+  --white: #ffffff;
+
   --green: #2f8f2f;
   --green-dark: #257425;
+  --green-750: #215421;
+  --green-700: #2f5d2f;
+  --green-675: #247328;
+  --green-650: #256b25;
+  --green-600: #2f7d2b;
+  --green-400: #79aa79;
+  --green-350: #8eb18f;
+  --green-300: #bfcdbf;
+  --green-230: #d7e2d8;
+  --green-220: #d7e7d8;
+  --green-200: #d8e3db;
+  --green-180: #dce4da;
+  --green-175: #dce8de;
+  --green-150: #e6ece6;
+  --green-125: #eff3ee;
+  --green-100: #eff7ef;
+  --green-095: #f2f7f2;
+  --green-090: #f3f7f3;
+  --green-075: #eef8ee;
+  --green-050: #f7faf7;
+  --green-025: #f8fbf8;
+  --green-mist: #eef2ee;
   --green-soft: #d2ddd1;
   --green-soft-2: #c5dac8;
   --green-soft-3: #d9e3da;
@@ -8,6 +33,16 @@
 
   --orange: #f58600;
   --orange-dark: #ff8f00;
+  --orange-bright: #ff8f1f;
+  --orange-600: #f57c00;
+  --orange-deep: #de7100;
+  --orange-200: #f3d5a6;
+  --orange-150: #f4d6a6;
+  --orange-125: #f8e8cf;
+  --orange-100: #f8ead2;
+  --orange-075: #fff8f2;
+  --orange-050: #fff1de;
+  --orange-025: #fff7ee;
   --orange-soft: #f2cf99;
   --orange-soft-2: #fff8ef;
   --orange-soft-3: #f3d8aa;
@@ -15,18 +50,106 @@
 
   --red: #ea2b23;
   --red-dark: #cf221b;
+  --red-750: #b9201a;
+  --red-700: #b42318;
+  --red-600: #d92d20;
+  --red-100: #f3d9d7;
+  --red-025: #fff7f7;
 
-  --light-bg: #f4f1ed;
-  --light-bg-2: #eee7de;
-  --light-card: #f5f3f2;
-  --light-card-2: #f8f7f2;
+  --beige-250: #e9dfd2;
+  --beige-225: #e9e1d3;
+  --beige-200: #eae1d7;
+  --beige-050: #f8f5f1;
+  --beige-025: #faf7f5;
+
+  --page-bg: #f6f6f6;
+  --surface-panel: #efeee4;
+  --surface-card: #f5f3f2;
+  --surface-card-green: #f4f5f2;
+  --surface-card-beige: #f4f2ef;
+  --surface-card-soft: #f3f1ef;
+
+  --neutral-050: #fbfbfb;
+  --neutral-100: #f8f8f8;
+  --neutral-150: #f7f7f7;
+  --neutral-200: #f5f5f5;
+  --neutral-250: #f2f2f2;
+  --neutral-300: #f2f1f1;
+  --neutral-350: #efefef;
+  --neutral-400: #ececec;
+  --neutral-450: #e2e2e2;
 
   --text: #000000;
   --muted: #626262;
+  --text-muted-2: #8a8a8a;
+  --text-muted-3: #7a7a7a;
+  --text-muted-4: #6b6b6b;
+  --text-muted-5: #666666;
+  --text-muted-6: #5f5f5f;
+  --text-muted-7: #5b5b5b;
+  --text-muted-8: #585858;
+  --text-muted-9: #555555;
+  --text-muted-10: #4d4d4d;
+  --text-muted-11: #4b4b4b;
+
+  --text-dark-1: #444444;
+  --text-dark-2: #3f3f3f;
+  --text-dark-3: #303030;
+  --text-dark-4: #2f2f2f;
+  --text-dark-5: #2c2c2c;
+  --text-dark-6: #222222;
+  --text-dark-7: #202020;
+  --text-dark-8: #1f1f1f;
+  --text-dark-9: #1d1d1d;
+  --text-dark-10: #1a1a1a;
+  --text-dark-11: #111111;
+
   --footer-bg: #e5e7eb;
-  --white: #ffffff;
   --border: #d5d5d5;
-  --shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --border-light: #d9d9d9;
+  --border-soft: #d8d8d8;
+
+  --overlay-dark: rgba(0, 0, 0, 0.42);
+  --overlay-white-96: rgba(255, 255, 255, 0.96);
+  --overlay-white-98: rgba(255, 255, 255, 0.98);
+  --overlay-surface-96: rgba(248, 248, 248, 0.96);
+  --overlay-card-94: rgba(245, 243, 242, 0.94);
+
+  --green-glow-52: rgba(184, 204, 184, 0.52);
+  --green-glow-40: rgba(184, 204, 184, 0.4);
+  --green-glow-18: rgba(184, 204, 184, 0.18);
+  --green-glow-16: rgba(184, 204, 184, 0.16);
+
+  --green-shadow-08: rgba(47, 143, 47, 0.08);
+  --green-shadow-10: rgba(47, 143, 47, 0.1);
+  --green-shadow-10-alt: rgba(47, 143, 70, 0.1);
+  --green-shadow-12: rgba(47, 143, 47, 0.12);
+  --green-shadow-20: rgba(47, 143, 47, 0.2);
+  --green-shadow-35: rgba(47, 143, 47, 0.35);
+
+  --green-accent-14: rgba(75, 181, 67, 0.14);
+  --green-accent-15: rgba(75, 181, 67, 0.15);
+
+  --orange-shadow-10: rgba(220, 122, 32, 0.1);
+  --orange-shadow-22: rgba(245, 124, 0, 0.22);
+  --orange-shadow-35: rgba(245, 134, 0, 0.35);
+
+  --red-shadow-08: rgba(217, 45, 32, 0.08);
+  --red-shadow-10: rgba(234, 43, 35, 0.1);
+  --red-shadow-12: rgba(234, 43, 35, 0.12);
+  --red-shadow-18: rgba(234, 43, 35, 0.18);
+  --red-shadow-20: rgba(234, 43, 35, 0.2);
+
+  --shadow-black-04: rgba(0, 0, 0, 0.04);
+  --shadow-black-05: rgba(0, 0, 0, 0.05);
+  --shadow-black-06: rgba(0, 0, 0, 0.06);
+  --shadow-black-08: rgba(0, 0, 0, 0.08);
+  --shadow-black-09: rgba(0, 0, 0, 0.09);
+  --shadow-black-12: rgba(0, 0, 0, 0.12);
+  --shadow-black-14: rgba(0, 0, 0, 0.14);
+  --shadow-green-08: rgba(46, 67, 49, 0.08);
+
+  --shadow: 0 4px 14px var(--shadow-black-08);
 
   --container-width: 1120px;
   --container-padding: 48px;

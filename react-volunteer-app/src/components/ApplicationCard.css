@@ -5,7 +5,7 @@
   gap: 16px;
   padding: 18px 20px;
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--white);
   box-shadow: var(--shadow);
 }
 
@@ -37,7 +37,7 @@
 .application-card__avatar-link:hover .application-card__avatar,
 .application-card__avatar-link:focus-visible .application-card__avatar {
   transform: scale(1.04);
-  box-shadow: 0 0 0 4px rgba(75, 181, 67, 0.14);
+  box-shadow: 0 0 0 4px var(--green-accent-14);
 }
 
 .application-card__info {
@@ -52,7 +52,7 @@
   font-size: 22px;
   font-weight: 900;
   line-height: 1.1;
-  color: #1f1f1f;
+  color: var(--text-dark-8);
 }
 
 .application-card__status {
@@ -65,25 +65,25 @@
   justify-content: center;
   font-size: 13px;
   font-weight: 900;
-  background: #efefef;
-  color: #4b4b4b;
+  background: var(--neutral-350);
+  color: var(--text-muted-11);
 }
 
 .application-card__status--active {
-  background: rgba(75, 181, 67, 0.15);
-  color: #2f7d2b;
+  background: var(--green-accent-15);
+  color: var(--green-600);
 }
 
 .application-card__status--rejected {
-  background: rgba(234, 43, 35, 0.12);
-  color: #b9201a;
+  background: var(--red-shadow-12);
+  color: var(--red-750);
 }
 
 .application-card__line {
   margin: 0;
   font-size: 16px;
   line-height: 1.35;
-  color: #5f5f5f;
+  color: var(--text-muted-6);
 }
 
 .application-card__reject,
@@ -92,7 +92,7 @@
   min-height: 52px;
   padding: 0 18px;
   border-radius: 16px;
-  color: #ffffff;
+  color: var(--white);
   font-size: 16px;
   font-weight: 900;
   line-height: 1;

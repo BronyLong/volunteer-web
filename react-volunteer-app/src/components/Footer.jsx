@@ -12,7 +12,11 @@ import okIcon from "../assets/SVG/odnoklassnini.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 
+import { getUserIdFromToken } from "../api";
+
 export default function Footer() {
+  const userId = getUserIdFromToken();
+
   return (
     <footer className="footer">
       <div className="container footer__top">
@@ -50,7 +54,9 @@ export default function Footer() {
               <Link to="/login">Войти</Link>
             </li>
             <li>
-              <Link to="/profile">Личный кабинет</Link>
+              <Link to={userId ? `/profiles/${userId}` : "/login"}>
+                Личный кабинет
+              </Link>
             </li>
           </ul>
         </div>

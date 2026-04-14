@@ -1,5 +1,5 @@
 .event-edit-page {
-  background: linear-gradient(90deg, #e9dfd2 0 72%, #d8e3db 72% 100%);
+  background: linear-gradient(90deg, var(--beige-250) 0 72%, var(--green-200) 72% 100%);
 }
 
 .event-edit-section {
@@ -14,9 +14,9 @@
 .event-edit-card {
   width: 100%;
   max-width: 860px;
-  background: rgba(248, 248, 248, 0.96);
+  background: var(--overlay-surface-96);
   border-radius: 42px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 38px 42px 34px;
 }
 
@@ -32,7 +32,7 @@
   width: 100%;
   height: 1px;
   margin: 18px 0 34px;
-  background: rgba(0, 0, 0, 0.09);
+  background: var(--shadow-black-09);
 }
 
 .event-edit-form {
@@ -79,18 +79,20 @@
   font-size: 18px;
   line-height: 1.2;
   font-weight: 900;
-  color: #1a1a1a;
+  color: var(--text-dark-10);
 }
 
 .form-field__input,
 .form-field__textarea,
 .form-field__select {
   width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
   border-radius: 14px;
-  border: 1.5px solid #d8d8d8;
-  background: #fbfbfb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  color: #2c2c2c;
+  border: 1.5px solid var(--border-soft);
+  background: var(--neutral-050);
+  box-shadow: 0 2px 8px var(--shadow-black-04);
+  color: var(--text-dark-5);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -112,8 +114,8 @@
   resize: none;
   font-size: 17px;
   line-height: 1.45;
-  color: #2c2c2c;
-  caret-color: #2c2c2c;
+  color: var(--text-dark-5);
+  caret-color: var(--text-dark-5);
   overflow: hidden;
   white-space: pre-wrap;
   word-break: break-word;
@@ -132,8 +134,8 @@
 .form-field__textarea:focus,
 .form-field__select:focus {
   border-color: var(--green);
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
+  background: var(--white);
+  box-shadow: 0 0 0 4px var(--green-shadow-12);
   outline: none;
 }
 
@@ -143,7 +145,7 @@
   border: 1.5px solid var(--border);
   border-radius: 16px;
   padding: 14px;
-  background: #fbfbfb;
+  background: var(--neutral-050);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -164,11 +166,14 @@
 
 .task-input {
   flex: 1;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   height: 48px;
   padding: 0 16px;
   border-radius: 12px;
   border: 1.5px solid var(--border);
-  background: #ffffff;
+  background: var(--white);
   font-size: 16px;
   color: var(--text);
   transition: 0.2s ease;
@@ -176,7 +181,7 @@
 
 .task-input:focus {
   border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(47, 143, 47, 0.12);
+  box-shadow: 0 0 0 3px var(--green-shadow-12);
   outline: none;
 }
 
@@ -199,21 +204,21 @@
 .task-remove {
   font-size: 30px;
   line-height: 1;
-  color: #111111;
+  color: var(--text-dark-11);
 }
 
 .task-add-btn {
   font-size: 30px;
   line-height: 1;
-  color: #111111;
+  color: var(--text-dark-11);
 }
 
 .task-remove:hover {
-  background: rgba(234, 43, 35, 0.1);
+  background: var(--red-shadow-10);
 }
 
 .task-add-btn:hover {
-  background: rgba(47, 143, 47, 0.1);
+  background: var(--green-shadow-10);
 }
 
 /* select */
@@ -233,15 +238,15 @@
   padding: 0 48px 0 52px;
   font-size: 18px;
   font-weight: 800;
-  color: #1f1f1f;
+  color: var(--text-dark-8);
   border-radius: 14px;
-  border: 1.5px solid #d8d8d8;
-  background-color: #fbfbfb;
+  border: 1.5px solid var(--border-soft);
+  background-color: var(--neutral-050);
   background-image: var(--category-icon);
   background-repeat: no-repeat;
   background-position: 18px center;
   background-size: 20px 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px var(--shadow-black-04);
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -251,17 +256,17 @@
 
 .form-field__select:focus {
   border-color: var(--green);
-  background-color: #ffffff;
+  background-color: var(--white);
   background-image: var(--category-icon);
   background-repeat: no-repeat;
   background-position: 18px center;
   background-size: 20px 20px;
-  box-shadow: 0 0 0 4px rgba(47, 143, 47, 0.12);
+  box-shadow: 0 0 0 4px var(--green-shadow-12);
 }
 
 .form-field__select option {
-  color: #1f1f1f;
-  background: #ffffff;
+  color: var(--text-dark-8);
+  background: var(--white);
 }
 
 .select-wrap__arrow {
@@ -270,8 +275,8 @@
   top: 50%;
   width: 14px;
   height: 14px;
-  border-right: 3px solid #8a8a8a;
-  border-bottom: 3px solid #8a8a8a;
+  border-right: 3px solid var(--text-muted-2);
+  border-bottom: 3px solid var(--text-muted-2);
   transform: translateY(-60%) rotate(45deg);
   pointer-events: none;
 }
@@ -282,9 +287,9 @@
   width: 100%;
   height: 272px;
   border-radius: 18px;
-  border: 1.5px solid #d8d8d8;
-  background: #fbfbfb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1.5px solid var(--border-soft);
+  background: var(--neutral-050);
+  box-shadow: 0 2px 8px var(--shadow-black-04);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,8 +303,8 @@
 }
 
 .upload-box:hover {
-  border-color: #bfcdbf;
-  background: #ffffff;
+  border-color: var(--green-300);
+  background: var(--white);
 }
 
 .upload-box__input {
@@ -341,7 +346,7 @@
   min-height: 62px;
   padding: 0 28px;
   border-radius: 16px;
-  color: #ffffff;
+  color: var(--white);
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
@@ -350,11 +355,11 @@
     background 0.2s ease,
     transform 0.2s ease;
   background: var(--orange);
-  box-shadow: 0 10px 20px rgba(245, 124, 0, 0.22);
+  box-shadow: 0 10px 20px var(--orange-shadow-22);
 }
 
 .event-edit-form__submit:hover {
-  background: #de7100;
+  background: var(--orange-deep);
   transform: translateY(-1px);
 }
 
@@ -391,6 +396,7 @@
   .event-edit-card {
     padding: 28px 20px 24px;
     border-radius: 28px;
+    box-sizing: border-box;
   }
 
   .event-edit-card__title {
@@ -424,10 +430,23 @@
 
 @media (max-width: 520px) {
   .event-edit-page {
-    background: linear-gradient(180deg, #e9dfd2 0 70%, #d8e3db 70% 100%);
+    background: linear-gradient(180deg, var(--beige-250) 0 70%, var(--green-200) 70% 100%);
+  }
+
+  .event-edit-card {
+    padding: 24px 18px 22px;
   }
 
   .event-edit-card__title {
     font-size: 30px;
+  }
+
+  .event-edit-form__actions {
+    width: 100%;
+  }
+
+  .event-edit-form__submit {
+    width: 100%;
+    min-width: 0;
   }
 }

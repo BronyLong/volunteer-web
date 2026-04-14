@@ -6,8 +6,8 @@
 
   padding: 16px 18px;
   border-radius: 18px;
-  background: #fbfbfb;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  background: var(--neutral-050);
+  box-shadow: 0 6px 18px var(--shadow-black-05);
 }
 
 .profile-event-card__content {
@@ -20,7 +20,7 @@
   font-size: 16px;
   line-height: 1.25;
   font-weight: 900;
-  color: #222222;
+  color: var(--text-dark-6);
 }
 
 .profile-event-card__meta {
@@ -35,7 +35,7 @@
 
   font-size: 14px;
   line-height: 1.35;
-  color: #3f3f3f;
+  color: var(--text-dark-2);
 }
 
 .profile-event-card__icon {
@@ -60,7 +60,7 @@
   justify-content: center;
 
   background: var(--green);
-  color: #ffffff;
+  color: var(--white);
   font-size: 16px;
   font-weight: 900;
   text-align: center;

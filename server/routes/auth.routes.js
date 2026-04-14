@@ -13,6 +13,18 @@ function validateEmail(email) {
   return regex.test(email);
 }
 
+function validatePassword(password) {
+  if (password.length < 8) return false;
+
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const hasSpaces = /\s/.test(password);
+
+  return hasUpper && hasLower && hasDigit && hasSpecial && !hasSpaces;
+}
+
 router.post("/register", async (req, res) => {
   let { firstName, lastName, email, password } = req.body;
 
@@ -28,6 +40,13 @@ router.post("/register", async (req, res) => {
   if (!validateEmail(email)) {
     return res.status(400).json({
       message: "Введите корректный email, например example@mail.com",
+    });
+  }
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Пароль должен быть не менее 8 символов, содержать заглавные и строчные буквы, цифры, спецсимволы и не содержать пробелов",
     });
   }
 
