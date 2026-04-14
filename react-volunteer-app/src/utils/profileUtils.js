@@ -60,7 +60,7 @@ export function formatRussianPhone(value) {
 
   normalized = normalized.slice(0, 11);
 
-  const country = normalized[0] || "7";
+  const country = normalized[0];
   const part1 = normalized.slice(1, 4);
   const part2 = normalized.slice(4, 7);
   const part3 = normalized.slice(7, 9);
@@ -153,16 +153,4 @@ export function buildValidationErrors(formData) {
 
 export function hasValidationErrors(errors) {
   return Object.values(errors).some(Boolean);
-}
-
-function validatePassword(password) {
-  if (password.length < 8) return false;
-
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /\d/.test(password);
-  const hasSpecial = /[^A-Za-z0-9]/.test(password);
-  const hasSpaces = /\s/.test(password);
-
-  return hasUpper && hasLower && hasDigit && hasSpecial && !hasSpaces;
 }

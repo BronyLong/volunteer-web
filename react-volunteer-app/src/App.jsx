@@ -11,7 +11,6 @@ import EventOpenPage from "./pages/EventOpenPage";
 import ProfileSettings from "./pages/ProfileSettings";
 import EventEditPage from "./pages/EventEditPage";
 import EventCreatePage from "./pages/EventCreatePage";
-import ScrollToTop from "./components/ScrollToTop";
 
 import "./styles/reset.css";
 import "./styles/variables.css";

@@ -14,12 +14,18 @@ export async function apiFetch(path, options = {}) {
   });
 
   const contentType = response.headers.get("content-type") || "";
-  const data = contentType.includes("application/json")
-    ? await response.json()
-    : null;
+
+  let data = null;
+  let text = null;
+
+  if (contentType.includes("application/json")) {
+    data = await response.json();
+  } else {
+    text = await response.text();
+  }
 
   if (!response.ok) {
-    throw new Error(data?.message || "Ошибка запроса");
+    throw new Error(data?.message || text || "Ошибка запроса");
   }
 
   return data;
