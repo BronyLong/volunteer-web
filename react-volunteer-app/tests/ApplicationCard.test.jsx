@@ -77,4 +77,32 @@ describe("ApplicationCard", () => {
       screen.getByRole("button", { name: /восстановить заявку/i })
     ).toBeInTheDocument();
   });
+
+  it("renders fallback status and avatar without profile link for unknown status", () => {
+    const { container } = render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ApplicationCard
+          id={1}
+          avatar="avatar.jpg"
+          name=""
+          secondName=""
+          email="user@example.com"
+          phone="+7 (999) 000-00-00"
+          status="pending"
+        />
+      </MemoryRouter>
+    );
+  
+    expect(screen.getByText("Пользователь")).toBeInTheDocument();
+    expect(screen.getByText("Неизвестно")).toBeInTheDocument();
+    expect(container.querySelector(".application-card__avatar-link")).toBeNull();
+    expect(container.querySelector(".application-card__status")).toHaveTextContent(
+      "Неизвестно"
+    );
+  });
 });

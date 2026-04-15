@@ -3,14 +3,21 @@ const API_URL = "http://localhost:5000/api";
 export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
 
+  const {
+    headers: customHeaders = {},
+    method,
+    ...restOptions
+  } = options;
+
   const response = await fetch(`${API_URL}${path}`, {
-    cache: options.method === "GET" || !options.method ? "no-store" : "default",
+    ...restOptions,
+    method,
+    cache: method === "GET" || !method ? "no-store" : "default",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
+      ...customHeaders,
     },
-    ...options,
   });
 
   const contentType = response.headers.get("content-type") || "";
