@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { writeAuditLog } from "../utils/audit.js";
 
 dotenv.config();
 
@@ -284,6 +285,8 @@ router.put("/me", authMiddleware, async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    const oldProfile = await getProfileByUserId(req.user.id, client);
+
     const emailExists = await client.query(
       `
       SELECT id
@@ -351,6 +354,20 @@ router.put("/me", authMiddleware, async (req, res) => {
     );
 
     const updatedProfile = await getProfileByUserId(req.user.id, client);
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "profile_update",
+      entityType: "profile",
+      entityId: req.user.id,
+      req,
+      details: {
+        before: oldProfile,
+        after: updatedProfile,
+      },
+      db: client,
+    });
 
     await client.query("COMMIT");
 

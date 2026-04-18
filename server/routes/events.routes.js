@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { writeAuditLog } from "../utils/audit.js";
 
 dotenv.config();
 
@@ -56,6 +57,34 @@ async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
   );
 
   return applicationResult.rows.length > 0;
+}
+
+async function getEventForAudit(eventId, db = pool) {
+  const result = await db.query(
+    `
+    SELECT
+      e.id,
+      e.title,
+      e.image_url,
+      e.description,
+      e.start_at,
+      e.location,
+      e.tasks,
+      e.participant_limit,
+      e.available_slots,
+      e.category_id,
+      e.created_by,
+      e.created_at,
+      e.updated_at,
+      c.name AS category_name
+    FROM events e
+    JOIN categories c ON c.id = e.category_id
+    WHERE e.id = $1
+    `,
+    [eventId]
+  );
+
+  return result.rows[0] || null;
 }
 
 router.get("/", async (req, res) => {
@@ -204,8 +233,12 @@ router.post("/", authMiddleware, async (req, res) => {
       .json({ message: "Не все обязательные поля заполнены" });
   }
 
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const result = await client.query(
       `
       INSERT INTO events (
         title,
@@ -235,13 +268,31 @@ router.post("/", authMiddleware, async (req, res) => {
       ]
     );
 
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "event_create",
+      entityType: "event",
+      entityId: result.rows[0].id,
+      req,
+      details: {
+        event: result.rows[0],
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
+
     res.status(201).json({
       message: "Мероприятие создано",
       event: result.rows[0],
     });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Create event error:", error);
     res.status(500).json({ message: "Ошибка при создании мероприятия" });
+  } finally {
+    client.release();
   }
 });
 
@@ -303,6 +354,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
       });
     }
 
+    const oldEvent = await getEventForAudit(req.params.id, client);
+
     const activeApplications = await client.query(
       `
       SELECT COUNT(*)::int AS count
@@ -354,6 +407,22 @@ router.put("/:id", authMiddleware, async (req, res) => {
       ]
     );
 
+    const updatedEvent = await getEventForAudit(req.params.id, client);
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "event_update",
+      entityType: "event",
+      entityId: req.params.id,
+      req,
+      details: {
+        before: oldEvent,
+        after: updatedEvent,
+      },
+      db: client,
+    });
+
     await client.query("COMMIT");
 
     res.json({
@@ -376,27 +445,36 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     });
   }
 
+  const client = await pool.connect();
+
   try {
-    const existing = await pool.query(
+    await client.query("BEGIN");
+
+    const existing = await client.query(
       `
       SELECT id, created_by
       FROM events
       WHERE id = $1
+      FOR UPDATE
       `,
       [req.params.id]
     );
 
     if (existing.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
     if (!canManageEvent(req.user, existing.rows[0].created_by)) {
+      await client.query("ROLLBACK");
       return res.status(403).json({
         message: "Нет доступа к удалению этого мероприятия",
       });
     }
 
-    await pool.query(
+    const deletedEvent = await getEventForAudit(req.params.id, client);
+
+    await client.query(
       `
       DELETE FROM events
       WHERE id = $1
@@ -404,10 +482,28 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       [req.params.id]
     );
 
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "event_delete",
+      entityType: "event",
+      entityId: req.params.id,
+      req,
+      details: {
+        deleted_event: deletedEvent,
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
+
     res.json({ message: "Мероприятие удалено" });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Delete event error:", error);
     res.status(500).json({ message: "Ошибка при удалении мероприятия" });
+  } finally {
+    client.release();
   }
 });
 

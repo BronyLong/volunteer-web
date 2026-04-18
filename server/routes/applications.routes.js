@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { writeAuditLog } from "../utils/audit.js";
 
 const router = Router();
 
@@ -107,6 +108,19 @@ router.post("/", authMiddleware, async (req, res) => {
       `,
       [event_id, availableSlots - 1]
     );
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_create",
+      entityType: "application",
+      entityId: applicationResult.rows[0].id,
+      req,
+      details: {
+        application: applicationResult.rows[0],
+      },
+      db: client,
+    });
 
     await client.query("COMMIT");
 
@@ -285,6 +299,22 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
       [application.event_id, newAvailableSlots]
     );
 
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_reject",
+      entityType: "application",
+      entityId: req.params.id,
+      req,
+      details: {
+        event_id: application.event_id,
+        target_user_id: application.user_id,
+        previous_status: application.status,
+        new_status: "rejected",
+      },
+      db: client,
+    });
+
     await client.query("COMMIT");
 
     res.json({ message: "Заявка отклонена" });
@@ -386,6 +416,22 @@ router.patch("/:id/restore", authMiddleware, async (req, res) => {
       [application.event_id, availableSlots - 1]
     );
 
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_restore",
+      entityType: "application",
+      entityId: req.params.id,
+      req,
+      details: {
+        event_id: application.event_id,
+        target_user_id: application.user_id,
+        previous_status: application.status,
+        new_status: "active",
+      },
+      db: client,
+    });
+
     await client.query("COMMIT");
 
     res.json({ message: "Заявка восстановлена" });
@@ -468,6 +514,22 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       `,
       [application.event_id, newAvailableSlots]
     );
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_delete",
+      entityType: "application",
+      entityId: req.params.id,
+      req,
+      details: {
+        event_id: application.event_id,
+        target_user_id: application.user_id,
+        previous_status: application.status,
+        deleted_by_owner: true,
+      },
+      db: client,
+    });
 
     await client.query("COMMIT");
 

@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { pool } from "../db.js";
+import { writeAuditLog } from "../utils/audit.js";
 
 dotenv.config();
 
@@ -50,8 +51,12 @@ router.post("/register", async (req, res) => {
     });
   }
 
+  const client = await pool.connect();
+
   try {
-    const existingUser = await pool.query(
+    await client.query("BEGIN");
+
+    const existingUser = await client.query(
       `
       SELECT id
       FROM users
@@ -61,6 +66,7 @@ router.post("/register", async (req, res) => {
     );
 
     if (existingUser.rows.length > 0) {
+      await client.query("ROLLBACK");
       return res.status(409).json({
         message: "Пользователь с таким email уже существует",
       });
@@ -68,7 +74,7 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const userResult = await pool.query(
+    const userResult = await client.query(
       `
       INSERT INTO users (email, password, role, is_active)
       VALUES ($1, $2, $3, $4)
@@ -79,13 +85,30 @@ router.post("/register", async (req, res) => {
 
     const user = userResult.rows[0];
 
-    await pool.query(
+    await client.query(
       `
       INSERT INTO profiles (user_id, first_name, last_name)
       VALUES ($1, $2, $3)
       `,
       [user.id, firstName, lastName]
     );
+
+    await writeAuditLog({
+      userId: user.id,
+      userRole: user.role,
+      action: "register",
+      entityType: "user",
+      entityId: user.id,
+      req,
+      details: {
+        email: user.email,
+        first_name: firstName,
+        last_name: lastName,
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
@@ -99,8 +122,11 @@ router.post("/register", async (req, res) => {
       user,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Register error:", error);
     res.status(500).json({ message: "Ошибка сервера при регистрации" });
+  } finally {
+    client.release();
   }
 });
 
@@ -125,20 +151,71 @@ router.post("/login", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      await writeAuditLog({
+        action: "login_failed",
+        entityType: "auth",
+        req,
+        status: "failed",
+        details: {
+          email,
+          reason: "user_not_found",
+        },
+      });
+
       return res.status(401).json({ message: "Неверный email или пароль" });
     }
 
     const user = result.rows[0];
 
     if (!user.is_active) {
+      await writeAuditLog({
+        userId: user.id,
+        userRole: user.role,
+        action: "login_blocked",
+        entityType: "auth",
+        entityId: user.id,
+        req,
+        status: "failed",
+        details: {
+          email: user.email,
+          reason: "account_inactive",
+        },
+      });
+
       return res.status(403).json({ message: "Аккаунт деактивирован" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
+      await writeAuditLog({
+        userId: user.id,
+        userRole: user.role,
+        action: "login_failed",
+        entityType: "auth",
+        entityId: user.id,
+        req,
+        status: "failed",
+        details: {
+          email: user.email,
+          reason: "invalid_password",
+        },
+      });
+
       return res.status(401).json({ message: "Неверный email или пароль" });
     }
+
+    await writeAuditLog({
+      userId: user.id,
+      userRole: user.role,
+      action: "login",
+      entityType: "auth",
+      entityId: user.id,
+      req,
+      details: {
+        email: user.email,
+      },
+    });
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
