@@ -484,40 +484,52 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <section className="profile-events">
-            <div className="profile-events__header">
-              <h2 className="profile-events__title">
-                {getEventsTitle(profile.role, profile.is_owner)}
-              </h2>
+          {profile.is_owner && profile.role === "admin" ? (
+            <section className="profile-events">
+              <div className="profile-events__header">
+                <h2 className="profile-events__title">Администрирование</h2>
 
-              {profile.is_owner && profile.role === "coordinator" ? (
-                <Link to="/create" className="profile-events__create-button">
-                  Добавить мероприятие
+                <Link to="/admin" className="profile-events__create-button">
+                  Перейти
                 </Link>
-              ) : null}
-            </div>
-
-            <div className="profile-events__divider"></div>
-
-            {profileEvents.length > 0 ? (
-              <div className="profile-events__list">
-                {profileEvents.map((event) => (
-                  <ProfileEventCard
-                    key={event.id}
-                    title={event.title}
-                    location={event.location || "Не указано"}
-                    date={formatEventDate(event.start_at)}
-                    link={`/events/${event.id}`}
-                    buttonText="К мероприятию"
-                  />
-                ))}
               </div>
-            ) : (
-              <div className="profile-events__empty">
-                Здесь пока нет мероприятий
+            </section>
+          ) : (
+            <section className="profile-events">
+              <div className="profile-events__header">
+                <h2 className="profile-events__title">
+                  {getEventsTitle(profile.role, profile.is_owner)}
+                </h2>
+
+                {profile.is_owner && profile.role === "coordinator" ? (
+                  <Link to="/create" className="profile-events__create-button">
+                    Добавить мероприятие
+                  </Link>
+                ) : null}
               </div>
-            )}
-          </section>
+
+              <div className="profile-events__divider"></div>
+
+              {profileEvents.length > 0 ? (
+                <div className="profile-events__list">
+                  {profileEvents.map((event) => (
+                    <ProfileEventCard
+                      key={event.id}
+                      title={event.title}
+                      location={event.location || "Не указано"}
+                      date={formatEventDate(event.start_at)}
+                      link={`/events/${event.id}`}
+                      buttonText="К мероприятию"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-events__empty">
+                  Здесь пока нет мероприятий
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </section>
     </main>

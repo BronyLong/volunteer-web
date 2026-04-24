@@ -3,10 +3,12 @@ import "./ApplicationCard.css";
 
 function getStatusLabel(status) {
   switch (status) {
+    case "pending":
+      return "Ожидает решения";
+    case "approved":
+      return "Принята";
     case "rejected":
       return "Отклонена";
-    case "active":
-      return "Подана";
     default:
       return "Неизвестно";
   }
@@ -14,10 +16,12 @@ function getStatusLabel(status) {
 
 function getStatusClass(status) {
   switch (status) {
+    case "pending":
+      return "application-card__status application-card__status--pending";
+    case "approved":
+      return "application-card__status application-card__status--approved";
     case "rejected":
       return "application-card__status application-card__status--rejected";
-    case "active":
-      return "application-card__status application-card__status--active";
     default:
       return "application-card__status";
   }
@@ -31,15 +35,15 @@ export default function ApplicationCard({
   secondName,
   email,
   phone,
-  status = "active",
+  status = "pending",
+  onAccept,
   onReject,
-  onRestore,
+  isAccepting = false,
   isRejecting = false,
-  isRestoring = false,
+  canAccept = true,
   canReject = true,
-  canRestore = true,
 }) {
-  const isRejected = status === "rejected";
+  const isPending = status === "pending";
   const fullName = `${name} ${secondName}`.trim() || "Пользователь";
   const profileLink = userId ? `/profiles/${userId}` : null;
 
@@ -53,63 +57,45 @@ export default function ApplicationCard({
             aria-label={`Перейти в профиль пользователя ${fullName}`}
             title="Открыть профиль"
           >
-            <img
-              src={avatar}
-              alt={fullName}
-              className="application-card__avatar"
-            />
+            <img src={avatar} alt={fullName} className="application-card__avatar" />
           </Link>
         ) : (
-          <img
-            src={avatar}
-            alt={fullName}
-            className="application-card__avatar"
-          />
+          <img src={avatar} alt={fullName} className="application-card__avatar" />
         )}
 
         <div className="application-card__info">
           <h3 className="application-card__name">{fullName}</h3>
-
-          <span className={getStatusClass(status)}>
-            {getStatusLabel(status)}
-          </span>
-
+          <span className={getStatusClass(status)}>{getStatusLabel(status)}</span>
           <p className="application-card__line">{email}</p>
           <p className="application-card__line">{phone}</p>
         </div>
       </div>
 
-      {isRejected ? (
-        <button
-          type="button"
-          className="application-card__restore"
-          onClick={() => onRestore?.(id)}
-          disabled={isRestoring || !canRestore}
-          aria-label="Восстановить заявку"
-          title={
-            !canRestore
-              ? "Нельзя изменять заявки завершённого мероприятия"
-              : "Восстановить заявку"
-          }
-        >
-          {isRestoring ? "Восстановление..." : "Восстановить заявку"}
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="application-card__reject"
-          onClick={() => onReject?.(id)}
-          disabled={isRejecting || !canReject}
-          aria-label="Отклонить заявку"
-          title={
-            !canReject
-              ? "Нельзя изменять заявки завершённого мероприятия"
-              : "Отклонить заявку"
-          }
-        >
-          {isRejecting ? "Отклонение..." : "Отклонить заявку"}
-        </button>
-      )}
+      {isPending ? (
+        <div className="application-card__actions">
+          <button
+            type="button"
+            className="application-card__accept"
+            onClick={() => onAccept?.(id)}
+            disabled={isAccepting || !canAccept}
+            aria-label="Принять заявку"
+            title={!canAccept ? "Нельзя изменять заявки завершённого мероприятия" : "Принять заявку"}
+          >
+            {isAccepting ? "Принятие..." : "Принять"}
+          </button>
+
+          <button
+            type="button"
+            className="application-card__reject"
+            onClick={() => onReject?.(id)}
+            disabled={isRejecting || !canReject}
+            aria-label="Отклонить заявку"
+            title={!canReject ? "Нельзя изменять заявки завершённого мероприятия" : "Отклонить заявку"}
+          >
+            {isRejecting ? "Отклонение..." : "Отклонить"}
+          </button>
+        </div>
+      ) : null}
     </article>
   );
 }

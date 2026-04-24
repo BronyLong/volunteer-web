@@ -85,7 +85,7 @@ async function getProfileByUserId(userId, db = pool) {
         FROM applications a
         JOIN events e ON e.id = a.event_id
         WHERE a.user_id = u.id
-          AND a.status = 'active'
+          AND a.status = 'approved'
       ), '[]'::json) AS volunteer_events,
 
       COALESCE((
@@ -125,7 +125,7 @@ async function getProfileAccessLevel(viewer, targetUserId) {
     SELECT 1
     FROM applications a
     JOIN events e ON e.id = a.event_id
-    WHERE a.status = 'active'
+    WHERE a.status = 'approved'
       AND (
         (a.user_id = $1 AND e.created_by = $2)
         OR

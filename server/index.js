@@ -8,6 +8,7 @@ import eventsRoutes from "./routes/events.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import applicationsRoutes from "./routes/applications.routes.js";
 import categoriesRoutes from "./routes/categories.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/events", eventsRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/applications", applicationsRoutes);
 app.use("/api/categories", categoriesRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 

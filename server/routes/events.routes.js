@@ -50,7 +50,7 @@ async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
     FROM applications
     WHERE user_id = $1
       AND event_id = $2
-      AND status = 'active'
+      AND status = 'approved'
     LIMIT 1
     `,
     [viewer.id, eventId]
@@ -115,7 +115,7 @@ router.get("/", async (req, res) => {
       LEFT JOIN (
         SELECT event_id, COUNT(*)::int AS count
         FROM applications
-        WHERE status = 'active'
+        WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
     `;
@@ -171,7 +171,7 @@ router.get("/:id", async (req, res) => {
       LEFT JOIN (
         SELECT event_id, COUNT(*)::int AS count
         FROM applications
-        WHERE status = 'active'
+        WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
       WHERE e.id = $1
@@ -360,7 +360,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
       `
       SELECT COUNT(*)::int AS count
       FROM applications
-      WHERE event_id = $1 AND status = 'active'
+      WHERE event_id = $1 AND status = 'approved'
       `,
       [req.params.id]
     );

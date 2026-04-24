@@ -11,6 +11,7 @@ import EventOpenPage from "./pages/EventOpenPage";
 import ProfileSettings from "./pages/ProfileSettings";
 import EventEditPage from "./pages/EventEditPage";
 import EventCreatePage from "./pages/EventCreatePage";
+import AdminPage from "./pages/AdminPage";
 
 import "./styles/reset.css";
 import "./styles/variables.css";
@@ -30,6 +31,7 @@ export default function App() {
 
         <Route path="/help" element={<HelpPage />} />
         <Route path="/create" element={<EventCreatePage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/events/:id" element={<EventOpenPage />} />
         <Route path="/events/:id/edit" element={<EventEditPage />} />
       </Route>
