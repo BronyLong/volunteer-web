@@ -415,7 +415,7 @@ export default function EventCreatePage() {
                     <div
                       className="select-wrap"
                       style={{
-                        "--category-icon": `url(${selectedCategory.icon})`,
+                        "--category-icon": `url("${selectedCategory.icon}")`,
                       }}
                     >
                       <select
