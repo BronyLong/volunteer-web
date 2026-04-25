@@ -64,6 +64,9 @@ SELECT
 FROM users
 WHERE email = 'volunteer@example.com';
 
+-- =========================================
+-- МЕРОПРИЯТИЯ
+-- =========================================
 INSERT INTO events (
     title,
     description,
@@ -331,17 +334,6 @@ VALUES
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
     (SELECT id FROM users WHERE email = 'coordinator@example.com')
-);
-
-INSERT INTO applications (
-    user_id,
-    event_id,
-    status
-)
-VALUES (
-    (SELECT id FROM users WHERE email = 'volunteer@example.com'),
-    (SELECT id FROM events WHERE title = 'Экологическая акция в городском парке'),
-    'active'
 );
 
 -- =========================================

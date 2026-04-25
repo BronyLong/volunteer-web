@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getProfileById, updateMyProfile } from "../api";
+import { formatDuration } from "../utils/eventUtils";
 import ProfileEventCard from "../components/ProfileEventCard";
 
 import locationIcon from "../assets/SVG/location_footer.svg";
@@ -62,9 +63,7 @@ function getEventsTitle(role, isOwner) {
     return isOwner ? "Мои мероприятия" : "Мероприятия координатора";
   }
 
-  return isOwner
-    ? "Мероприятия, в которых я участвую"
-    : "Мероприятия пользователя";
+  return isOwner ? "Мои мероприятия" : "Мероприятия пользователя";
 }
 
 function formatEventDate(value) {
@@ -210,6 +209,16 @@ export default function ProfilePage() {
 
     return items.filter((item) => item.href);
   }, [profile, canViewContacts]);
+
+  const volunteerStats = useMemo(() => {
+    const stats = profile?.volunteer_stats || {};
+
+    return {
+      completedEventsCount: Number(stats.completed_events_count || 0),
+      completedMinutes: Number(stats.completed_minutes || 0),
+      upcomingEventsCount: Number(stats.upcoming_events_count || 0),
+    };
+  }, [profile]);
 
   const profileEvents = useMemo(() => {
     if (!profile) return [];
@@ -509,6 +518,41 @@ export default function ProfilePage() {
               </div>
 
               <div className="profile-events__divider"></div>
+
+              {profile.role === "volunteer" ? (
+                <>
+                  <div className="profile-events__stats">
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {volunteerStats.completedEventsCount}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Завершено мероприятий
+                      </span>
+                    </div>
+
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {formatDuration(volunteerStats.completedMinutes)}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Время участия
+                      </span>
+                    </div>
+
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {volunteerStats.upcomingEventsCount}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Предстоит мероприятий
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="profile-events__divider"></div>
+                </>
+              ) : null}
 
               {profileEvents.length > 0 ? (
                 <div className="profile-events__list">

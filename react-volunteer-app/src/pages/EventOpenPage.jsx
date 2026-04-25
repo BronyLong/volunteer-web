@@ -30,6 +30,7 @@ import {
 
 import {
   formatDate,
+  formatDuration,
   formatTime,
   getCoordinatorName,
   getDisplayValue,
@@ -501,6 +502,18 @@ export default function EventOpenPage() {
                     />
                   </span>
                   <strong>{formatTime(eventData.start_at)}</strong>
+                </div>
+
+                <div className="event-card__info-box">
+                  <span className="event-card__meta-label">
+                    ДЛИТЕЛЬНОСТЬ
+                    <img
+                      src={timeIcon}
+                      alt=""
+                      className="event-card__meta-inline-icon"
+                    />
+                  </span>
+                  <strong>{formatDuration(eventData.duration_minutes)}</strong>
                 </div>
               </div>
 

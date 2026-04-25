@@ -39,3 +39,24 @@ export function isEventPast(startAt) {
 
   return eventDate.getTime() < Date.now();
 }
+
+export function formatDuration(minutes) {
+  const numericMinutes = Number(minutes);
+
+  if (!Number.isFinite(numericMinutes) || numericMinutes <= 0) {
+    return "Не указано";
+  }
+
+  const hours = Math.floor(numericMinutes / 60);
+  const restMinutes = numericMinutes % 60;
+
+  if (hours > 0 && restMinutes > 0) {
+    return `${hours} ч ${restMinutes} мин`;
+  }
+
+  if (hours > 0) {
+    return `${hours} ч`;
+  }
+
+  return `${restMinutes} мин`;
+}

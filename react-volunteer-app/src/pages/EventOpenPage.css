@@ -49,9 +49,9 @@
 .event-card__settings {
   width: 42px;
   height: 42px;
-  border: 2px solid var(--green-350);
+  border: 2px solid var(--green-300);
   border-radius: 14px;
-  background: var(--green-050);
+  background: var(--white);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -186,7 +186,7 @@
 .event-card__places-box,
 .event-card__location-box,
 .event-card__info-box {
-  background: var(--green-175);
+  background: var(--green-200);
   border-radius: 14px;
   box-shadow: var(--shadow);
 }
@@ -245,7 +245,7 @@
 
 .event-card__date-time-grid {
   display: grid;
-  grid-template-columns: 182px 182px;
+  grid-template-columns: 182px 182px 182px;
   gap: 22px;
 }
 

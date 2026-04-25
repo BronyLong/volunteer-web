@@ -2,7 +2,7 @@
   padding: 64px 0 44px;
   background:
     radial-gradient(circle at left top, var(--green-glow-40) 0%, var(--green-glow-16) 32%, transparent 68%),
-    linear-gradient(90deg, var(--green-230) 0%, var(--green-mist) 100%);
+    linear-gradient(90deg, var(--green-200) 0%, var(--green-mist) 100%);
 }
 
 .hero__inner {
@@ -75,14 +75,14 @@
   flex: 0 0 362px;
   padding: 18px 18px 20px;
   border-radius: 10px;
-  background: var(--green-soft-2);
+  background: var(--green-soft);
   display: flex;
   flex-direction: column;
   transition: background 0.25s ease;
 }
 
 .hero__event-card--green {
-  background: var(--green-soft-2);
+  background: var(--green-soft);
 }
 
 .hero__event-card--orange {
@@ -140,7 +140,7 @@
 .hero__event-card--green .event-preview__place,
 .hero__event-card--green .event-preview__places,
 .hero__event-card--green .event-preview__category-row {
-  background: var(--green-soft-3);
+  background: var(--green-soft);
 }
 
 .hero__event-card--green .event-preview__category-pill {
@@ -177,7 +177,7 @@
   height: 96px;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--green-180);
+  background: var(--green-200);
   box-shadow: var(--shadow);
 }
 
@@ -292,7 +292,7 @@
 }
 
 .hero__slider-dots--green .hero__dot {
-  background: var(--green-220);
+  background: var(--green-200);
 }
 
 .hero__slider-dots--green .hero__dot--active {
@@ -509,7 +509,7 @@
 }
 
 .event-card__tag--green {
-  background: var(--green-125);
+  background: var(--green-100);
 }
 
 .event-card__tag--orange {

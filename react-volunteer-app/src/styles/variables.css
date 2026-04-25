@@ -4,32 +4,14 @@
 
   --green: #2f8f2f;
   --green-dark: #257425;
-  --green-750: #215421;
   --green-700: #2f5d2f;
-  --green-675: #247328;
-  --green-650: #256b25;
   --green-600: #2f7d2b;
   --green-400: #79aa79;
-  --green-350: #8eb18f;
   --green-300: #bfcdbf;
-  --green-230: #d7e2d8;
-  --green-220: #d7e7d8;
   --green-200: #d8e3db;
-  --green-180: #dce4da;
-  --green-175: #dce8de;
-  --green-150: #e6ece6;
-  --green-125: #eff3ee;
   --green-100: #eff7ef;
-  --green-095: #f2f7f2;
-  --green-090: #f3f7f3;
-  --green-075: #eef8ee;
-  --green-050: #f7faf7;
-  --green-025: #f8fbf8;
   --green-mist: #eef2ee;
   --green-soft: #d2ddd1;
-  --green-soft-2: #c5dac8;
-  --green-soft-3: #d9e3da;
-  --green-soft-4: #eef4ef;
 
   --orange: #f58600;
   --orange-dark: #ff8f00;
@@ -37,12 +19,8 @@
   --orange-600: #f57c00;
   --orange-deep: #de7100;
   --orange-200: #f3d5a6;
-  --orange-150: #f4d6a6;
-  --orange-125: #f8e8cf;
   --orange-100: #f8ead2;
-  --orange-075: #fff8f2;
   --orange-050: #fff1de;
-  --orange-025: #fff7ee;
   --orange-soft: #f2cf99;
   --orange-soft-2: #fff8ef;
   --orange-soft-3: #f3d8aa;
@@ -103,6 +81,8 @@
   --text-dark-9: #1d1d1d;
   --text-dark-10: #1a1a1a;
   --text-dark-11: #111111;
+
+  --link-blue: #045c98;
 
   --footer-bg: #e5e7eb;
   --border: #d5d5d5;
