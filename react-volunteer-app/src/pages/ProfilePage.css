@@ -90,12 +90,12 @@
 }
 
 .profile-page__state--error {
-  color: var(--red-700);
+  color: var(--red-dark);
 }
 
 .profile-page__inline-error {
   margin-top: 18px;
-  color: var(--red-700);
+  color: var(--red-dark);
   font-size: 16px;
   font-weight: 700;
 }

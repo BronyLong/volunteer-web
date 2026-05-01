@@ -81,7 +81,7 @@
 
 .application-card__status--rejected {
   background: var(--red-shadow-12);
-  color: var(--red-750);
+  color: var(--red);
 }
 
 .application-card__line {

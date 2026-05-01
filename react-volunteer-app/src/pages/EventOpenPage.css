@@ -515,7 +515,7 @@
 }
 
 .event-card__application-status--rejected {
-  background: var(--red-100);
+  background: var(--red-soft);
   color: var(--red);
 }
 

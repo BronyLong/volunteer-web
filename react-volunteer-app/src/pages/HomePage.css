@@ -86,7 +86,7 @@
 }
 
 .hero__event-card--orange {
-  background: var(--orange-soft-3);
+  background: var(--orange-soft);
 }
 
 .hero__event-card-content {
@@ -154,7 +154,7 @@
 .hero__event-card--orange .event-preview__place,
 .hero__event-card--orange .event-preview__places,
 .hero__event-card--orange .event-preview__category-row {
-  background: var(--orange-soft-3);
+  background: var(--orange-soft);
 }
 
 .hero__event-card--orange .event-preview__category-pill {
@@ -627,7 +627,7 @@
 }
 
 .cta__button--light {
-  background: var(--orange-soft-2);
+  background: var(--white);
   color: var(--orange-dark);
 }
 
