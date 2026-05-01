@@ -1,7 +1,3 @@
-dot -Tpng org_chart.dot -o org_chart.png
-dot -Tpng BPMN.dot -o BPMN.png
-dot -Tpng EPC.dot -o EPC.png
-dot -Tpng it_infrastructure.dot -o it_infrastructure.png
-dot -Tpng process_landscape.dot -o process_landscape.png
-dot -Tpng sys_landscape.dot -o sys_landscape.png
-dot -Tpng data_model.dot -o data_model.png
+dot -Tpng conceptual_data_model.dot -o conceptual_data_model.png
+dot -Tpng logical_data_model.dot -o logical_data_model.png
+dot -Tpng physical_data_model.dot -o physical_data_model.png
