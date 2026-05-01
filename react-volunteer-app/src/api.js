@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api";
+const API_URL = "/api";
 
 export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -101,18 +101,17 @@ export async function deleteApplication(id) {
   });
 }
 
+export async function acceptApplication(id) {
+  return apiFetch(`/applications/${id}/accept`, {
+    method: "PATCH",
+  });
+}
+
 export async function rejectApplication(id) {
   return apiFetch(`/applications/${id}/reject`, {
     method: "PATCH",
   });
 }
-
-export async function restoreApplication(id) {
-  return apiFetch(`/applications/${id}/restore`, {
-    method: "PATCH",
-  });
-}
-
 export function saveToken(token) {
   localStorage.setItem("token", token);
 }
@@ -146,4 +145,46 @@ export function getUserFromToken() {
   } catch {
     return null;
   }
+}
+
+export async function getAdminUsers() {
+  return apiFetch("/admin/users");
+}
+
+export async function updateAdminUserRole(id, role) {
+  return apiFetch(`/admin/users/${id}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function updateAdminUserActive(id, isActive) {
+  return apiFetch(`/admin/users/${id}/active`, {
+    method: "PATCH",
+    body: JSON.stringify({ is_active: isActive }),
+  });
+}
+
+export async function getAdminEvents() {
+  return apiFetch("/admin/events");
+}
+
+export async function updateAdminEventCoordinator(id, coordinatorId) {
+  return apiFetch(`/admin/events/${id}/coordinator`, {
+    method: "PATCH",
+    body: JSON.stringify({ coordinator_id: coordinatorId }),
+  });
+}
+
+export async function getAdminLogs(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      params.set(key, value);
+    }
+  });
+
+  const query = params.toString();
+  return apiFetch(`/admin/logs${query ? `?${query}` : ""}`);
 }

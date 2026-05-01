@@ -78,15 +78,47 @@ async function getProfileByUserId(userId, db = pool) {
             'id', e.id,
             'title', e.title,
             'location', e.location,
-            'start_at', e.start_at
+            'start_at', e.start_at,
+            'duration_minutes', e.duration_minutes,
+            'application_status', a.status
           )
           ORDER BY e.start_at ASC
         )
         FROM applications a
         JOIN events e ON e.id = a.event_id
         WHERE a.user_id = u.id
-          AND a.status = 'active'
+          AND a.status = 'approved'
       ), '[]'::json) AS volunteer_events,
+
+      json_build_object(
+        'completed_events_count', COALESCE((
+          SELECT COUNT(DISTINCT e.id)::int
+          FROM applications a
+          JOIN events e ON e.id = a.event_id
+          WHERE a.user_id = u.id
+            AND a.status = 'approved'
+            AND e.start_at < CURRENT_TIMESTAMP
+        ), 0),
+        'completed_minutes', COALESCE((
+          SELECT SUM(completed_events.duration_minutes)::int
+          FROM (
+            SELECT DISTINCT e.id, e.duration_minutes
+            FROM applications a
+            JOIN events e ON e.id = a.event_id
+            WHERE a.user_id = u.id
+              AND a.status = 'approved'
+              AND e.start_at < CURRENT_TIMESTAMP
+          ) AS completed_events
+        ), 0),
+        'upcoming_events_count', COALESCE((
+          SELECT COUNT(DISTINCT e.id)::int
+          FROM applications a
+          JOIN events e ON e.id = a.event_id
+          WHERE a.user_id = u.id
+            AND a.status = 'approved'
+            AND e.start_at >= CURRENT_TIMESTAMP
+        ), 0)
+      ) AS volunteer_stats,
 
       COALESCE((
         SELECT json_agg(
@@ -94,7 +126,8 @@ async function getProfileByUserId(userId, db = pool) {
             'id', e.id,
             'title', e.title,
             'location', e.location,
-            'start_at', e.start_at
+            'start_at', e.start_at,
+            'duration_minutes', e.duration_minutes
           )
           ORDER BY e.start_at ASC
         )
@@ -125,7 +158,7 @@ async function getProfileAccessLevel(viewer, targetUserId) {
     SELECT 1
     FROM applications a
     JOIN events e ON e.id = a.event_id
-    WHERE a.status = 'active'
+    WHERE a.status = 'approved'
       AND (
         (a.user_id = $1 AND e.created_by = $2)
         OR
@@ -160,6 +193,11 @@ function sanitizeProfile(profile, accessLevel, viewer) {
     volunteer_events: Array.isArray(profile.volunteer_events)
       ? profile.volunteer_events
       : [],
+    volunteer_stats: profile.volunteer_stats || {
+      completed_events_count: 0,
+      completed_minutes: 0,
+      upcoming_events_count: 0,
+    },
     coordinator_events: Array.isArray(profile.coordinator_events)
       ? profile.coordinator_events
       : [],

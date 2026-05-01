@@ -18,6 +18,7 @@ const INITIAL_FORM = {
   location: "",
   date: "",
   time: "",
+  durationMinutes: "120",
 };
 
 function getCategoryIconByName(name) {
@@ -150,28 +151,31 @@ export default function EventCreatePage() {
 
   function handleChange(event) {
     const { name, value } = event.target;
-
-    if (name === "places") {
+  
+    if (name === "places" || name === "durationMinutes") {
       if (value === "") {
-        setFormData((prev) => ({ ...prev, places: "" }));
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
         return;
       }
-
+  
       const numericValue = Number(value);
       if (numericValue < 1) return;
-
+  
       setFormData((prev) => ({
         ...prev,
-        places: value,
+        [name]: value,
       }));
       return;
     }
-
+  
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-
+  
     if (error) setError("");
   }
 
@@ -180,6 +184,15 @@ export default function EventCreatePage() {
       setFormData((prev) => ({
         ...prev,
         places: "1",
+      }));
+    }
+  }
+
+  function handleDurationBlur() {
+    if (formData.durationMinutes === "" || Number(formData.durationMinutes) < 1) {
+      setFormData((prev) => ({
+        ...prev,
+        durationMinutes: "1",
       }));
     }
   }
@@ -242,7 +255,8 @@ export default function EventCreatePage() {
       !formData.places ||
       !formData.location.trim() ||
       !formData.date ||
-      !formData.time
+      !formData.time ||
+      !formData.durationMinutes
     ) {
       setError("Заполните все обязательные поля");
       return;
@@ -262,6 +276,7 @@ export default function EventCreatePage() {
           .map((task) => task.trim())
           .filter(Boolean),
         participant_limit: Number(formData.places),
+        duration_minutes: Number(formData.durationMinutes),
         category_id: formData.category,
       };
 
@@ -400,7 +415,7 @@ export default function EventCreatePage() {
                     <div
                       className="select-wrap"
                       style={{
-                        "--category-icon": `url(${selectedCategory.icon})`,
+                        "--category-icon": `url("${selectedCategory.icon}")`,
                       }}
                     >
                       <select
@@ -483,6 +498,23 @@ export default function EventCreatePage() {
                         className="form-field__input"
                         value={formData.time}
                         onChange={handleChange}
+                        disabled={saving}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="eventDuration" className="form-field__label">
+                        Длительность, минут
+                      </label>
+                      <input
+                        id="eventDuration"
+                        name="durationMinutes"
+                        type="number"
+                        min="1"
+                        className="form-field__input"
+                        value={formData.durationMinutes}
+                        onChange={handleChange}
+                        onBlur={handleDurationBlur}
                         disabled={saving}
                       />
                     </div>

@@ -7,11 +7,11 @@
 }
 
 .event-tile--green {
-  background: var(--green-soft-2);
+  background: var(--green-soft);
 }
 
 .event-tile--orange {
-  background: var(--orange-150);
+  background: var(--orange-100);
 }
 
 .event-tile__title {
@@ -56,7 +56,7 @@
   height: 110px;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--green-150);
+  background: var(--green-100);
   box-shadow: var(--shadow);
 }
 
@@ -173,11 +173,11 @@
 .event-tile--green .event-tile__place,
 .event-tile--green .event-tile__spots,
 .event-tile--green .event-tile__category-row {
-  background: var(--green-175);
+  background: var(--green-200);
 }
 
 .event-tile--green .event-tile__category-pill {
-  background: var(--green-090);
+  background: var(--white);
 }
 
 /* ---------- ORANGE ---------- */
@@ -185,11 +185,11 @@
 .event-tile--orange .event-tile__place,
 .event-tile--orange .event-tile__spots,
 .event-tile--orange .event-tile__category-row {
-  background: var(--orange-125);
+  background: var(--orange-100);
 }
 
 .event-tile--orange .event-tile__category-pill {
-  background: var(--orange-025);
+  background: var(--white);
 }
 
 

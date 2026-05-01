@@ -50,7 +50,7 @@ async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
     FROM applications
     WHERE user_id = $1
       AND event_id = $2
-      AND status = 'active'
+      AND status = 'approved'
     LIMIT 1
     `,
     [viewer.id, eventId]
@@ -68,6 +68,7 @@ async function getEventForAudit(eventId, db = pool) {
       e.image_url,
       e.description,
       e.start_at,
+      e.duration_minutes,
       e.location,
       e.tasks,
       e.participant_limit,
@@ -99,6 +100,7 @@ router.get("/", async (req, res) => {
         e.image_url,
         e.description,
         e.start_at,
+        e.duration_minutes,
         e.location,
         e.tasks,
         e.participant_limit,
@@ -115,7 +117,7 @@ router.get("/", async (req, res) => {
       LEFT JOIN (
         SELECT event_id, COUNT(*)::int AS count
         FROM applications
-        WHERE status = 'active'
+        WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
     `;
@@ -147,6 +149,7 @@ router.get("/:id", async (req, res) => {
         e.image_url,
         e.description,
         e.start_at,
+        e.duration_minutes,
         e.location,
         e.tasks,
         e.participant_limit,
@@ -171,7 +174,7 @@ router.get("/:id", async (req, res) => {
       LEFT JOIN (
         SELECT event_id, COUNT(*)::int AS count
         FROM applications
-        WHERE status = 'active'
+        WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
       WHERE e.id = $1
@@ -211,6 +214,7 @@ router.post("/", authMiddleware, async (req, res) => {
     location,
     tasks = [],
     participant_limit,
+    duration_minutes,
     category_id,
   } = req.body;
 
@@ -226,6 +230,7 @@ router.post("/", authMiddleware, async (req, res) => {
     !start_at ||
     !location ||
     !participant_limit ||
+    !duration_minutes ||
     !category_id
   ) {
     return res
@@ -245,6 +250,7 @@ router.post("/", authMiddleware, async (req, res) => {
         image_url,
         description,
         start_at,
+        duration_minutes,
         location,
         tasks,
         participant_limit,
@@ -252,7 +258,7 @@ router.post("/", authMiddleware, async (req, res) => {
         category_id,
         created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)
       RETURNING *
       `,
       [
@@ -260,6 +266,7 @@ router.post("/", authMiddleware, async (req, res) => {
         image_url || null,
         description,
         start_at,
+        duration_minutes,
         location,
         tasks,
         Number(participant_limit),
@@ -305,6 +312,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
     location,
     tasks = [],
     participant_limit,
+    duration_minutes,
     category_id,
   } = req.body;
 
@@ -320,6 +328,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
     !start_at ||
     !location ||
     !participant_limit ||
+    !duration_minutes ||
     !category_id
   ) {
     return res
@@ -360,7 +369,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
       `
       SELECT COUNT(*)::int AS count
       FROM applications
-      WHERE event_id = $1 AND status = 'active'
+      WHERE event_id = $1 AND status = 'approved'
       `,
       [req.params.id]
     );
@@ -385,12 +394,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
         image_url = $2,
         description = $3,
         start_at = $4,
-        location = $5,
-        tasks = $6,
-        participant_limit = $7,
-        available_slots = $8,
-        category_id = $9
-      WHERE id = $10
+        duration_minutes = $5,
+        location = $6,
+        tasks = $7,
+        participant_limit = $8,
+        available_slots = $9,
+        category_id = $10
+      WHERE id = $11
       RETURNING *
       `,
       [
@@ -398,6 +408,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
         image_url || null,
         description,
         start_at,
+        duration_minutes,
         location,
         tasks,
         newLimit,

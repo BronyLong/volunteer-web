@@ -29,19 +29,39 @@ digraph PhysicalDataModel {
         arrowsize=0.8
     ];
 
-    users [label="{users|id UUID PK\lemail VARCHAR(255) UNIQUE NOT NULL\lpassword TEXT NOT NULL\lrole VARCHAR(32) NOT NULL\lis_active BOOLEAN DEFAULT true\lcreated_at TIMESTAMP NOT NULL\l}"];
+    users [
+        label="{users|id UUID PK\lemail VARCHAR(255) UNIQUE NOT NULL\lpassword TEXT NOT NULL\lrole VARCHAR(32) NOT NULL\lis_active BOOLEAN DEFAULT true\lcreated_at TIMESTAMP NOT NULL\l}"
+    ];
 
-    profiles [label="{profiles|user_id UUID PK, FK users.id\lfirst_name VARCHAR(100) NOT NULL\llast_name VARCHAR(100) NOT NULL\lphone VARCHAR(30)\lcity VARCHAR(120)\lavatar_url TEXT\lbio TEXT\lsocial_vk TEXT\lsocial_ok TEXT\lsocial_max TEXT\l}"];
+    profiles [
+        label="{profiles|user_id UUID PK, FK users.id\lfirst_name VARCHAR(100) NOT NULL\llast_name VARCHAR(100) NOT NULL\lphone VARCHAR(30)\lcity VARCHAR(120)\lavatar_url TEXT\lbio TEXT\lsocial_vk TEXT\lsocial_ok TEXT\lsocial_max TEXT\l}"
+    ];
 
-    categories [label="{categories|id SERIAL PK\lname VARCHAR(100) UNIQUE NOT NULL\l}"];
+    categories [
+        label="{categories|id SERIAL PK\lname VARCHAR(100) UNIQUE NOT NULL\l}"
+    ];
 
-    events [label="{events|id UUID PK\ltitle VARCHAR(255) NOT NULL\ldescription TEXT NOT NULL\lstart_at TIMESTAMP NOT NULL\llocation VARCHAR(255) NOT NULL\ltasks TEXT[] NOT NULL DEFAULT '{}'\lparticipant_limit INTEGER NOT NULL\lavailable_slots INTEGER NOT NULL\lcategory_id INTEGER FK categories.id\lcreated_by UUID FK users.id\lcreated_at TIMESTAMP NOT NULL\lupdated_at TIMESTAMP NOT NULL\l}"];
+    events [
+        label="{events|id UUID PK\ltitle VARCHAR(255) NOT NULL\limage_url TEXT\ldescription TEXT NOT NULL\lstart_at TIMESTAMP NOT NULL\lduration_minutes INTEGER NOT NULL DEFAULT 120\llocation VARCHAR(255) NOT NULL\ltasks TEXT ARRAY NOT NULL DEFAULT empty_array\lparticipant_limit INTEGER NOT NULL\lavailable_slots INTEGER NOT NULL\lcategory_id INTEGER NOT NULL, FK categories.id\lcreated_by UUID NOT NULL, FK users.id\lcreated_at TIMESTAMP NOT NULL\lupdated_at TIMESTAMP NOT NULL\l}"
+    ];
 
-    applications [label="{applications|id BIGSERIAL PK\luser_id UUID FK users.id\levent_id UUID FK events.id\lstatus VARCHAR(20) DEFAULT 'active'\lcreated_at TIMESTAMP NOT NULL\l}"];
+    applications [
+        label="{applications|id BIGSERIAL PK\luser_id UUID NOT NULL, FK users.id\levent_id UUID NOT NULL, FK events.id\lstatus VARCHAR(20) DEFAULT 'pending'\lcreated_at TIMESTAMP NOT NULL\l}"
+    ];
 
-    idx1 [shape=note, fillcolor="#FFF8E8", color="#D4A64A", label="Индексы:\l- users(email) UNIQUE\l- categories(name) UNIQUE\l- applications(user_id, event_id) UNIQUE\l- events(start_at)\l- events(category_id)\l- applications(event_id)\l"];
+    idx1 [
+        shape=note,
+        fillcolor="#FFF8E8",
+        color="#D4A64A",
+        label="Индексы:\l- users(email) UNIQUE\l- categories(name) UNIQUE\l- applications(user_id, event_id) UNIQUE\l- events(start_at)\l- events(category_id)\l- applications(event_id)\l"
+    ];
 
-    chk [shape=note, fillcolor="#EEF9F0", color="#68A36B", label="Ограничения:\l- participant_limit > 0\l- available_slots >= 0\l- available_slots <= participant_limit\l"];
+    chk [
+        shape=note,
+        fillcolor="#EEF9F0",
+        color="#68A36B",
+        label="Ограничения:\l- duration_minutes > 0\l- participant_limit > 0\l- available_slots >= 0\l- available_slots <= participant_limit\l"
+    ];
 
     users -> profiles [label="1 : 1", dir=both];
     users -> events [label="1 : N", dir=both];

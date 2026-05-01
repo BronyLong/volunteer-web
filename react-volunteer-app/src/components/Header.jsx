@@ -12,7 +12,7 @@ import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
 import locationIcon from "../assets/SVG/location_footer.svg";
 
-import okIcon from "../assets/SVG/odnoklassnini.svg";
+import okIcon from "../assets/SVG/odnoklassniki.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 

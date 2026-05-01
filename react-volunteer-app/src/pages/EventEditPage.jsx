@@ -24,6 +24,7 @@ const INITIAL_FORM = {
   location: "",
   date: "",
   time: "",
+  durationMinutes: "120",
 };
 
 function getCategoryIconByName(name) {
@@ -170,6 +171,7 @@ export default function EventEditPage() {
           location: eventData.location || "",
           date: toDateInputValue(eventData.start_at),
           time: toTimeInputValue(eventData.start_at),
+          durationMinutes: String(eventData.duration_minutes || "120"),
         });
 
         setTasks(Array.isArray(eventData.tasks) ? eventData.tasks : []);
@@ -198,28 +200,31 @@ export default function EventEditPage() {
 
   function handleChange(event) {
     const { name, value } = event.target;
-
-    if (name === "places") {
+  
+    if (name === "places" || name === "durationMinutes") {
       if (value === "") {
-        setFormData((prev) => ({ ...prev, places: "" }));
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
         return;
       }
-
+  
       const numericValue = Number(value);
       if (numericValue < 1) return;
-
+  
       setFormData((prev) => ({
         ...prev,
-        places: value,
+        [name]: value,
       }));
       return;
     }
-
+  
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-
+  
     if (error) setError("");
   }
 
@@ -228,6 +233,15 @@ export default function EventEditPage() {
       setFormData((prev) => ({
         ...prev,
         places: "1",
+      }));
+    }
+  }
+
+  function handleDurationBlur() {
+    if (formData.durationMinutes === "" || Number(formData.durationMinutes) < 1) {
+      setFormData((prev) => ({
+        ...prev,
+        durationMinutes: "1",
       }));
     }
   }
@@ -290,7 +304,8 @@ export default function EventEditPage() {
       !formData.places ||
       !formData.location.trim() ||
       !formData.date ||
-      !formData.time
+      !formData.time ||
+      !formData.durationMinutes
     ) {
       setError("Заполните все обязательные поля");
       return;
@@ -308,6 +323,7 @@ export default function EventEditPage() {
         location: formData.location.trim(),
         tasks: tasks.map((task) => task.trim()).filter(Boolean),
         participant_limit: Number(formData.places),
+        duration_minutes: Number(formData.durationMinutes),
         category_id: formData.category,
       };
 
@@ -474,7 +490,7 @@ export default function EventEditPage() {
                     <div
                       className="select-wrap"
                       style={{
-                        "--category-icon": `url(${selectedCategory.icon})`,
+                        "--category-icon": `url("${selectedCategory.icon}")`,
                       }}
                     >
                       <select
@@ -556,6 +572,23 @@ export default function EventEditPage() {
                         className="form-field__input"
                         value={formData.time}
                         onChange={handleChange}
+                        disabled={saving || deleting}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="eventDuration" className="form-field__label">
+                        Длительность, минут
+                      </label>
+                      <input
+                        id="eventDuration"
+                        name="durationMinutes"
+                        type="number"
+                        min="1"
+                        className="form-field__input"
+                        value={formData.durationMinutes}
+                        onChange={handleChange}
+                        onBlur={handleDurationBlur}
                         disabled={saving || deleting}
                       />
                     </div>

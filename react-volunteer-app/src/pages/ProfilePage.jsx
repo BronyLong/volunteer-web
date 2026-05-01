@@ -3,12 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getProfileById, updateMyProfile } from "../api";
+import { formatDuration } from "../utils/eventUtils";
 import ProfileEventCard from "../components/ProfileEventCard";
 
 import locationIcon from "../assets/SVG/location_footer.svg";
 import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
-import okIcon from "../assets/SVG/odnoklassnini.svg";
+import okIcon from "../assets/SVG/odnoklassniki.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 import arrowIcon from "../assets/SVG/arrow.svg";
@@ -58,13 +59,11 @@ function getRoleLabel(role) {
 }
 
 function getEventsTitle(role, isOwner) {
-  if (role === "coordinator" || role === "admin") {
+  if (role === "coordinator") {
     return isOwner ? "Мои мероприятия" : "Мероприятия координатора";
   }
 
-  return isOwner
-    ? "Мероприятия, в которых я участвую"
-    : "Мероприятия пользователя";
+  return isOwner ? "Мои мероприятия" : "Мероприятия пользователя";
 }
 
 function formatEventDate(value) {
@@ -211,10 +210,20 @@ export default function ProfilePage() {
     return items.filter((item) => item.href);
   }, [profile, canViewContacts]);
 
+  const volunteerStats = useMemo(() => {
+    const stats = profile?.volunteer_stats || {};
+
+    return {
+      completedEventsCount: Number(stats.completed_events_count || 0),
+      completedMinutes: Number(stats.completed_minutes || 0),
+      upcomingEventsCount: Number(stats.upcoming_events_count || 0),
+    };
+  }, [profile]);
+
   const profileEvents = useMemo(() => {
     if (!profile) return [];
 
-    if (profile.role === "coordinator" || profile.role === "admin") {
+    if (profile.role === "coordinator") {
       return Array.isArray(profile.coordinator_events)
         ? profile.coordinator_events
         : [];
@@ -438,7 +447,9 @@ export default function ProfilePage() {
 
               <div className="profile-card__divider"></div>
 
-              <div className="profile-bio">{getTextValue(profile.bio, "Пока не заполнено")}</div>
+              <div className="profile-bio">
+                {getTextValue(profile.bio, "Пока не заполнено")}
+              </div>
 
               {socials.length > 0 ? (
                 <div className="profile-socials">
@@ -484,40 +495,89 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <section className="profile-events">
-            <div className="profile-events__header">
-              <h2 className="profile-events__title">
-                {getEventsTitle(profile.role, profile.is_owner)}
-              </h2>
+          {profile.role === "admin" ? (
+            profile.is_owner ? (
+              <section className="profile-events">
+                <div className="profile-events__header">
+                  <h2 className="profile-events__title">Администрирование</h2>
 
-              {profile.is_owner && profile.role === "coordinator" ? (
-                <Link to="/create" className="profile-events__create-button">
-                  Добавить мероприятие
-                </Link>
+                  <Link to="/admin" className="profile-events__create-button">
+                    Перейти
+                  </Link>
+                </div>
+              </section>
+            ) : null
+          ) : (
+            <section className="profile-events">
+              <div className="profile-events__header">
+                <h2 className="profile-events__title">
+                  {getEventsTitle(profile.role, profile.is_owner)}
+                </h2>
+
+                {profile.is_owner && profile.role === "coordinator" ? (
+                  <Link to="/create" className="profile-events__create-button">
+                    Добавить мероприятие
+                  </Link>
+                ) : null}
+              </div>
+
+              <div className="profile-events__divider"></div>
+
+              {profile.role === "volunteer" ? (
+                <>
+                  <div className="profile-events__stats">
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {volunteerStats.completedEventsCount}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Завершено мероприятий
+                      </span>
+                    </div>
+
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {formatDuration(volunteerStats.completedMinutes)}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Время участия
+                      </span>
+                    </div>
+
+                    <div className="profile-events__stat-card">
+                      <span className="profile-events__stat-value">
+                        {volunteerStats.upcomingEventsCount}
+                      </span>
+                      <span className="profile-events__stat-label">
+                        Предстоит мероприятий
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="profile-events__divider"></div>
+                </>
               ) : null}
-            </div>
 
-            <div className="profile-events__divider"></div>
-
-            {profileEvents.length > 0 ? (
-              <div className="profile-events__list">
-                {profileEvents.map((event) => (
-                  <ProfileEventCard
-                    key={event.id}
-                    title={event.title}
-                    location={event.location || "Не указано"}
-                    date={formatEventDate(event.start_at)}
-                    link={`/events/${event.id}`}
-                    buttonText="К мероприятию"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="profile-events__empty">
-                Здесь пока нет мероприятий
-              </div>
-            )}
-          </section>
+              {profileEvents.length > 0 ? (
+                <div className="profile-events__list">
+                  {profileEvents.map((event) => (
+                    <ProfileEventCard
+                      key={event.id}
+                      title={event.title}
+                      location={event.location || "Не указано"}
+                      date={formatEventDate(event.start_at)}
+                      link={`/events/${event.id}`}
+                      buttonText="К мероприятию"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-events__empty">
+                  Здесь пока нет мероприятий
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </section>
     </main>

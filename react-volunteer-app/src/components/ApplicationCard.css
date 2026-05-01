@@ -69,14 +69,19 @@
   color: var(--text-muted-11);
 }
 
-.application-card__status--active {
+.application-card__status--pending {
+  background: var(--neutral-350);
+  color: var(--text-muted-11);
+}
+
+.application-card__status--approved {
   background: var(--green-accent-15);
   color: var(--green-600);
 }
 
 .application-card__status--rejected {
   background: var(--red-shadow-12);
-  color: var(--red-750);
+  color: var(--red);
 }
 
 .application-card__line {
@@ -86,9 +91,16 @@
   color: var(--text-muted-6);
 }
 
-.application-card__reject,
-.application-card__restore {
-  min-width: 190px;
+.application-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.application-card__accept,
+.application-card__reject {
+  min-width: 150px;
   min-height: 52px;
   padding: 0 18px;
   border-radius: 16px;
@@ -105,6 +117,15 @@
   text-align: center;
 }
 
+.application-card__accept {
+  background: var(--green);
+}
+
+.application-card__accept:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
 .application-card__reject {
   background: var(--red);
 }
@@ -114,17 +135,8 @@
   transform: translateY(-1px);
 }
 
-.application-card__restore {
-  background: var(--green);
-}
-
-.application-card__restore:hover {
-  background: var(--green-dark);
-  transform: translateY(-1px);
-}
-
 .application-card__reject:disabled,
-.application-card__restore:disabled {
+.application-card__accept:disabled {
   opacity: 0.55;
   cursor: default;
   transform: none;
@@ -162,8 +174,14 @@
     font-size: 14px;
   }
 
-  .application-card__reject,
-  .application-card__restore {
+  .application-card__actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .application-card__accept,
+  .application-card__reject {
     width: 100%;
     min-width: 0;
     min-height: 46px;

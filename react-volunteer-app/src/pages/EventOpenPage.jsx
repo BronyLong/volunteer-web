@@ -21,15 +21,16 @@ import eventImage from "../assets/images/animals_help.png";
 import womanAvatar from "../assets/images/avatar_man.png";
 
 import {
+  acceptApplication,
   apiFetch,
   deleteApplication,
   getToken,
   rejectApplication,
-  restoreApplication,
 } from "../api";
 
 import {
   formatDate,
+  formatDuration,
   formatTime,
   getCoordinatorName,
   getDisplayValue,
@@ -58,6 +59,15 @@ function getCategoryIcon(categoryName) {
   return leafCategoryIcon;
 }
 
+function getApplicationTime(application) {
+  return new Date(
+    application.created_at ||
+      application.updated_at ||
+      application.submitted_at ||
+      application.application_date ||
+      0
+  ).getTime();
+}
 
 export default function EventOpenPage() {
   const params = useParams();
@@ -65,14 +75,15 @@ export default function EventOpenPage() {
 
   const [eventData, setEventData] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [showRejectedApplications, setShowRejectedApplications] = useState(false);
   const [myApplications, setMyApplications] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [acceptingId, setAcceptingId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
-  const [restoringId, setRestoringId] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -179,6 +190,31 @@ export default function EventOpenPage() {
     return `/profiles/${eventData.creator_id}`;
   }, [eventData]);
 
+  const currentApplication = useMemo(() => {
+    if (myApplications.length === 0) return null;
+
+    const sortedApplications = [...myApplications].sort((a, b) => {
+      const timeDiff = getApplicationTime(b) - getApplicationTime(a);
+
+      if (timeDiff !== 0) return timeDiff;
+
+      return Number(b.id || 0) - Number(a.id || 0);
+    });
+
+    const activeApplication = sortedApplications.find(
+      (application) =>
+        application.status === "pending" || application.status === "approved"
+    );
+
+    return activeApplication || sortedApplications[0];
+  }, [myApplications]);
+
+  const visibleApplications = useMemo(() => {
+    if (showRejectedApplications) return applications;
+
+    return applications.filter((application) => application.status !== "rejected");
+  }, [applications, showRejectedApplications]);
+
   async function refreshVolunteerApplicationData() {
     const refreshedEvent = await apiFetch(`/events/${eventId}`);
     const myApps = await apiFetch("/applications/my");
@@ -236,6 +272,22 @@ export default function EventOpenPage() {
     }
   }
 
+  async function handleAcceptApplication(applicationId) {
+    if (eventIsPast) return;
+
+    try {
+      setAcceptingId(applicationId);
+      setError("");
+
+      await acceptApplication(applicationId);
+      await refreshManagerApplicationData();
+    } catch (err) {
+      setError(err.message || "Не удалось принять заявку");
+    } finally {
+      setAcceptingId(null);
+    }
+  }
+
   async function handleRejectApplication(applicationId) {
     if (eventIsPast) return;
 
@@ -252,20 +304,23 @@ export default function EventOpenPage() {
     }
   }
 
-  async function handleRestoreApplication(applicationId) {
-    if (eventIsPast) return;
-
-    try {
-      setRestoringId(applicationId);
-      setError("");
-
-      await restoreApplication(applicationId);
-      await refreshManagerApplicationData();
-    } catch (err) {
-      setError(err.message || "Не удалось восстановить заявку");
-    } finally {
-      setRestoringId(null);
+  function getMyApplicationStatusText(status) {
+    switch (status) {
+      case "pending":
+        return "Заявка отправлена и ожидает решения координатора";
+      case "approved":
+        return "Вы участвуете в мероприятии";
+      case "rejected":
+        return "Заявка отклонена";
+      default:
+        return "Вы подали заявку";
     }
+  }
+
+  function getMyApplicationStatusClass(status) {
+    return status === "rejected"
+      ? "event-card__application-status event-card__application-status--rejected"
+      : "event-card__application-status";
   }
 
   if (loading) {
@@ -448,6 +503,18 @@ export default function EventOpenPage() {
                   </span>
                   <strong>{formatTime(eventData.start_at)}</strong>
                 </div>
+
+                <div className="event-card__info-box">
+                  <span className="event-card__meta-label">
+                    ДЛИТЕЛЬНОСТЬ
+                    <img
+                      src={timeIcon}
+                      alt=""
+                      className="event-card__meta-inline-icon"
+                    />
+                  </span>
+                  <strong>{formatDuration(eventData.duration_minutes)}</strong>
+                </div>
               </div>
 
               <div className="event-card__divider"></div>
@@ -549,20 +616,33 @@ export default function EventOpenPage() {
                 ) : null}
 
                 {canVolunteerInteract &&
-                  (myApplications.length > 0 ? (
+                  (currentApplication ? (
                     <div className="event-card__application-actions">
-                      <div className="event-card__application-status">
-                        Вы подали заявку
+                      <div className={getMyApplicationStatusClass(currentApplication.status)}>
+                        {getMyApplicationStatusText(currentApplication.status)}
                       </div>
 
-                      <button
-                        type="button"
-                        className="event-card__withdraw-button"
-                        onClick={() => handleWithdrawApplication(myApplications[0].id)}
-                        disabled={actionLoading}
-                      >
-                        {actionLoading ? "Отзываем..." : "Отозвать"}
-                      </button>
+                      {currentApplication.status === "pending" ? (
+                        <button
+                          type="button"
+                          className="event-card__withdraw-button"
+                          onClick={() => handleWithdrawApplication(currentApplication.id)}
+                          disabled={actionLoading}
+                        >
+                          {actionLoading ? "Отзываем..." : "Отозвать"}
+                        </button>
+                      ) : null}
+
+                      {currentApplication.status === "rejected" ? (
+                        <button
+                          type="button"
+                          className="event-card__join-button"
+                          onClick={handleApply}
+                          disabled={actionLoading}
+                        >
+                          {actionLoading ? "Отправляем..." : "Подать заявку повторно"}
+                        </button>
+                      ) : null}
                     </div>
                   ) : (
                     <button
@@ -588,7 +668,18 @@ export default function EventOpenPage() {
           {canViewApplications ? (
             <section className="applications-section">
               <div className="applications-card">
-                <h2 className="applications-card__title">Поданные заявки</h2>
+                <div className="applications-card__header">
+                  <h2 className="applications-card__title">Поданные заявки</h2>
+
+                  <label className="applications-card__toggle">
+                    <input
+                      type="checkbox"
+                      checked={showRejectedApplications}
+                      onChange={(event) => setShowRejectedApplications(event.target.checked)}
+                    />
+                    <span>Показывать отклоненные заявки</span>
+                  </label>
+                </div>
 
                 {eventIsPast ? (
                   <div className="applications-empty">
@@ -599,9 +690,9 @@ export default function EventOpenPage() {
 
                 {applicationsLoading ? (
                   <div className="applications-empty">Загрузка заявок...</div>
-                ) : applications.length > 0 ? (
+                ) : visibleApplications.length > 0 ? (
                   <div className="applications-list">
-                    {applications.map((application) => (
+                    {visibleApplications.map((application) => (
                       <ApplicationCard
                         key={application.id}
                         id={application.id}
@@ -612,18 +703,18 @@ export default function EventOpenPage() {
                         email={application.email || "Не указан"}
                         phone={application.phone || "Не указан"}
                         status={application.status}
+                        onAccept={handleAcceptApplication}
                         onReject={handleRejectApplication}
-                        onRestore={handleRestoreApplication}
+                        isAccepting={acceptingId === application.id}
                         isRejecting={rejectingId === application.id}
-                        isRestoring={restoringId === application.id}
+                        canAccept={canChangeApplications}
                         canReject={canChangeApplications}
-                        canRestore={canChangeApplications}
                       />
                     ))}
                   </div>
                 ) : (
                   <div className="applications-empty">
-                    Пока нет поданных заявок на это мероприятие
+                    Пока нет заявок для отображения
                   </div>
                 )}
               </div>

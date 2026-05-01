@@ -3,7 +3,7 @@
   padding: 48px 0 72px;
   background:
     radial-gradient(circle at left top, var(--green-glow-52) 0%, var(--green-glow-18) 28%, transparent 60%),
-    linear-gradient(90deg, var(--green-230) 0%, var(--green-mist) 100%);
+    linear-gradient(90deg, var(--green-200) 0%, var(--green-mist) 100%);
 }
 
 .login-hero__head {

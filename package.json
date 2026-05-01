@@ -1,0 +1,15 @@
+{
+  "name": "volunteer-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n SERVER,WEB -c blue,green \"npm --prefix server run dev\" \"npm --prefix react-volunteer-app run dev\"",
+    "start": "concurrently -k -n SERVER,WEB -c blue,green \"npm --prefix server run start\" \"npm --prefix react-volunteer-app run dev\"",
+    "install:all": "npm install && npm --prefix server install && npm --prefix react-volunteer-app install",
+    "test": "npm --prefix server run test:run && npm --prefix react-volunteer-app run test:run",
+    "coverage": "npm --prefix server run coverage && npm --prefix react-volunteer-app run coverage"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

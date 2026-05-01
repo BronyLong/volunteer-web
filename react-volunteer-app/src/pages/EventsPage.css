@@ -110,7 +110,7 @@
 }
 
 .events-filters__button--orange {
-  background: var(--orange-075);
+  background: var(--orange-100);
 }
 
 .events-filters__button--all.events-filters__button--active {
@@ -126,7 +126,7 @@
 }
 
 .events-filters__button--orange.events-filters__button--active {
-  background: var(--orange-050);
+  background: var(--orange-100);
   border-color: var(--orange-shadow-35);
   color: var(--orange);
 }

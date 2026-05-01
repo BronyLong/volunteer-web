@@ -159,7 +159,7 @@
 }
 
 .btn--active {
-  background: var(--green-025);
+  background: var(--white);
 }
 
 .btn--active-login {
@@ -196,7 +196,7 @@
 }
 
 .menu-toggle:hover {
-  background: var(--green-050);
+  background: var(--white);
 }
 
 .menu-toggle__icon {

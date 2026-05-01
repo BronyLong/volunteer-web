@@ -32,14 +32,6 @@ digraph ClassDiagram_VolunteerApp {
 + uploadAvatar()\l
 }"];
 
-    CoordinatorProfile [label="{CoordinatorProfile|
-+ userId: UUID\l
-+ position: string\l
-+ department: string\l|
-+ manageEvents()\l
-+ viewApplications()\l
-}"];
-
     Category [label="{Category|
 + id: int\l
 + name: string\l|
@@ -98,7 +90,6 @@ digraph ClassDiagram_VolunteerApp {
 }"];
 
     User -> Profile [label="1 to 1", dir=both];
-    User -> CoordinatorProfile [label="1 to 0..1", style=dashed];
     Category -> Event [label="1 to 0..*", dir=both];
     User -> Application [label="1 to 0..*", dir=both];
     Event -> Application [label="1 to 0..*", dir=both];

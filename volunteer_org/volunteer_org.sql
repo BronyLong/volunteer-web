@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS audit_logs CASCADE;
 
 -- =========================================
 -- 1. USERS
@@ -57,9 +58,10 @@ CREATE TABLE categories (
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
-	image_url TEXT,
+    image_url TEXT,
     description TEXT NOT NULL,
     start_at TIMESTAMP NOT NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 120,
     location VARCHAR(255) NOT NULL,
     tasks TEXT[] NOT NULL DEFAULT '{}',
     participant_limit INTEGER NOT NULL,
@@ -79,6 +81,9 @@ CREATE TABLE events (
         REFERENCES users(id)
         ON DELETE RESTRICT,
 
+    CONSTRAINT chk_events_duration_minutes
+        CHECK (duration_minutes > 0),
+
     CONSTRAINT chk_events_participant_limit
         CHECK (participant_limit > 0),
 
@@ -96,7 +101,7 @@ CREATE TABLE applications (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL,
     event_id UUID NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_applications_user
@@ -109,8 +114,8 @@ CREATE TABLE applications (
         REFERENCES events(id)
         ON DELETE CASCADE,
 
-    CONSTRAINT uq_applications_user_event
-        UNIQUE (user_id, event_id)
+    CONSTRAINT chk_applications_status
+        CHECK (status IN ('pending', 'approved', 'rejected'))
 );
 
 -- =========================================
@@ -155,6 +160,16 @@ CREATE INDEX IF NOT EXISTS idx_events_category_id
 CREATE INDEX IF NOT EXISTS idx_applications_event_id
     ON applications(event_id);
 
+CREATE INDEX IF NOT EXISTS idx_applications_user_id
+    ON applications(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_applications_status
+    ON applications(status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_applications_user_event_active
+    ON applications(user_id, event_id)
+    WHERE status IN ('pending', 'approved');
+
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id
     ON audit_logs(user_id);
 
@@ -182,4 +197,3 @@ CREATE TRIGGER trg_events_set_updated_at
 BEFORE UPDATE ON events
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
-
