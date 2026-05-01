@@ -9,7 +9,7 @@ import ProfileEventCard from "../components/ProfileEventCard";
 import locationIcon from "../assets/SVG/location_footer.svg";
 import emailIcon from "../assets/SVG/email_footer.svg";
 import phoneIcon from "../assets/SVG/phone_footer.svg";
-import okIcon from "../assets/SVG/odnoklassnini.svg";
+import okIcon from "../assets/SVG/odnoklassniki.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 import arrowIcon from "../assets/SVG/arrow.svg";
@@ -59,7 +59,7 @@ function getRoleLabel(role) {
 }
 
 function getEventsTitle(role, isOwner) {
-  if (role === "coordinator" || role === "admin") {
+  if (role === "coordinator") {
     return isOwner ? "Мои мероприятия" : "Мероприятия координатора";
   }
 
@@ -223,7 +223,7 @@ export default function ProfilePage() {
   const profileEvents = useMemo(() => {
     if (!profile) return [];
 
-    if (profile.role === "coordinator" || profile.role === "admin") {
+    if (profile.role === "coordinator") {
       return Array.isArray(profile.coordinator_events)
         ? profile.coordinator_events
         : [];
@@ -447,7 +447,9 @@ export default function ProfilePage() {
 
               <div className="profile-card__divider"></div>
 
-              <div className="profile-bio">{getTextValue(profile.bio, "Пока не заполнено")}</div>
+              <div className="profile-bio">
+                {getTextValue(profile.bio, "Пока не заполнено")}
+              </div>
 
               {socials.length > 0 ? (
                 <div className="profile-socials">
@@ -493,16 +495,18 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {profile.is_owner && profile.role === "admin" ? (
-            <section className="profile-events">
-              <div className="profile-events__header">
-                <h2 className="profile-events__title">Администрирование</h2>
+          {profile.role === "admin" ? (
+            profile.is_owner ? (
+              <section className="profile-events">
+                <div className="profile-events__header">
+                  <h2 className="profile-events__title">Администрирование</h2>
 
-                <Link to="/admin" className="profile-events__create-button">
-                  Перейти
-                </Link>
-              </div>
-            </section>
+                  <Link to="/admin" className="profile-events__create-button">
+                    Перейти
+                  </Link>
+                </div>
+              </section>
+            ) : null
           ) : (
             <section className="profile-events">
               <div className="profile-events__header">
