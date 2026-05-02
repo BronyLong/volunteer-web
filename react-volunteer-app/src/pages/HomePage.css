@@ -1,7 +1,7 @@
 .hero {
   padding: 64px 0 44px;
   background:
-    radial-gradient(circle at left top, var(--green-glow-40) 0%, var(--green-glow-16) 32%, transparent 68%),
+    radial-gradient(circle at left top, var(--green-glow-50) 0%, var(--green-glow-10) 32%, transparent 68%),
     linear-gradient(90deg, var(--green-200) 0%, var(--green-mist) 100%);
 }
 
@@ -32,7 +32,7 @@
   max-width: 560px;
   font-size: 17px;
   line-height: 1.5;
-  color: var(--text-muted-3);
+  color: var(--muted);
 }
 
 .hero__actions {
@@ -66,7 +66,7 @@
 
 .hero__button--outline {
   background: var(--surface-card-beige);
-  color: var(--text);
+  color: var(--black);
   border: 1.5px solid var(--green);
 }
 
@@ -86,7 +86,7 @@
 }
 
 .hero__event-card--orange {
-  background: var(--orange-soft);
+  background: var(--orange-100);
 }
 
 .hero__event-card-content {
@@ -123,7 +123,7 @@
 
 .hero__event-date {
   margin: 0 0 10px;
-  color: var(--text-muted-3);
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .hero__event-card--green .event-preview__category-pill {
-  background: var(--beige-050);
+  background: var(--white);
 }
 
 .hero__event-card--orange .event-preview {
@@ -154,11 +154,11 @@
 .hero__event-card--orange .event-preview__place,
 .hero__event-card--orange .event-preview__places,
 .hero__event-card--orange .event-preview__category-row {
-  background: var(--orange-soft);
+  background: var(--orange-100);
 }
 
 .hero__event-card--orange .event-preview__category-pill {
-  background: var(--beige-050);
+  background: var(--white);
 }
 
 .event-preview__inner {
@@ -283,7 +283,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  background: var(--beige-225);
+  background: var(--beige);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -334,7 +334,7 @@
 
 .advantages {
   padding: 42px 0 38px;
-  background: linear-gradient(90deg, var(--light-bg) 0%, var(--light-bg-2) 100%);
+  background: var(--orange-050);
 }
 
 .advantages__grid {
@@ -348,7 +348,7 @@
   min-height: 152px;
   padding: 14px 12px;
   border-radius: 18px;
-  background: var(--neutral-100);
+  background: var(--white);
   box-shadow: var(--shadow);
 }
 
@@ -377,17 +377,17 @@
 
 .feature-card__text {
   margin: 0;
-  color: var(--text-muted-5);
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.45;
 }
 
 .join-banner {
-  margin: 34px auto 0;
+  margin: 0 auto 0;
   max-width: 640px;
   min-height: 56px;
   border-radius: 18px;
-  background: var(--light-card-2);
+  background: var(--white);
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
@@ -414,6 +414,11 @@
   font-weight: 900;
 }
 
+.join-banner-cta {
+  padding: 17px 0;
+  background: var(--orange-050);
+}
+
 .steps {
   padding: 48px 0 54px;
   background: var(--green-soft);
@@ -429,7 +434,7 @@
 .step-card {
   min-height: 150px;
   border-radius: 18px;
-  background: var(--neutral-100);
+  background: var(--white);
   box-shadow: var(--shadow);
   padding: 14px 12px;
 }
@@ -451,7 +456,7 @@
 
 .step-card__text {
   margin: 0;
-  color: var(--text-muted-5);
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -469,7 +474,7 @@
 }
 
 .event-card {
-  background: var(--neutral-100);
+  background: var(--white);
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 16px 16px 18px;
@@ -518,7 +523,7 @@
 
 .event-card__spots {
   font-size: 13px;
-  color: var(--text-muted-5);
+  color: var(--muted);
 }
 
 .event-card__title-home {
@@ -536,7 +541,7 @@
 
 .event-card__meta p {
   margin: 0;
-  color: var(--text-muted-5);
+  color: var(--muted);
   font-size: 14px;
   display: inline-flex;
   align-items: center;
@@ -573,7 +578,7 @@
 
 .cta {
   padding: 48px 0;
-  background: linear-gradient(90deg, var(--light-bg) 0%, var(--light-bg-2) 100%);
+  background: var(--orange-050);
 }
 
 .cta__box {
@@ -634,6 +639,12 @@
 .cta__button--solid {
   background: var(--orange-dark);
   color: var(--white);
+}
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-main);
 }
 
 @media (max-width: 1100px) {
@@ -806,6 +817,7 @@
   .join-banner__button {
     width: 100%;
   }
+  
 
   .cta__box {
     padding: 20px 18px;

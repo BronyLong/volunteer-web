@@ -1,11 +1,11 @@
 .events-page {
-  background: var(--neutral-200);
+  background: var(--white);
 }
 
 .events-hero {
   position: relative;
   overflow: hidden;
-  background: var(--beige-200);
+  background: var(--beige);
 }
 
 .events-hero__background {
@@ -83,7 +83,7 @@
   min-height: 56px;
   padding: 0 22px;
   border-radius: 18px;
-  background: var(--neutral-100);
+  background: var(--white);
   box-shadow: var(--shadow);
   display: inline-flex;
   align-items: center;
@@ -92,7 +92,7 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 900;
-  color: var(--text-dark-7);
+  color: var(--black);
   border: 1px solid transparent;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -102,11 +102,11 @@
 }
 
 .events-filters__button--all {
-  background: var(--neutral-100);
+  background: var(--white);
 }
 
 .events-filters__button--green {
-  background: var(--neutral-100);
+  background: var(--white);
 }
 
 .events-filters__button--orange {

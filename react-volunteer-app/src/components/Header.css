@@ -2,9 +2,9 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--overlay-white-96);
+  background: var(--white);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--shadow-black-04);
+  border-bottom: 1px solid var(--shadow-black-05);
 }
 
 .container {
@@ -163,7 +163,7 @@
 }
 
 .btn--active-login {
-  box-shadow: 0 0 0 2px var(--green-shadow-08) inset;
+  box-shadow: 0 0 0 2px var(--green-shadow-10) inset;
 }
 
 .btn--icon {
@@ -192,7 +192,7 @@
   justify-content: center;
   cursor: pointer;
   transition: 0.2s ease;
-  box-shadow: 0 1px 0 var(--shadow-black-04);
+  box-shadow: 0 1px 0 var(--shadow-black-05);
 }
 
 .menu-toggle:hover {
@@ -231,7 +231,7 @@
   display: none;
   width: 100%;
   border-top: 1px solid var(--shadow-black-05);
-  background: var(--overlay-white-98);
+  background: var(--white);
 }
 
 .mobile-menu.is-open {
@@ -252,7 +252,7 @@
   min-height: 44px;
   padding: 0 14px;
   border-radius: 12px;
-  background: var(--light-card);
+  background: var(--neutral);
   display: flex;
   align-items: center;
   font-weight: 700;
@@ -314,8 +314,8 @@
   padding: 18px;
   border-radius: 20px;
   background: var(--white);
-  box-shadow: 0 20px 50px var(--shadow-black-14);
-  border: 1px solid var(--shadow-black-06);
+  box-shadow: 0 20px 50px var(--shadow-black-12);
+  border: 1px solid var(--shadow-black-05);
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);
@@ -384,7 +384,7 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: var(--neutral-200);
+  background: var(--white);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -392,7 +392,7 @@
 }
 
 .header-help__social:hover {
-  background: var(--neutral-400);
+  background: var(--neutral);
   transform: translateY(-1px);
 }
 
@@ -414,7 +414,7 @@
   margin-bottom: 4px;
   padding: 12px;
   border-radius: 14px;
-  background: var(--neutral-100);
+  background: var(--white);
   display: grid;
   gap: 14px;
 }
@@ -491,8 +491,8 @@
 
 .header__logout-button:focus-visible {
   outline: none;
-  background: var(--red-shadow-12);
-  box-shadow: 0 0 0 3px var(--red-shadow-18);
+  background: var(--red-shadow-10);
+  box-shadow: 0 0 0 3px var(--red-shadow-20);
 }
 
 .header__logout-icon {

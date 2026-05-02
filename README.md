@@ -99,17 +99,20 @@
 volunteer-web/
 ├── react-volunteer-app/       # React-приложение
 │   ├── src/                   # Исходный код frontend
-│   ├── public/                # Статические файлы
-│   ├── dist/                  # Production-сборка frontend
+│   ├── tests/                 # Тесты frontend-части проекта
+│   ├── index.html             # Точка входа frontend
+│   ├── package-lock.json
 │   ├── package.json
-│   └── vite.config.js
+│   ├── vite.json
+│   └── vitest.config.js
 │
 ├── server/                    # Серверная часть Node.js + Express
-│   ├── routes/                # API-маршруты
 │   ├── middleware/            # Middleware авторизации и проверки ролей
+│   ├── routes/                # API-маршруты
 │   ├── utils/                 # Вспомогательные функции
 │   ├── db.js                  # Подключение к PostgreSQL
 │   ├── index.js               # Точка входа backend
+│   ├── package-lock.js
 │   └── package.json
 │
 ├── volunteer_org/             # SQL-структура БД и данные
@@ -118,8 +121,17 @@ volunteer-web/
 │   └── diagram.pgerd          # Диаграмма БД
 │
 ├── volunteer-web/             # HTML/CSS-макеты без логики
+│   ├── images/                # Изображения в формате png
+│   ├── pages/                 # Статические страницы HTML/CSS
+│   │   ├── CSS/
+│   │   └── HTML/
+│   └── SVG                    # Векторные изображения
 │
-├── volunteerWebDocs/          # Документация проекта
+├── volunteerWebDocs/                     # Документация проекта
+│   ├── .obsidian/                        # Конфиг редактора md файлов obsidian
+│   ├── Diagrams/                         # Диаграммы проекта
+│   ├── Выполненные задачи/               # Дневник разработки
+│   └── Необходимые данные для проекта/   # Основная документация
 │
 ├── package.json               # Общие команды проекта
 ├── package-lock.json

@@ -12,10 +12,10 @@
   margin: 0 auto;
   padding: 44px 40px 34px;
   border-radius: 42px;
-  background: var(--overlay-card-94);
+  background: var(--overlay-card);
   box-shadow:
     0 20px 50px var(--shadow-green-08),
-    0 4px 14px var(--shadow-black-06);
+    0 4px 14px var(--shadow-black-05);
   backdrop-filter: blur(6px);
 }
 

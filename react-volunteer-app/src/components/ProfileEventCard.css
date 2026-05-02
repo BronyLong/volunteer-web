@@ -6,7 +6,7 @@
 
   padding: 16px 18px;
   border-radius: 18px;
-  background: var(--neutral-050);
+  background: var(--white);
   box-shadow: 0 6px 18px var(--shadow-black-05);
 }
 
@@ -20,7 +20,7 @@
   font-size: 16px;
   line-height: 1.25;
   font-weight: 900;
-  color: var(--text-dark-6);
+  color: var(--black);
 }
 
 .profile-event-card__meta {
@@ -35,7 +35,7 @@
 
   font-size: 14px;
   line-height: 1.35;
-  color: var(--text-dark-2);
+  color: var(--black);
 }
 
 .profile-event-card__icon {

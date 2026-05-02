@@ -47,8 +47,8 @@
   padding: 0 28px;
   margin: 0 auto;
   border-radius: 18px;
-  background: var(--surface-card-green);
-  box-shadow: 0 8px 18px var(--green-shadow-12);
+  background: var(--white);
+  box-shadow: 0 8px 18px var(--green-shadow-10);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -61,7 +61,7 @@
 }
 
 .profile-settings-card {
-  background: var(--neutral-100);
+  background: var(--white);
   border-radius: 42px;
   box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 42px 42px 34px;
@@ -112,7 +112,7 @@
 .form-field__label {
   font-size: 18px;
   font-weight: 800;
-  color: var(--text-dark-9);
+  color: var(--black);
 }
 
 .form-field__input,
@@ -120,10 +120,10 @@
   width: 100%;
   border-radius: 14px;
   border: 1.5px solid var(--border-light);
-  background: var(--neutral-050);
-  box-shadow: 0 2px 8px var(--shadow-black-04);
+  background: var(--white);
+  box-shadow: 0 2px 8px var(--shadow-black-05);
   font-size: 16px;
-  color: var(--text);
+  color: var(--black);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
@@ -140,20 +140,20 @@
 
 .form-field__input::placeholder,
 .form-field__textarea::placeholder {
-  color: var(--text-muted-3);
+  color: var(--muted);
 }
 
 .form-field__input:focus,
 .form-field__textarea:focus {
   border-color: var(--green);
   background: var(--white);
-  box-shadow: 0 0 0 4px var(--green-shadow-12);
+  box-shadow: 0 0 0 4px var(--green-shadow-10);
 }
 
 .form-field__input--error {
   border-color: var(--red);
   background: var(--red-soft);
-  box-shadow: 0 0 0 4px var(--red-shadow-08);
+  box-shadow: 0 0 0 4px var(--red-shadow-10);
 }
 
 .form-field__error {
@@ -202,7 +202,7 @@
   margin: 40px 0;
   padding: 24px;
   border-radius: 24px;
-  background: var(--neutral-100);
+  background: var(--white);
   box-shadow: 0 12px 32px var(--shadow-black-08);
   text-align: center;
   font-size: 20px;

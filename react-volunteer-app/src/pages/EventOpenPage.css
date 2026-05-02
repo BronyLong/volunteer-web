@@ -1,5 +1,5 @@
 .event-page {
-  background: linear-gradient(90deg, var(--beige-250) 0 72%, var(--green-200) 72% 100%);
+  background: linear-gradient(90deg, var(--beige) 0 72%, var(--green-200) 72% 100%);
 }
 
 .event-layout {
@@ -14,7 +14,7 @@
 .event-card {
   width: 100%;
   max-width: 760px;
-  background: var(--overlay-surface-96);
+  background: var(--overlay-surface);
   border-radius: 42px;
   box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 34px 32px 26px;
@@ -82,7 +82,7 @@
 
 .event-card__image-box {
   overflow: hidden;
-  background: var(--neutral-300);
+  background: var(--white);
 }
 
 .event-card__image {
@@ -94,7 +94,7 @@
 .event-card__tasks-box {
   background: var(--page-bg);
   padding: 20px 18px;
-  border: 1px solid var(--shadow-black-04);
+  border: 1px solid var(--shadow-black-05);
 }
 
 .event-card__section-title {
@@ -176,7 +176,7 @@
 }
 
 .event-card__category-pill--green {
-  box-shadow: 0 8px 18px var(--green-shadow-10-alt);
+  box-shadow: 0 8px 18px var(--green-shadow-10);
 }
 
 .event-card__category-pill--orange {
@@ -213,7 +213,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-muted-9);
+  color: var(--muted);
 }
 
 .event-card__meta-inline-icon {
@@ -265,7 +265,7 @@
 
 .coordinator-card {
   min-height: 112px;
-  background: var(--neutral-150);
+  background: var(--white);
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 12px 14px;
@@ -274,7 +274,7 @@
 
 .coordinator-card__label {
   font-size: 13px;
-  color: var(--text-muted-10);
+  color: var(--muted);
   margin-bottom: 10px;
 }
 
@@ -305,7 +305,7 @@
 .coordinator-card__avatar-link:hover .coordinator-card__avatar-wrap,
 .coordinator-card__avatar-link:focus-visible .coordinator-card__avatar-wrap {
   transform: scale(1.04);
-  box-shadow: 0 0 0 4px var(--green-accent-14);
+  box-shadow: 0 0 0 4px var(--green-accent-15);
 }
 
 .coordinator-card__avatar {
@@ -335,7 +335,7 @@
 }
 
 .coordinator-card__line--muted {
-  color: var(--text-muted-2);
+  color: var(--muted);
 }
 
 .coordinator-card__icon {
@@ -349,8 +349,8 @@
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: var(--neutral-400);
-  color: var(--text-muted-5);
+  background: var(--neutral);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
   font-weight: 700;
@@ -387,7 +387,7 @@
 }
 
 .applications-card {
-  background: var(--overlay-surface-96);
+  background: var(--overlay-surface);
   border-radius: 42px;
   box-shadow: 0 24px 60px var(--shadow-black-12);
   padding: 28px 38px 38px;
@@ -418,7 +418,7 @@
   font-size: 15px;
   font-weight: 800;
   line-height: 1.35;
-  color: var(--text-muted-6);
+  color: var(--muted);
   cursor: pointer;
   user-select: none;
   text-align: center;
@@ -449,7 +449,7 @@
   margin-top: 26px;
   min-height: 150px;
   border-radius: 22px;
-  background: linear-gradient(180deg, var(--white) 0%, var(--neutral-250) 100%);
+  background: var(--white);
   box-shadow: 0 6px 18px var(--shadow-black-08);
   padding: 24px;
   display: flex;
@@ -459,7 +459,7 @@
   font-size: 20px;
   line-height: 1.4;
   font-weight: 800;
-  color: var(--text-muted-4);
+  color: var(--muted);
 }
 
 .event-card__application-actions {
@@ -561,7 +561,7 @@
 
 @media (max-width: 640px) {
   .event-page {
-    background: linear-gradient(180deg, var(--beige-250) 0 58%, var(--green-200) 58% 100%);
+    background: linear-gradient(180deg, var(--beige) 0 58%, var(--green-200) 58% 100%);
   }
 
   .event-card__header {

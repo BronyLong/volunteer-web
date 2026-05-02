@@ -23,14 +23,14 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
-  color: var(--text-dark-1);
+  color: var(--black);
 }
 
 .footer__title {
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 900;
-  color: var(--text-dark-3);
+  color: var(--black);
 }
 
 .footer__title--green {
@@ -114,7 +114,7 @@
   margin: 18px 0 0;
   text-align: center;
   font-size: 14px;
-  color: var(--text-dark-1);
+  color: var(--black);
 }
 
 @media (max-width: 980px) {

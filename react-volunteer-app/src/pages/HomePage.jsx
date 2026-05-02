@@ -307,7 +307,7 @@ export default function HomePage() {
                       <p>
                         {currentHeroEvent
                           ? currentHeroEvent.location
-                          : "Место проведения место проведения"}
+                          : "Место проведения"}
                       </p>
                     </div>
                   </div>
@@ -366,6 +366,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="section-divider"></div>
+
       <section className="advantages" id="advantages">
         <div className="container">
           <p className="section-label section-label--orange">О платформе</p>
@@ -403,15 +405,19 @@ export default function HomePage() {
               <h3 className="feature-card__title">Удобные инструменты</h3>
               <p className="feature-card__text">Функции для координаторов и администраторов без перегрузки интерфейса.</p>
             </article>
-          </div>
-
-          <div className="join-banner">
-            <div className="join-banner__text">Хотите стать частью команды?</div>
-            <Link to="/events" className="join-banner__button">
-              Принять участие
-            </Link>
-          </div>
+          </div>  
         </div>
+      </section>
+
+      <div className="section-divider"></div>
+
+      <section className="join-banner-cta">
+        <div className="join-banner">
+            <div className="join-banner__text">Хотите стать частью команды?</div>
+              <Link to="/events" className="join-banner__button">
+                Принять участие
+              </Link>
+          </div>
       </section>
 
       <section className="steps">
@@ -446,6 +452,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="section-divider"></div>
 
       <section className="events">
         <div className="container">
@@ -604,6 +612,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="section-divider"></div>
+
       <section className="cta">
         <div className="container">
           <div className="cta__box"> 
@@ -626,6 +636,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="section-divider"></div>
     </>
   );
 }

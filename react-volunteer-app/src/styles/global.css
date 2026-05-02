@@ -1,6 +1,6 @@
 body {
   font-family: "Nunito Sans", sans-serif;
-  color: var(--text);
+  color: var(--black);
   background: var(--page-bg);
   line-height: 1.4;
 }

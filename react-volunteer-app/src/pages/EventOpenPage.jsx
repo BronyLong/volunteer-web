@@ -59,6 +59,17 @@ function getCategoryIcon(categoryName) {
   return leafCategoryIcon;
 }
 
+function getCategoryTheme(categoryName) {
+  const normalized = String(categoryName || "").toLowerCase();
+
+  if (normalized.includes("дет")) return "orange";
+  if (normalized.includes("пожил")) return "orange";
+  if (normalized.includes("эколог")) return "green";
+  if (normalized.includes("живот")) return "green";
+
+  return "green";
+}
+
 function getApplicationTime(application) {
   return new Date(
     application.created_at ||
@@ -159,6 +170,10 @@ export default function EventOpenPage() {
 
   const categoryIcon = useMemo(() => {
     return getCategoryIcon(eventData?.category_name);
+  }, [eventData]);
+
+  const categoryTheme = useMemo(() => {
+    return getCategoryTheme(eventData?.category_name);
   }, [eventData]);
 
   const hasCoordinatorContactAccess = useMemo(() => {
@@ -440,7 +455,9 @@ export default function EventOpenPage() {
 
               <div className="event-card__meta-grid">
                 <div className="event-card__meta-left">
-                  <div className="event-card__category-pill">
+                  <div
+                    className={`event-card__category-pill event-card__category-pill--${categoryTheme}`}
+                  >
                     <img
                       src={categoryIcon}
                       alt=""

@@ -13,6 +13,15 @@
   --green-mist: #eef2ee;
   --green-soft: #d2ddd1;
 
+  --green-glow-50: rgba(184, 204, 184, 0.50);
+  --green-glow-10: rgba(184, 204, 184, 0.10);
+
+  --green-shadow-10: rgba(47, 143, 47, 0.1);
+  --green-shadow-20: rgba(47, 143, 47, 0.2);
+  --green-shadow-35: rgba(47, 143, 47, 0.35);
+
+  --green-accent-15: rgba(75, 181, 67, 0.15);
+
   --orange: #f58600;
   --orange-dark: #ff8f00;
   --orange-bright: #ff8f1f;
@@ -23,15 +32,18 @@
   --orange-050: #fff1de;
   --orange-soft: #f2cf99;
 
+  --orange-shadow-10: rgba(220, 122, 32, 0.1);
+  --orange-shadow-20: rgba(245, 124, 0, 0.20);
+  --orange-shadow-35: rgba(245, 134, 0, 0.35);
+
   --red: #ea2b23;
   --red-dark:#b42318;
   --red-soft: #f3d9d7;
 
-  --beige-250: #e9dfd2;
-  --beige-225: #e9e1d3;
-  --beige-200: #eae1d7;
-  --beige-050: #f8f5f1;
-  --beige-025: #faf7f5;
+  --red-shadow-10: rgba(234, 43, 35, 0.1);
+  --red-shadow-20: rgba(234, 43, 35, 0.2);
+
+  --beige: #eae1d7;
 
   --page-bg: #f6f6f6;
   --surface-panel: #efeee4;
@@ -40,40 +52,9 @@
   --surface-card-beige: #f4f2ef;
   --surface-card-soft: #f3f1ef;
 
-  --neutral-050: #fbfbfb;
-  --neutral-100: #f8f8f8;
-  --neutral-150: #f7f7f7;
-  --neutral-200: #f5f5f5;
-  --neutral-250: #f2f2f2;
-  --neutral-300: #f2f1f1;
-  --neutral-350: #efefef;
-  --neutral-400: #ececec;
-  --neutral-450: #e2e2e2;
+  --neutral: #ececec;
 
-  --text: #000000;
   --muted: #626262;
-  --text-muted-2: #8a8a8a;
-  --text-muted-3: #7a7a7a;
-  --text-muted-4: #6b6b6b;
-  --text-muted-5: #666666;
-  --text-muted-6: #5f5f5f;
-  --text-muted-7: #5b5b5b;
-  --text-muted-8: #585858;
-  --text-muted-9: #555555;
-  --text-muted-10: #4d4d4d;
-  --text-muted-11: #4b4b4b;
-
-  --text-dark-1: #444444;
-  --text-dark-2: #3f3f3f;
-  --text-dark-3: #303030;
-  --text-dark-4: #2f2f2f;
-  --text-dark-5: #2c2c2c;
-  --text-dark-6: #222222;
-  --text-dark-7: #202020;
-  --text-dark-8: #1f1f1f;
-  --text-dark-9: #1d1d1d;
-  --text-dark-10: #1a1a1a;
-  --text-dark-11: #111111;
 
   --link-blue: #045c98;
 
@@ -81,45 +62,15 @@
   --border: #d5d5d5;
   --border-light: #d9d9d9;
   --border-soft: #d8d8d8;
+  --border-main: rgba(189, 189, 189, 0.5);;
 
   --overlay-dark: rgba(0, 0, 0, 0.42);
-  --overlay-white-96: rgba(255, 255, 255, 0.96);
-  --overlay-white-98: rgba(255, 255, 255, 0.98);
-  --overlay-surface-96: rgba(248, 248, 248, 0.96);
-  --overlay-card-94: rgba(245, 243, 242, 0.94);
+  --overlay-surface: rgba(248, 248, 248, 0.96);
+  --overlay-card: rgba(245, 243, 242, 0.94);
 
-  --green-glow-52: rgba(184, 204, 184, 0.52);
-  --green-glow-40: rgba(184, 204, 184, 0.4);
-  --green-glow-18: rgba(184, 204, 184, 0.18);
-  --green-glow-16: rgba(184, 204, 184, 0.16);
-
-  --green-shadow-08: rgba(47, 143, 47, 0.08);
-  --green-shadow-10: rgba(47, 143, 47, 0.1);
-  --green-shadow-10-alt: rgba(47, 143, 70, 0.1);
-  --green-shadow-12: rgba(47, 143, 47, 0.12);
-  --green-shadow-20: rgba(47, 143, 47, 0.2);
-  --green-shadow-35: rgba(47, 143, 47, 0.35);
-
-  --green-accent-14: rgba(75, 181, 67, 0.14);
-  --green-accent-15: rgba(75, 181, 67, 0.15);
-
-  --orange-shadow-10: rgba(220, 122, 32, 0.1);
-  --orange-shadow-22: rgba(245, 124, 0, 0.22);
-  --orange-shadow-35: rgba(245, 134, 0, 0.35);
-
-  --red-shadow-08: rgba(217, 45, 32, 0.08);
-  --red-shadow-10: rgba(234, 43, 35, 0.1);
-  --red-shadow-12: rgba(234, 43, 35, 0.12);
-  --red-shadow-18: rgba(234, 43, 35, 0.18);
-  --red-shadow-20: rgba(234, 43, 35, 0.2);
-
-  --shadow-black-04: rgba(0, 0, 0, 0.04);
   --shadow-black-05: rgba(0, 0, 0, 0.05);
-  --shadow-black-06: rgba(0, 0, 0, 0.06);
   --shadow-black-08: rgba(0, 0, 0, 0.08);
-  --shadow-black-09: rgba(0, 0, 0, 0.09);
   --shadow-black-12: rgba(0, 0, 0, 0.12);
-  --shadow-black-14: rgba(0, 0, 0, 0.14);
   --shadow-green-08: rgba(46, 67, 49, 0.08);
 
   --shadow: 0 4px 14px var(--shadow-black-08);

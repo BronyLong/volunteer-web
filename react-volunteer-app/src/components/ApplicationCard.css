@@ -37,7 +37,7 @@
 .application-card__avatar-link:hover .application-card__avatar,
 .application-card__avatar-link:focus-visible .application-card__avatar {
   transform: scale(1.04);
-  box-shadow: 0 0 0 4px var(--green-accent-14);
+  box-shadow: 0 0 0 4px var(--green-accent-15);
 }
 
 .application-card__info {
@@ -52,7 +52,7 @@
   font-size: 22px;
   font-weight: 900;
   line-height: 1.1;
-  color: var(--text-dark-8);
+  color: var(--black);
 }
 
 .application-card__status {
@@ -65,13 +65,13 @@
   justify-content: center;
   font-size: 13px;
   font-weight: 900;
-  background: var(--neutral-350);
-  color: var(--text-muted-11);
+  background: var(--white);
+  color: var(--muted);
 }
 
 .application-card__status--pending {
-  background: var(--neutral-350);
-  color: var(--text-muted-11);
+  background: var(--white);
+  color: var(--muted);
 }
 
 .application-card__status--approved {
@@ -80,7 +80,7 @@
 }
 
 .application-card__status--rejected {
-  background: var(--red-shadow-12);
+  background: var(--red-shadow-10);
   color: var(--red);
 }
 
@@ -88,7 +88,7 @@
   margin: 0;
   font-size: 16px;
   line-height: 1.35;
-  color: var(--text-muted-6);
+  color: var(--muted);
 }
 
 .application-card__actions {
