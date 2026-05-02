@@ -15,7 +15,7 @@ import statisticsIcon from "../assets/SVG/statistics.svg";
 import toolsIcon from "../assets/SVG/hammer_and_wrench.svg";
 import calendarCardIcon from "../assets/SVG/calendar_card.svg";
 
-import animalsHelpImage from "../assets/images/animals_help.png";
+import defaultEventImage from "../assets/images/default_event.png";
 
 const HERO_SLIDES_COUNT = 4;
 const HERO_AUTOPLAY_MS = 5000;
@@ -113,7 +113,7 @@ function decorateEvent(event) {
     formattedDate: formatDate(event.start_at),
     spotsText: `${event.available_slots ?? 0} мест`,
     placesText: `${event.available_slots ?? 0} из ${event.participant_limit ?? 0}`,
-    image: animalsHelpImage,
+    image: defaultEventImage,
   };
 }
 
@@ -293,7 +293,7 @@ export default function HomePage() {
                   <div className="event-preview__top">
                     <div className="event-preview__image-wrap">
                       <img
-                        src={currentHeroEvent ? currentHeroEvent.image : animalsHelpImage}
+                        src={currentHeroEvent ? currentHeroEvent.image : defaultEventImage}
                         alt="Мероприятие"
                         className="event-preview__image"
                       />

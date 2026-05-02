@@ -3,7 +3,7 @@ import { apiFetch } from "../api";
 import "./EventsPage.css";
 
 import EventCard from "../components/EventCard";
-import childrenHelpImage from "../assets/images/children_help.png";
+import defaultEventImage from "../assets/images/default_event.png";
 import peopleImage from "../assets/images/people.png";
 import leafCategoryIcon from "../assets/SVG/leaf_category.svg";
 import elderlyCategoryIcon from "../assets/SVG/elderly_category.svg";
@@ -180,7 +180,7 @@ export default function EventsPage() {
                 date={new Date(event.start_at).toLocaleDateString("ru-RU")}
                 location={event.location}
                 places={`${event.available_slots} из ${event.participant_limit}`}
-                image={childrenHelpImage}
+                image={defaultEventImage}
                 category={getCategoryType(event.category_name)}
                 link={`/events/${event.id}`}
               />

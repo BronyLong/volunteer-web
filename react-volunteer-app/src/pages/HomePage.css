@@ -300,7 +300,7 @@
 }
 
 .hero__slider-dots--orange .hero__dot {
-  background: var(--orange-100);
+  background: var(--orange-soft);
 }
 
 .hero__slider-dots--orange .hero__dot--active {

@@ -17,7 +17,7 @@ import phoneIcon from "../assets/SVG/phone_footer.svg";
 import dateIcon from "../assets/SVG/calendar_card.svg";
 import timeIcon from "../assets/SVG/clock.svg";
 
-import eventImage from "../assets/images/animals_help.png";
+import defaultEventImage from "../assets/images/default_event.png";
 import womanAvatar from "../assets/images/avatar_man.png";
 
 import {
@@ -412,7 +412,7 @@ export default function EventOpenPage() {
               <div className="event-card__top-grid">
                 <div className="event-card__image-box">
                   <img
-                    src={eventData.image_url || eventImage}
+                    src={eventData.image_url || defaultEventImage}
                     alt={eventData.title}
                     className="event-card__image"
                   />
