@@ -13,7 +13,7 @@ import {
   updateAdminUserRole,
 } from "../api";
 
-import manAvatar from "../assets/images/avatar_man.png";
+import { getProfileAvatar } from "../utils/avatarUtils";
 
 const ROLES = [
   { value: "volunteer", label: "Волонтер" },
@@ -85,7 +85,7 @@ function formatDate(value) {
 }
 
 function getFullName(item) {
-  const fullName = `${item.first_name || ""} ${item.last_name || ""}`.trim();
+  const fullName = `${item.first_name || ""} ${item.middle_name || ""} ${item.last_name || ""}`.trim();
   return fullName || "Не указано";
 }
 
@@ -547,7 +547,7 @@ export default function AdminPage() {
                       </td>
                       <td>
                         <img
-                          src={user.avatar_url || manAvatar}
+                          src={getProfileAvatar(user)}
                           alt="Аватар"
                           className="admin-avatar"
                         />

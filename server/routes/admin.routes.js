@@ -33,6 +33,8 @@ router.get("/users", async (req, res) => {
         u.created_at,
         p.first_name,
         p.last_name,
+        p.middle_name,
+        p.gender,
         p.phone,
         p.city,
         p.avatar_url

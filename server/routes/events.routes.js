@@ -165,6 +165,8 @@ router.get("/:id", async (req, res) => {
         u.email,
         p.first_name,
         p.last_name,
+        p.middle_name,
+        p.gender,
         p.phone,
         p.avatar_url
       FROM events e

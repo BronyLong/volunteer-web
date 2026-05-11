@@ -21,8 +21,9 @@ export function formatTime(value) {
 
 export function getCoordinatorName(eventData) {
   const firstName = eventData?.first_name?.trim() || "";
+  const middleName = eventData?.middle_name?.trim() || "";
   const lastName = eventData?.last_name?.trim() || "";
-  const fullName = `${firstName} ${lastName}`.trim();
+  const fullName = `${firstName} ${middleName} ${lastName}`.trim();
 
   return fullName || "Координатор не указан";
 }

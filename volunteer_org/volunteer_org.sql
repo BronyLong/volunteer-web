@@ -31,6 +31,8 @@ CREATE TABLE profiles (
     user_id UUID PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100),
+    gender VARCHAR(20) NOT NULL DEFAULT 'male',
     phone VARCHAR(30),
     city VARCHAR(120),
     avatar_url TEXT,
@@ -38,6 +40,9 @@ CREATE TABLE profiles (
     social_vk TEXT,
     social_ok TEXT,
     social_max TEXT,
+    CONSTRAINT chk_profiles_gender
+        CHECK (gender IN ('male', 'female')),
+
     CONSTRAINT fk_profiles_user
         FOREIGN KEY (user_id)
         REFERENCES users(id)

@@ -14,7 +14,7 @@ import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 import arrowIcon from "../assets/SVG/arrow.svg";
 import backgroundImage from "../assets/SVG/background.svg";
-import manAvatar from "../assets/images/avatar_man.png";
+import { getProfileAvatar } from "../utils/avatarUtils";
 
 function getTextValue(value, fallback = "Не указано") {
   return value && String(value).trim() ? value : fallback;
@@ -73,6 +73,46 @@ function formatEventDate(value) {
   if (Number.isNaN(date.getTime())) return "Дата не указана";
 
   return date.toLocaleDateString("ru-RU");
+}
+
+function getEventTime(event) {
+  const time = new Date(event?.start_at).getTime();
+
+  return Number.isNaN(time) ? null : time;
+}
+
+function isCompletedEvent(event) {
+  const time = getEventTime(event);
+
+  if (time === null) return false;
+
+  return time < Date.now();
+}
+
+function sortUpcomingEvents(events) {
+  return [...events].sort((firstEvent, secondEvent) => {
+    const firstTime = getEventTime(firstEvent);
+    const secondTime = getEventTime(secondEvent);
+
+    if (firstTime === null && secondTime === null) return 0;
+    if (firstTime === null) return 1;
+    if (secondTime === null) return -1;
+
+    return firstTime - secondTime;
+  });
+}
+
+function sortCompletedEvents(events) {
+  return [...events].sort((firstEvent, secondEvent) => {
+    const firstTime = getEventTime(firstEvent);
+    const secondTime = getEventTime(secondEvent);
+
+    if (firstTime === null && secondTime === null) return 0;
+    if (firstTime === null) return 1;
+    if (secondTime === null) return -1;
+
+    return secondTime - firstTime;
+  });
 }
 
 function getAccessMessage(profile) {
@@ -152,6 +192,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [eventsTab, setEventsTab] = useState("upcoming");
 
   useEffect(() => {
     async function loadProfile() {
@@ -176,7 +217,8 @@ export default function ProfilePage() {
 
     const firstName = profile.first_name?.trim() || "";
     const lastName = profile.last_name?.trim() || "";
-    const combined = `${firstName} ${lastName}`.trim();
+    const middleName = profile.middle_name?.trim() || "";
+    const combined = `${firstName} ${middleName} ${lastName}`.trim();
 
     return combined || "Пользователь";
   }, [profile]);
@@ -234,6 +276,21 @@ export default function ProfilePage() {
       : [];
   }, [profile]);
 
+  const upcomingEvents = useMemo(() => {
+    return sortUpcomingEvents(
+      profileEvents.filter((event) => !isCompletedEvent(event))
+    );
+  }, [profileEvents]);
+  
+  const completedEvents = useMemo(() => {
+    return sortCompletedEvents(
+      profileEvents.filter((event) => isCompletedEvent(event))
+    );
+  }, [profileEvents]);
+  
+  const visibleProfileEvents =
+    eventsTab === "completed" ? completedEvents : upcomingEvents;
+
   function handleAvatarClick() {
     if (!profile?.is_owner || avatarLoading) return;
     fileInputRef.current?.click();
@@ -258,6 +315,8 @@ export default function ProfilePage() {
       await updateMyProfile({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
+        middle_name: profile.middle_name || "",
+        gender: profile.gender || "male",
         email: profile.email || "",
         phone: profile.phone || "",
         city: profile.city || "",
@@ -340,7 +399,7 @@ export default function ProfilePage() {
             }
           >
             <img
-              src={profile.avatar_url || manAvatar}
+              src={getProfileAvatar(profile)}
               alt="Аватар пользователя"
               className="profile-summary__avatar"
             />
@@ -558,9 +617,39 @@ export default function ProfilePage() {
                 </>
               ) : null}
 
-              {profileEvents.length > 0 ? (
+              <div
+                className="profile-events__tabs"
+                role="tablist"
+                aria-label="Фильтр мероприятий профиля"
+              >
+                <button
+                  type="button"
+                  className={`profile-events__tab ${
+                    eventsTab === "upcoming" ? "profile-events__tab--active" : ""
+                  }`}
+                  onClick={() => setEventsTab("upcoming")}
+                  role="tab"
+                  aria-selected={eventsTab === "upcoming"}
+                >
+                  Предстоящие мероприятия
+                </button>
+              
+                <button
+                  type="button"
+                  className={`profile-events__tab ${
+                    eventsTab === "completed" ? "profile-events__tab--active" : ""
+                  }`}
+                  onClick={() => setEventsTab("completed")}
+                  role="tab"
+                  aria-selected={eventsTab === "completed"}
+                >
+                  Завершенные мероприятия
+                </button>
+              </div>
+              
+              {visibleProfileEvents.length > 0 ? (
                 <div className="profile-events__list">
-                  {profileEvents.map((event) => (
+                  {visibleProfileEvents.map((event) => (
                     <ProfileEventCard
                       key={event.id}
                       title={event.title}
@@ -573,7 +662,9 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="profile-events__empty">
-                  Здесь пока нет мероприятий
+                  {eventsTab === "completed"
+                    ? "Завершенных мероприятий пока нет"
+                    : "Предстоящих мероприятий пока нет"}
                 </div>
               )}
             </section>

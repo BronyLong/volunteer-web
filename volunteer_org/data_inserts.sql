@@ -14,12 +14,14 @@ VALUES
 ('volunteer@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'volunteer', TRUE);
 
 INSERT INTO profiles (
-    user_id, first_name, last_name, phone, city, avatar_url, bio, social_vk, social_ok, social_max
+    user_id, first_name, last_name, middle_name, gender, phone, city, avatar_url, bio, social_vk, social_ok, social_max
 )
 SELECT
     id,
     'Алексей',
     'Админов',
+    'Сергеевич',
+    'male',
     '+79990000001',
     'Москва',
     NULL,
@@ -31,12 +33,14 @@ FROM users
 WHERE email = 'admin@example.com';
 
 INSERT INTO profiles (
-    user_id, first_name, last_name, phone, city, avatar_url, bio, social_vk, social_ok, social_max
+    user_id, first_name, last_name, middle_name, gender, phone, city, avatar_url, bio, social_vk, social_ok, social_max
 )
 SELECT
     id,
     'Мария',
     'Координаторова',
+    'Ивановна',
+    'female',
     '+79990000002',
     'Казань',
     NULL,
@@ -48,12 +52,14 @@ FROM users
 WHERE email = 'coordinator@example.com';
 
 INSERT INTO profiles (
-    user_id, first_name, last_name, phone, city, avatar_url, bio, social_vk, social_ok, social_max
+    user_id, first_name, last_name, middle_name, gender, phone, city, avatar_url, bio, social_vk, social_ok, social_max
 )
 SELECT
     id,
     'Иван',
     'Волонтёров',
+    'Петрович',
+    'male',
     '+79990000003',
     'Казань',
     NULL,

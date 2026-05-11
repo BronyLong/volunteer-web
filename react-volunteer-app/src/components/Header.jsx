@@ -6,6 +6,7 @@ import logoHeart from "../assets/SVG/logoHeart.svg";
 import logoText from "../assets/SVG/logoText.svg";
 import accountOutline from "../assets/SVG/accountOutline.svg";
 import defaultAvatar from "../assets/images/avatar_man.png";
+import { getProfileAvatar } from "../utils/avatarUtils";
 import exitIcon from "../assets/SVG/exit.svg";
 
 import emailIcon from "../assets/SVG/email_footer.svg";
@@ -80,7 +81,7 @@ export default function Header({
 
         setAuthVariant("private");
         setUserId(profile?.id || tokenUserId);
-        setUserAvatar(profile?.avatar_url || avatar);
+        setUserAvatar(profile?.avatar_url || getProfileAvatar(profile));
       } catch {
         removeToken();
         setAuthVariant("public");

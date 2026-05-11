@@ -18,7 +18,7 @@ import dateIcon from "../assets/SVG/calendar_card.svg";
 import timeIcon from "../assets/SVG/clock.svg";
 
 import defaultEventImage from "../assets/images/default_event.png";
-import womanAvatar from "../assets/images/avatar_man.png";
+import { getProfileAvatar } from "../utils/avatarUtils";
 
 import {
   acceptApplication,
@@ -552,7 +552,7 @@ export default function EventOpenPage() {
                       >
                         <div className="coordinator-card__avatar-wrap">
                           <img
-                            src={eventData.avatar_url || womanAvatar}
+                            src={getProfileAvatar(eventData)}
                             alt="Координатор"
                             className="coordinator-card__avatar"
                           />
@@ -561,7 +561,7 @@ export default function EventOpenPage() {
                     ) : (
                       <div className="coordinator-card__avatar-wrap">
                         <img
-                          src={eventData.avatar_url || womanAvatar}
+                          src={getProfileAvatar(eventData)}
                           alt="Координатор"
                           className="coordinator-card__avatar"
                         />
@@ -714,9 +714,9 @@ export default function EventOpenPage() {
                         key={application.id}
                         id={application.id}
                         userId={application.user_id}
-                        avatar={application.avatar_url || womanAvatar}
+                        avatar={getProfileAvatar(application)}
                         name={application.first_name || "Имя не указано"}
-                        secondName={application.last_name || ""}
+                        secondName={`${application.middle_name || ""} ${application.last_name || ""}`.trim()}
                         email={application.email || "Не указан"}
                         phone={application.phone || "Не указан"}
                         status={application.status}

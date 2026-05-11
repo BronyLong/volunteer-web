@@ -1,6 +1,8 @@
 export const INITIAL_PROFILE_FIELD_ERRORS = {
   first_name: "",
   last_name: "",
+  middle_name: "",
+  gender: "",
   email: "",
   phone: "",
   social_vk: "",
@@ -25,6 +27,8 @@ export function mapProfileToForm(profile) {
   return {
     first_name: profile?.first_name || "",
     last_name: profile?.last_name || "",
+    middle_name: profile?.middle_name || "",
+    gender: profile?.gender || "male",
     email: profile?.email || "",
     phone: profile?.phone || "",
     city: profile?.city || "",
@@ -112,6 +116,8 @@ export function buildValidationErrors(formData) {
 
   const firstName = formData.first_name.trim();
   const lastName = formData.last_name.trim();
+  const middleName = formData.middle_name.trim();
+  const gender = formData.gender.trim();
   const email = normalizeEmail(formData.email);
   const phone = formData.phone.trim();
   const socialVk = formData.social_vk.trim();
@@ -124,6 +130,16 @@ export function buildValidationErrors(formData) {
 
   if (!lastName) {
     errors.last_name = "Введите фамилию";
+  }
+
+  if (middleName.length > 100) {
+    errors.middle_name = "Отчество должно быть не длиннее 100 символов";
+  }
+
+  if (!gender) {
+    errors.gender = "Выберите пол";
+  } else if (!["male", "female"].includes(gender)) {
+    errors.gender = "Выберите корректное значение пола";
   }
 
   if (!email) {

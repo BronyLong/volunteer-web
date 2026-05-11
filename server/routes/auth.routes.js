@@ -27,15 +27,21 @@ function validatePassword(password) {
 }
 
 router.post("/register", async (req, res) => {
-  let { firstName, lastName, email, password } = req.body;
+  let { firstName, lastName, middleName, gender, email, password } = req.body;
 
   firstName = firstName ? String(firstName).trim() : "";
   lastName = lastName ? String(lastName).trim() : "";
+  middleName = middleName ? String(middleName).trim() : "";
+  gender = gender ? String(gender).trim() : "";
   email = email ? String(email).trim().toLowerCase() : "";
   password = password ? String(password) : "";
 
-  if (!firstName || !lastName || !email || !password) {
+  if (!firstName || !lastName || !gender || !email || !password) {
     return res.status(400).json({ message: "Заполни все обязательные поля" });
+  }
+
+  if (!["male", "female"].includes(gender)) {
+    return res.status(400).json({ message: "Выберите корректное значение пола" });
   }
 
   if (!validateEmail(email)) {
@@ -87,10 +93,10 @@ router.post("/register", async (req, res) => {
 
     await client.query(
       `
-      INSERT INTO profiles (user_id, first_name, last_name)
-      VALUES ($1, $2, $3)
+      INSERT INTO profiles (user_id, first_name, last_name, middle_name, gender)
+      VALUES ($1, $2, $3, $4, $5)
       `,
-      [user.id, firstName, lastName]
+      [user.id, firstName, lastName, middleName, gender]
     );
 
     await writeAuditLog({
@@ -104,6 +110,8 @@ router.post("/register", async (req, res) => {
         email: user.email,
         first_name: firstName,
         last_name: lastName,
+        middle_name: middleName,
+        gender,
       },
       db: client,
     });

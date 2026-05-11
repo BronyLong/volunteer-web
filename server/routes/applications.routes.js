@@ -225,6 +225,8 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
         u.email,
         p.first_name,
         p.last_name,
+        p.middle_name,
+        p.gender,
         p.phone,
         p.city,
         p.avatar_url

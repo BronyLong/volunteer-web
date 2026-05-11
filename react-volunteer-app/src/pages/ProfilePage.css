@@ -395,6 +395,46 @@
   overflow-wrap: anywhere;
 }
 
+.profile-events__tabs {
+  margin-bottom: 22px;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--surface-card-green);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.profile-events__tab {
+  min-height: 52px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--green-700);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-events__tab:hover {
+  background: var(--white);
+  box-shadow: 0 6px 16px var(--green-shadow-10);
+}
+
+.profile-events__tab--active {
+  background: var(--green);
+  color: var(--white);
+  box-shadow: 0 8px 18px var(--green-shadow-10);
+}
+
+.profile-events__tab--active:hover {
+  background: var(--green-dark);
+}
+
 .profile-events__list {
   display: flex;
   flex-direction: column;
@@ -511,6 +551,16 @@
 
   .profile-card__divider {
     margin: 14px 0 20px;
+  }
+
+  .profile-events__tabs {
+    grid-template-columns: 1fr;
+    margin-bottom: 18px;
+  }
+  
+  .profile-events__tab {
+    min-height: 48px;
+    font-size: 15px;
   }
 
   .profile-contacts {

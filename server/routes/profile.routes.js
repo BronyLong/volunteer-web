@@ -64,6 +64,8 @@ async function getProfileByUserId(userId, db = pool) {
       u.created_at,
       p.first_name,
       p.last_name,
+      p.middle_name,
+      p.gender,
       p.phone,
       p.city,
       p.avatar_url,
@@ -188,6 +190,8 @@ function sanitizeProfile(profile, accessLevel, viewer) {
     role: profile.role,
     first_name: profile.first_name,
     last_name: profile.last_name,
+    middle_name: profile.middle_name,
+    gender: profile.gender,
     avatar_url: profile.avatar_url,
     bio: profile.bio,
     volunteer_events: Array.isArray(profile.volunteer_events)
@@ -263,6 +267,8 @@ router.put("/me", authMiddleware, async (req, res) => {
   const {
     first_name,
     last_name,
+    middle_name,
+    gender,
     email,
     phone,
     city,
@@ -275,6 +281,8 @@ router.put("/me", authMiddleware, async (req, res) => {
 
   const normalizedFirstName = String(first_name || "").trim();
   const normalizedLastName = String(last_name || "").trim();
+  const normalizedMiddleName = middle_name ? String(middle_name).trim() : "";
+  const normalizedGender = gender ? String(gender).trim() : "";
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const normalizedPhone = phone ? String(phone).trim() : "";
   const normalizedCity = city ? String(city).trim() : "";
@@ -284,8 +292,14 @@ router.put("/me", authMiddleware, async (req, res) => {
   const normalizedOk = social_ok ? String(social_ok).trim() : "";
   const normalizedMax = social_max ? String(social_max).trim() : "";
 
-  if (!normalizedFirstName || !normalizedLastName || !normalizedEmail) {
-    return res.status(400).json({ message: "Имя, фамилия и email обязательны" });
+  if (!normalizedFirstName || !normalizedLastName || !normalizedGender || !normalizedEmail) {
+    return res.status(400).json({
+      message: "Имя, фамилия, пол и email обязательны",
+    });
+  }
+
+  if (!["male", "female"].includes(normalizedGender)) {
+    return res.status(400).json({ message: "Выберите корректное значение пола" });
   }
 
   if (!validateEmail(normalizedEmail)) {
@@ -356,6 +370,8 @@ router.put("/me", authMiddleware, async (req, res) => {
         user_id,
         first_name,
         last_name,
+        middle_name,
+        gender,
         phone,
         city,
         avatar_url,
@@ -364,11 +380,13 @@ router.put("/me", authMiddleware, async (req, res) => {
         social_ok,
         social_max
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       ON CONFLICT (user_id)
       DO UPDATE SET
         first_name = EXCLUDED.first_name,
         last_name = EXCLUDED.last_name,
+        middle_name = EXCLUDED.middle_name,
+        gender = EXCLUDED.gender,
         phone = EXCLUDED.phone,
         city = EXCLUDED.city,
         avatar_url = EXCLUDED.avatar_url,
@@ -381,6 +399,8 @@ router.put("/me", authMiddleware, async (req, res) => {
         req.user.id,
         normalizedFirstName,
         normalizedLastName,
+        normalizedMiddleName,
+        normalizedGender,
         normalizedPhone,
         normalizedCity,
         normalizedAvatarUrl,

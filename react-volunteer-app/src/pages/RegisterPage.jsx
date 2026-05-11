@@ -9,6 +9,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    middleName: "",
+    gender: "male",
     email: "",
     password: "",
     confirmPassword: "",
@@ -41,6 +43,8 @@ export default function RegisterPage() {
       const data = await registerUser({
         firstName: form.firstName,
         lastName: form.lastName,
+        middleName: form.middleName,
+        gender: form.gender,
         email: form.email,
         password: form.password,
       });
@@ -108,6 +112,40 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                   />
+                </div>
+              </div>
+
+              <div className="register-form__row register-form__row--two">
+                <div className="form-field">
+                  <label htmlFor="middleName" className="form-field__label">
+                    Отчество
+                  </label>
+                  <input
+                    id="middleName"
+                    name="middleName"
+                    type="text"
+                    className="form-field__input"
+                    placeholder="Введите отчество"
+                    value={form.middleName}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="gender" className="form-field__label">
+                    Пол
+                  </label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    className="form-field__input"
+                    value={form.gender}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="male">Мужской</option>
+                    <option value="female">Женский</option>
+                  </select>
                 </div>
               </div>
 

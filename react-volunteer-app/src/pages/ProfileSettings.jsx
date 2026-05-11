@@ -14,12 +14,14 @@ import {
   normalizeEmail,
 } from "../utils/profileUtils";
 
-import manAvatar from "../assets/images/avatar_man.png";
+import { getProfileAvatar } from "../utils/avatarUtils";
 import backgroundImage from "../assets/SVG/background.svg";
 
 const INITIAL_FORM = {
   first_name: "",
   last_name: "",
+  middle_name: "",
+  gender: "male",
   email: "",
   phone: "",
   city: "",
@@ -81,10 +83,11 @@ export default function ProfileSettings() {
   const fullName = useMemo(() => {
     const firstName = formData.first_name.trim();
     const lastName = formData.last_name.trim();
-    const combined = `${firstName} ${lastName}`.trim();
+    const middleName = formData.middle_name.trim();
+    const combined = `${firstName} ${middleName} ${lastName}`.trim();
 
     return combined || "Пользователь";
-  }, [formData.first_name, formData.last_name]);
+  }, [formData.first_name, formData.last_name, formData.middle_name]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -118,6 +121,8 @@ export default function ProfileSettings() {
       ...formData,
       first_name: formData.first_name.trim(),
       last_name: formData.last_name.trim(),
+      middle_name: formData.middle_name.trim(),
+      gender: formData.gender.trim(),
       email: normalizeEmail(formData.email),
       phone: formData.phone.trim(),
       city: formData.city.trim(),
@@ -143,6 +148,8 @@ export default function ProfileSettings() {
       const payload = {
         first_name: preparedFormData.first_name,
         last_name: preparedFormData.last_name,
+        middle_name: preparedFormData.middle_name,
+        gender: preparedFormData.gender,
         email: preparedFormData.email,
         phone: preparedFormData.phone,
         city: preparedFormData.city,
@@ -189,7 +196,7 @@ export default function ProfileSettings() {
         <div className="container">
           <div className="profile-summary__avatar-wrap">
             <img
-              src={profile?.avatar_url || manAvatar}
+              src={getProfileAvatar(profile)}
               alt="Аватар пользователя"
               className="profile-summary__avatar"
             />
@@ -250,6 +257,45 @@ export default function ProfileSettings() {
                 />
                 {fieldErrors.last_name ? (
                   <div className="form-field__error">{fieldErrors.last_name}</div>
+                ) : null}
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="middleName" className="form-field__label">
+                  Отчество
+                </label>
+                <input
+                  id="middleName"
+                  name="middle_name"
+                  type="text"
+                  className={getFieldClassName(Boolean(fieldErrors.middle_name))}
+                  placeholder="Введите отчество"
+                  value={formData.middle_name}
+                  onChange={handleChange}
+                  disabled={saving}
+                />
+                {fieldErrors.middle_name ? (
+                  <div className="form-field__error">{fieldErrors.middle_name}</div>
+                ) : null}
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="gender" className="form-field__label">
+                  Пол
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  className={getFieldClassName(Boolean(fieldErrors.gender))}
+                  value={formData.gender}
+                  onChange={handleChange}
+                  disabled={saving}
+                >
+                  <option value="male">Мужской</option>
+                  <option value="female">Женский</option>
+                </select>
+                {fieldErrors.gender ? (
+                  <div className="form-field__error">{fieldErrors.gender}</div>
                 ) : null}
               </div>
 
