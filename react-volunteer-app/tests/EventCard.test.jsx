@@ -55,4 +55,40 @@ describe("EventCard", () => {
     expect(screen.getByText("20 из 20")).toBeInTheDocument();
     expect(screen.getByText("Экология")).toBeInTheDocument();
   });
+
+  it("falls back to ecology category for unknown category type", () => {
+    render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <EventCard category="unknown-category" />
+      </MemoryRouter>
+    );
+  
+    expect(screen.getByText("Экология")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /подробнее/i })).toHaveClass(
+      "event-tile__button--green"
+    );
+  });
+  
+  it("renders orange category button for children category", () => {
+    render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <EventCard category="children" />
+      </MemoryRouter>
+    );
+  
+    expect(screen.getByText("Детям")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /подробнее/i })).toHaveClass(
+      "event-tile__button--orange"
+    );
+  });
 });

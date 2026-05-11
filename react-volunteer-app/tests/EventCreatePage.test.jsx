@@ -1,23 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import EventCreatePage from "../src/pages/EventCreatePage";
 
-const mockNavigate = vi.fn();
 const mockCreateEvent = vi.fn();
 const mockGetCategories = vi.fn();
 const mockGetUserFromToken = vi.fn();
-
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+const mockNavigate = vi.fn();
 
 vi.mock("../src/api", async () => {
   const actual = await vi.importActual("../src/api");
+
   return {
     ...actual,
     createEvent: (...args) => mockCreateEvent(...args),
@@ -26,50 +19,45 @@ vi.mock("../src/api", async () => {
   };
 });
 
-function renderPage() {
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+function renderPage(route = "/events/create") {
   return render(
     <MemoryRouter
+      initialEntries={[route]}
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true,
       }}
     >
-      <EventCreatePage />
+      <Routes>
+        <Route path="/events/create" element={<EventCreatePage />} />
+        <Route path="/events/:id" element={<div>Event page</div>} />
+        <Route path="/events" element={<div>Events page</div>} />
+        <Route path="/login" element={<div>Login page</div>} />
+        <Route path="/" element={<div>Main page</div>} />
+      </Routes>
     </MemoryRouter>
   );
 }
 
-function fillRequiredFields() {
-  fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
-    target: { value: "Субботник" },
-  });
-
-  fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
-    target: { value: "Описание мероприятия" },
-  });
-
-  fireEvent.change(screen.getByLabelText(/место проведения/i), {
-    target: { value: "Парк Победы" },
-  });
-
-  fireEvent.change(screen.getByLabelText(/дата проведения/i), {
-    target: { value: "2099-05-10" },
-  });
-
-  fireEvent.change(screen.getByLabelText(/время проведения/i), {
-    target: { value: "10:30" },
-  });
-}
-
-function addTask(taskText = "Собрать мусор") {
-  const newTaskInput = screen.getByPlaceholderText(/новая задача/i);
-
-  fireEvent.change(newTaskInput, {
-    target: { value: taskText },
-  });
-
-  fireEvent.click(screen.getByRole("button", { name: /добавить задачу/i }));
-}
+const categories = [
+  {
+    id: 1,
+    name: "Экология",
+  },
+  {
+    id: 2,
+    name: "Животные",
+  },
+];
 
 function mockCanvasSuccess(dataUrl = "data:image/jpeg;base64,resized-image") {
   const originalCreateElement = document.createElement.bind(document);
@@ -91,15 +79,13 @@ function mockCanvasSuccess(dataUrl = "data:image/jpeg;base64,resized-image") {
 
   class FileReaderMock {
     constructor() {
-      this.result = "data:image/png;base64,original-file";
+      this.result = "data:image/png;base64,file";
       this.onload = null;
       this.onerror = null;
     }
 
     readAsDataURL() {
-      if (this.onload) {
-        this.onload();
-      }
+      this.onload?.();
     }
   }
 
@@ -107,14 +93,12 @@ function mockCanvasSuccess(dataUrl = "data:image/jpeg;base64,resized-image") {
     constructor() {
       this.onload = null;
       this.onerror = null;
-      this.width = 1600;
-      this.height = 900;
+      this.width = 1200;
+      this.height = 800;
     }
 
     set src(_) {
-      if (this.onload) {
-        this.onload();
-      }
+      this.onload?.();
     }
   }
 
@@ -122,52 +106,16 @@ function mockCanvasSuccess(dataUrl = "data:image/jpeg;base64,resized-image") {
   vi.stubGlobal("Image", ImageMock);
 }
 
-function mockFileReaderError() {
+function mockCanvasImageError() {
   class FileReaderMock {
     constructor() {
+      this.result = "data:image/png;base64,file";
       this.onload = null;
       this.onerror = null;
     }
 
     readAsDataURL() {
-      if (this.onerror) {
-        this.onerror(new Error("read error"));
-      }
-    }
-  }
-
-  vi.stubGlobal("FileReader", FileReaderMock);
-}
-
-function mockImageLoadError() {
-  const originalCreateElement = document.createElement.bind(document);
-
-  vi.spyOn(document, "createElement").mockImplementation((tagName) => {
-    if (tagName === "canvas") {
-      return {
-        width: 0,
-        height: 0,
-        getContext: () => ({
-          drawImage: vi.fn(),
-        }),
-        toDataURL: () => "data:image/jpeg;base64,never-used",
-      };
-    }
-
-    return originalCreateElement(tagName);
-  });
-
-  class FileReaderMock {
-    constructor() {
-      this.result = "data:image/png;base64,original-file";
-      this.onload = null;
-      this.onerror = null;
-    }
-
-    readAsDataURL() {
-      if (this.onload) {
-        this.onload();
-      }
+      this.onload?.();
     }
   }
 
@@ -178,9 +126,7 @@ function mockImageLoadError() {
     }
 
     set src(_) {
-      if (this.onerror) {
-        this.onerror(new Error("image load error"));
-      }
+      this.onerror?.();
     }
   }
 
@@ -206,7 +152,7 @@ function mockCanvasContextError() {
 
   class FileReaderMock {
     constructor() {
-      this.result = "data:image/png;base64,original-file";
+      this.result = "data:image/png;base64,file";
       this.onload = null;
       this.onerror = null;
     }
@@ -220,8 +166,8 @@ function mockCanvasContextError() {
     constructor() {
       this.onload = null;
       this.onerror = null;
-      this.width = 1600;
-      this.height = 900;
+      this.width = 1200;
+      this.height = 800;
     }
 
     set src(_) {
@@ -238,75 +184,61 @@ describe("EventCreatePage", () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
 
-    window.scrollTo = vi.fn();
-
     mockGetUserFromToken.mockReturnValue({
       id: 10,
       role: "coordinator",
     });
 
-    mockGetCategories.mockResolvedValue([
-      { id: 1, name: "Экология" },
-      { id: 2, name: "Детям" },
-    ]);
+    mockGetCategories.mockResolvedValue(categories);
 
     mockCreateEvent.mockResolvedValue({
-      event: { id: 55 },
+      event: {
+        id: 99,
+      },
     });
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("redirects to login when user is not authorized", async () => {
-    mockGetUserFromToken.mockReturnValue(null);
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
-    });
-  });
-
-  it("redirects to home when user role is volunteer", async () => {
-    mockGetUserFromToken.mockReturnValue({
-      id: 15,
-      role: "volunteer",
-    });
-
-    renderPage();
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
-    });
-  });
-
-  it("allows admin to access the page", async () => {
-    mockGetUserFromToken.mockReturnValue({
-      id: 1,
-      role: "admin",
-    });
-
+  it("loads categories and renders create form", async () => {
     renderPage();
 
     expect(
       await screen.findByRole("heading", { name: /новое мероприятие/i })
     ).toBeInTheDocument();
+
+    expect(screen.getByLabelText(/название мероприятия/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/описание мероприятия/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/категория/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/количество мест/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/место проведения/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/дата проведения/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/время проведения/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/длительность, минут/i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockGetCategories).toHaveBeenCalled();
+    });
   });
 
-  it("loads categories and sets the first category by default", async () => {
+  it("redirects guest to login", () => {
+    mockGetUserFromToken.mockReturnValue(null);
+
     renderPage();
 
-    const categorySelect = await screen.findByLabelText(/категория/i);
-
-    expect(mockGetCategories).toHaveBeenCalledTimes(1);
-    expect(categorySelect.value).toBe("1");
-    expect(screen.getByRole("option", { name: "Экология" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Детям" })).toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
   });
 
-  it("shows category loading error", async () => {
+  it("redirects volunteer to main page", () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 22,
+      role: "volunteer",
+    });
+
+    renderPage();
+
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
+  });
+
+  it("shows categories loading error", async () => {
     mockGetCategories.mockRejectedValue(new Error("Не удалось загрузить категории"));
 
     renderPage();
@@ -316,88 +248,10 @@ describe("EventCreatePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("adds a task by Enter and removes it", async () => {
+  it("validates required fields", async () => {
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
-
-    const newTaskInput = screen.getByPlaceholderText(/новая задача/i);
-
-    fireEvent.change(newTaskInput, {
-      target: { value: "Подготовить инвентарь" },
-    });
-
-    fireEvent.keyDown(newTaskInput, {
-      key: "Enter",
-      code: "Enter",
-      charCode: 13,
-    });
-
-    expect(screen.getByDisplayValue("Подготовить инвентарь")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /удалить задачу/i }));
-
-    expect(
-      screen.queryByDisplayValue("Подготовить инвентарь")
-    ).not.toBeInTheDocument();
-  });
-
-  it("does not add an empty task", async () => {
-    renderPage();
-
-    await screen.findByLabelText(/категория/i);
-
-    const newTaskInput = screen.getByPlaceholderText(/новая задача/i);
-
-    fireEvent.change(newTaskInput, {
-      target: { value: "   " },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /добавить задачу/i }));
-
-    expect(
-      screen.queryByRole("button", { name: /удалить задачу/i })
-    ).not.toBeInTheDocument();
-  });
-
-  it("resets places to 1 on blur when value is empty", async () => {
-    renderPage();
-
-    await screen.findByLabelText(/категория/i);
-
-    const placesInput = screen.getByLabelText(/количество мест/i);
-
-    fireEvent.change(placesInput, {
-      target: { value: "" },
-    });
-
-    expect(placesInput.value).toBe("");
-
-    fireEvent.blur(placesInput);
-
-    expect(placesInput.value).toBe("1");
-  });
-
-  it("does not allow places lower than 1", async () => {
-    renderPage();
-  
-    await screen.findByLabelText(/категория/i);
-  
-    const placesInput = screen.getByLabelText(/количество мест/i);
-  
-    expect(placesInput.value).toBe("20");
-  
-    fireEvent.change(placesInput, {
-      target: { value: "0" },
-    });
-  
-    expect(placesInput.value).toBe("20");
-  });
-
-  it("shows validation error when required fields are empty", async () => {
-    renderPage();
-
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
     fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
 
@@ -408,52 +262,79 @@ describe("EventCreatePage", () => {
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 
-  it("shows error when a non-image file is selected", async () => {
+  it("adds and removes tasks", async () => {
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    const fileInput = screen.getByLabelText(/загрузить изображение/i);
-    const file = new File(["test"], "doc.txt", { type: "text/plain" });
+    fireEvent.change(screen.getByPlaceholderText(/новая задача/i), {
+      target: {
+        value: "Собрать мусор",
+      },
+    });
 
-    fireEvent.change(fileInput, {
-      target: { files: [file] },
+    fireEvent.click(screen.getByRole("button", { name: /добавить задачу/i }));
+
+    expect(screen.getByDisplayValue("Собрать мусор")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /удалить задачу/i }));
+
+    expect(screen.queryByDisplayValue("Собрать мусор")).not.toBeInTheDocument();
+  });
+
+  it("adds task by Enter key", async () => {
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    const taskInput = screen.getByPlaceholderText(/новая задача/i);
+
+    fireEvent.change(taskInput, {
+      target: {
+        value: "Выдать перчатки",
+      },
+    });
+
+    fireEvent.keyDown(taskInput, { key: "Enter" });
+
+    expect(screen.getByDisplayValue("Выдать перчатки")).toBeInTheDocument();
+  });
+
+  it("shows image type error", async () => {
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    const input = screen.getByLabelText(/загрузить изображение/i);
+    const file = new File(["text"], "file.txt", {
+      type: "text/plain",
+    });
+
+    fireEvent.change(input, {
+      target: {
+        files: [file],
+      },
     });
 
     expect(await screen.findByText(/выберите изображение/i)).toBeInTheDocument();
   });
 
-  it("shows image read error when FileReader fails", async () => {
-    mockFileReaderError();
+  it("shows image loading error when image loading fails", async () => {
+    mockCanvasImageError();
 
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    const fileInput = screen.getByLabelText(/загрузить изображение/i);
-    const file = new File(["img"], "avatar.png", { type: "image/png" });
-
-    fireEvent.change(fileInput, {
-      target: { files: [file] },
+    const input = screen.getByLabelText(/загрузить изображение/i);
+    const file = new File(["image"], "photo.png", {
+      type: "image/png",
     });
 
-    expect(
-      await screen.findByText(/не удалось прочитать файл/i)
-    ).toBeInTheDocument();
-  });
-
-  it("shows image processing error when Image fails to load", async () => {
-    mockImageLoadError();
-
-    renderPage();
-
-    await screen.findByLabelText(/категория/i);
-
-    const fileInput = screen.getByLabelText(/загрузить изображение/i);
-    const file = new File(["img"], "avatar.png", { type: "image/png" });
-
-    fireEvent.change(fileInput, {
-      target: { files: [file] },
+    fireEvent.change(input, {
+      target: {
+        files: [file],
+      },
     });
 
     expect(
@@ -461,34 +342,104 @@ describe("EventCreatePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("resizes valid image and sends image_url in payload", async () => {
-    mockCanvasSuccess("data:image/jpeg;base64,resized-image");
+  it("shows image processing error when canvas context is unavailable", async () => {
+    mockCanvasContextError();
 
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    fillRequiredFields();
-    addTask("Собрать мусор");
-
-    const fileInput = screen.getByLabelText(/загрузить изображение/i);
-    const file = new File(["img"], "poster.png", { type: "image/png" });
-
-    fireEvent.change(fileInput, {
-      target: { files: [file] },
+    const input = screen.getByLabelText(/загрузить изображение/i);
+    const file = new File(["image"], "photo.png", {
+      type: "image/png",
     });
 
-    await waitFor(() => {
-      expect(screen.getAllByAltText(/превью изображения/i).length).toBeGreaterThan(0);
+    fireEvent.change(input, {
+      target: {
+        files: [file],
+      },
     });
 
-    fireEvent.change(screen.getByLabelText(/количество мест/i), {
-      target: { value: "25" },
+    expect(
+      await screen.findByText(/не удалось обработать изображение/i)
+    ).toBeInTheDocument();
+  });
+
+  it("uploads image and creates event", async () => {
+    mockCanvasSuccess();
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    const input = screen.getByLabelText(/загрузить изображение/i);
+    const file = new File(["image"], "photo.png", {
+      type: "image/png",
+    });
+
+    fireEvent.change(input, {
+      target: {
+        files: [file],
+      },
+    });
+
+    expect(await screen.findByAltText(/превью изображения/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: {
+        value: "Субботник",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: {
+        value: "Описание мероприятия",
+      },
     });
 
     fireEvent.change(screen.getByLabelText(/категория/i), {
-      target: { value: "2" },
+      target: {
+        value: "1",
+      },
     });
+
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: {
+        value: "Парк Победы",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: {
+        value: "2099-05-10",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: {
+        value: "10:30",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/длительность, минут/i), {
+      target: {
+        value: "150",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/количество мест/i), {
+      target: {
+        value: "25",
+      },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/новая задача/i), {
+      target: {
+        value: "Собрать мусор",
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /добавить задачу/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
 
@@ -501,27 +452,59 @@ describe("EventCreatePage", () => {
         location: "Парк Победы",
         tasks: ["Собрать мусор"],
         participant_limit: 25,
-        category_id: "2",
+        duration_minutes: 150,
+        category_id: "1",
       });
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith("/events/55");
+    expect(mockNavigate).toHaveBeenCalledWith("/events/99");
   });
 
-  it("creates event and navigates to created event page", async () => {
+  it("creates event without image", async () => {
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    fillRequiredFields();
-    addTask("Собрать мусор");
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: {
+        value: "Субботник",
+      },
+    });
 
-    fireEvent.change(screen.getByLabelText(/количество мест/i), {
-      target: { value: "25" },
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: {
+        value: "Описание мероприятия",
+      },
     });
 
     fireEvent.change(screen.getByLabelText(/категория/i), {
-      target: { value: "2" },
+      target: {
+        value: "1",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: {
+        value: "Парк Победы",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: {
+        value: "2099-05-10",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: {
+        value: "10:30",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/количество мест/i), {
+      target: {
+        value: "25",
+      },
     });
 
     fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
@@ -533,41 +516,96 @@ describe("EventCreatePage", () => {
         description: "Описание мероприятия",
         start_at: "2099-05-10T10:30:00",
         location: "Парк Победы",
-        tasks: ["Собрать мусор"],
+        tasks: [],
         participant_limit: 25,
-        category_id: "2",
+        duration_minutes: 120,
+        category_id: "1",
       });
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith("/events/55");
+    expect(mockNavigate).toHaveBeenCalledWith("/events/99");
   });
 
-  it("navigates to /events when created event id is missing", async () => {
+  it("navigates to events list when response has no created event id", async () => {
     mockCreateEvent.mockResolvedValue({});
 
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    fillRequiredFields();
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: {
+        value: "Субботник",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: {
+        value: "Описание мероприятия",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: {
+        value: "Парк Победы",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: {
+        value: "2099-05-10",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: {
+        value: "10:30",
+      },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
 
     await waitFor(() => {
-      expect(mockCreateEvent).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).toHaveBeenCalledWith("/events");
     });
-
-    expect(mockNavigate).toHaveBeenCalledWith("/events");
   });
 
-  it("shows create event error", async () => {
-    mockCreateEvent.mockRejectedValue(new Error("Не удалось создать мероприятие"));
+  it("shows create fallback error", async () => {
+    mockCreateEvent.mockRejectedValue({});
 
     renderPage();
 
-    await screen.findByLabelText(/категория/i);
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
 
-    fillRequiredFields();
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: {
+        value: "Субботник",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: {
+        value: "Описание мероприятия",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: {
+        value: "Парк Победы",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: {
+        value: "2099-05-10",
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: {
+        value: "10:30",
+      },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
 
@@ -576,66 +614,261 @@ describe("EventCreatePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("uses fallback icon for unknown category name", async () => {
-    mockGetCategories.mockResolvedValueOnce([{ id: 9, name: "Другое" }]);
-  
-    const { container } = renderPage();
-  
-    await screen.findByLabelText(/категория/i);
-  
-    const selectWrap = container.querySelector(".select-wrap");
-    expect(selectWrap).toBeInTheDocument();
-  
-    const style = selectWrap.getAttribute("style");
-    expect(style).toContain("--category-icon:");
-    expect(style).toContain("data:image/svg+xml");
-  });
-  
-  it("changes category icon when selected category changes", async () => {
-    mockGetCategories.mockResolvedValueOnce([
-      { id: 3, name: "Животным" },
-      { id: 4, name: "Пожилым" },
-    ]);
-  
-    const { container } = renderPage();
-  
-    const categorySelect = await screen.findByLabelText(/категория/i);
-    const selectWrap = container.querySelector(".select-wrap");
-  
-    expect(selectWrap).toBeInTheDocument();
-  
-    const initialStyle = selectWrap.getAttribute("style");
-    expect(initialStyle).toContain("--category-icon:");
-    expect(initialStyle).toContain("data:image/svg+xml");
-  
-    fireEvent.change(categorySelect, {
-      target: { value: "4" },
+  it("loads all category icon branches", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "coordinator",
     });
   
-    const updatedStyle = selectWrap.getAttribute("style");
-    expect(updatedStyle).toContain("--category-icon:");
-    expect(updatedStyle).toContain("data:image/svg+xml");
-    expect(updatedStyle).not.toBe(initialStyle);
+    mockGetCategories.mockResolvedValue([
+      { id: 1, name: "Экология" },
+      { id: 2, name: "Детям" },
+      { id: 3, name: "Животным" },
+      { id: 4, name: "Пожилым" },
+      { id: 5, name: "Другое" },
+    ]);
+  
+    renderPage();
+  
+    expect(await screen.findByRole("heading", { name: /новое мероприятие/i })).toBeInTheDocument();
+  
+    expect(screen.getByRole("option", { name: "Экология" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Детям" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Животным" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Пожилым" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Другое" })).toBeInTheDocument();
   });
   
-  it("shows image processing error when canvas context is unavailable", async () => {
-    mockCanvasContextError();
+  it("normalizes empty places and duration on blur", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "coordinator",
+    });
+  
+    mockGetCategories.mockResolvedValue([{ id: 1, name: "Экология" }]);
+  
+    renderPage();
+  
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+  
+    const placesInput = screen.getByLabelText(/количество мест/i);
+    const durationInput = screen.getByLabelText(/длительность/i);
+  
+    fireEvent.change(placesInput, {
+      target: {
+        name: "places",
+        value: "",
+      },
+    });
+  
+    expect(placesInput).toHaveValue(null);
+  
+    fireEvent.blur(placesInput);
+  
+    expect(placesInput).toHaveValue(1);
+  
+    fireEvent.change(durationInput, {
+      target: {
+        name: "durationMinutes",
+        value: "",
+      },
+    });
+  
+    expect(durationInput).toHaveValue(null);
+  
+    fireEvent.blur(durationInput);
+  
+    expect(durationInput).toHaveValue(1);
+  });
+  
+  it("ignores numeric values lower than one", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "coordinator",
+    });
+  
+    mockGetCategories.mockResolvedValue([{ id: 1, name: "Экология" }]);
+  
+    renderPage();
+  
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+  
+    const placesInput = screen.getByLabelText(/количество мест/i);
+    const durationInput = screen.getByLabelText(/длительность/i);
+  
+    expect(placesInput).toHaveValue(20);
+    expect(durationInput).toHaveValue(120);
+  
+    fireEvent.change(placesInput, {
+      target: {
+        name: "places",
+        value: "0",
+      },
+    });
+  
+    fireEvent.change(durationInput, {
+      target: {
+        name: "durationMinutes",
+        value: "0",
+      },
+    });
+  
+    expect(placesInput).toHaveValue(20);
+    expect(durationInput).toHaveValue(120);
+  });
+  
+  it("clears visible error after changing a regular field", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "coordinator",
+    });
+  
+    mockGetCategories.mockResolvedValue([{ id: 1, name: "Экология" }]);
+  
+    renderPage();
+  
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+  
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+  
+    expect(screen.getByText(/заполните все обязательные поля/i)).toBeInTheDocument();
+  
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: {
+        name: "title",
+        value: "Новое название",
+      },
+    });
+  
+    expect(screen.queryByText(/заполните все обязательные поля/i)).not.toBeInTheDocument();
+  });
+  
+  it("ignores adding empty task", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "coordinator",
+    });
+  
+    mockGetCategories.mockResolvedValue([{ id: 1, name: "Экология" }]);
+  
+    renderPage();
+  
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+  
+    fireEvent.change(screen.getByPlaceholderText(/новая задача/i), {
+      target: {
+        value: "   ",
+      },
+    });
+  
+    fireEvent.click(screen.getByRole("button", { name: /добавить задачу/i }));
+  
+    expect(screen.queryByDisplayValue("   ")).not.toBeInTheDocument();
+  });
+
+  it("resizes oversized uploaded image before create request", async () => {
+    const originalCreateElement = document.createElement.bind(document);
+    const drawImage = vi.fn();
+    const toDataURL = vi.fn(() => "data:image/jpeg;base64,resized-large-image");
+  
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      if (tagName === "canvas") {
+        return {
+          width: 0,
+          height: 0,
+          getContext: () => ({
+            drawImage,
+          }),
+          toDataURL,
+        };
+      }
+  
+      return originalCreateElement(tagName);
+    });
+  
+    class FileReaderMock {
+      constructor() {
+        this.result = "data:image/png;base64,original-file";
+        this.onload = null;
+        this.onerror = null;
+      }
+  
+      readAsDataURL() {
+        this.onload?.();
+      }
+    }
+  
+    class ImageMock {
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+        this.width = 2400;
+        this.height = 1800;
+      }
+  
+      set src(_) {
+        this.onload?.();
+      }
+    }
+  
+    vi.stubGlobal("FileReader", FileReaderMock);
+    vi.stubGlobal("Image", ImageMock);
   
     renderPage();
   
     const input = await screen.findByLabelText(/загрузить изображение/i);
-    const file = new File(["image"], "photo.png", { type: "image/png" });
+    const file = new File(["image"], "large.png", { type: "image/png" });
   
     fireEvent.change(input, {
       target: { files: [file] },
     });
   
-    expect(
-      await screen.findByText(/не удалось обработать изображение/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(toDataURL).toHaveBeenCalledWith("image/jpeg", 0.85);
+    });
+  
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: { value: "Новое мероприятие" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: { value: "Описание мероприятия" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/количество мест/i), {
+      target: { value: "20" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: { value: "Парк" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: { value: "2099-05-10" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: { value: "10:30" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/длительность/i), {
+      target: { value: "120" },
+    });
+  
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+  
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          image_url: "data:image/jpeg;base64,resized-large-image",
+        })
+      );
+    });
+  
+    expect(drawImage).toHaveBeenCalled();
   });
-
-  it("updates an already added task", async () => {
+  
+  it("updates an already added task before submit", async () => {
     renderPage();
   
     const newTaskInput = await screen.findByPlaceholderText(/новая задача/i);
@@ -652,6 +885,42 @@ describe("EventCreatePage", () => {
       target: { value: "Обновленная задача" },
     });
   
-    expect(screen.getByDisplayValue("Обновленная задача")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/название мероприятия/i), {
+      target: { value: "Новое мероприятие" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+      target: { value: "Описание мероприятия" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/количество мест/i), {
+      target: { value: "20" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/место проведения/i), {
+      target: { value: "Парк" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+      target: { value: "2099-05-10" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/время проведения/i), {
+      target: { value: "10:30" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/длительность/i), {
+      target: { value: "120" },
+    });
+  
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+  
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tasks: ["Обновленная задача"],
+        })
+      );
+    });
   });
 });

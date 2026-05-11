@@ -386,4 +386,71 @@ describe("ProfileSettings", () => {
       screen.getByText(/укажите корректную ссылку max/i)
     ).toBeInTheDocument();
   });
+
+  it("ignores duplicate submit while saving", async () => {
+    let resolveUpdate;
+  
+    mockUpdateMyProfile.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveUpdate = resolve;
+        })
+    );
+  
+    renderPage();
+  
+    await screen.findByDisplayValue("Анна");
+  
+    const submitButton = screen.getAllByRole("button", {
+      name: /сохранить изменения/i,
+    })[0];
+  
+    fireEvent.click(submitButton);
+    fireEvent.click(submitButton);
+  
+    expect(mockUpdateMyProfile).toHaveBeenCalledTimes(1);
+  
+    resolveUpdate({
+      profile: {
+        id: 5,
+        role: "volunteer",
+        first_name: "Анна",
+        last_name: "Иванова",
+        email: "anna@example.com",
+        phone: "",
+        city: "",
+        avatar_url: "",
+        bio: "",
+        social_vk: "",
+        social_ok: "",
+        social_max: "",
+      },
+    });
+  
+    expect(await screen.findByText(/изменения сохранены/i)).toBeInTheDocument();
+  });
+  
+  it("renders field errors for all required fields", async () => {
+    renderPage();
+  
+    await screen.findByDisplayValue("Анна");
+  
+    fireEvent.change(screen.getByLabelText(/имя/i), {
+      target: { value: "" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/фамилия/i), {
+      target: { value: "" },
+    });
+  
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "" },
+    });
+  
+    clickSave();
+  
+    expect(await screen.findByText(/введите имя/i)).toBeInTheDocument();
+    expect(screen.getByText(/введите фамилию/i)).toBeInTheDocument();
+    expect(screen.getByText(/введите email/i)).toBeInTheDocument();
+  });
 });

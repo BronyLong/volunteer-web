@@ -8,6 +8,7 @@ const mockDeleteApplication = vi.fn();
 const mockRejectApplication = vi.fn();
 const mockRestoreApplication = vi.fn();
 const mockGetToken = vi.fn();
+const mockAcceptApplication = vi.fn();
 
 vi.mock("../src/api", async () => {
   const actual = await vi.importActual("../src/api");
@@ -18,6 +19,7 @@ vi.mock("../src/api", async () => {
     rejectApplication: (...args) => mockRejectApplication(...args),
     restoreApplication: (...args) => mockRestoreApplication(...args),
     getToken: (...args) => mockGetToken(...args),
+    acceptApplication: (...args) => mockAcceptApplication(...args),
   };
 });
 
@@ -162,7 +164,7 @@ describe("EventOpenPage", () => {
           {
             id: 101,
             event_id: 55,
-            status: "active",
+            status: "pending",
           },
         ];
         return Promise.resolve({ success: true });
@@ -184,7 +186,9 @@ describe("EventOpenPage", () => {
       });
     });
 
-    expect(await screen.findByText(/вы подали заявку/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/заявка отправлена и ожидает решения координатора/i)
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /отозвать/i })).toBeInTheDocument();
   });
 
@@ -195,7 +199,7 @@ describe("EventOpenPage", () => {
       {
         id: 101,
         event_id: 55,
-        status: "active",
+        status: "pending",
       },
     ];
 
@@ -223,7 +227,7 @@ describe("EventOpenPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows manager applications and allows reject and restore", async () => {
+  it("shows manager applications and allows rejecting pending applications", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
 
     let eventApplications = [
@@ -235,7 +239,7 @@ describe("EventOpenPage", () => {
         last_name: "Волонтер",
         email: "ivan@example.com",
         phone: "+79990000001",
-        status: "active",
+        status: "pending",
       },
       {
         id: 202,
@@ -262,18 +266,11 @@ describe("EventOpenPage", () => {
       return { success: true };
     });
 
-    mockRestoreApplication.mockImplementation(async (id) => {
-      eventApplications = eventApplications.map((item) =>
-        item.id === id ? { ...item, status: "active" } : item
-      );
-      return { success: true };
-    });
-
     renderPage();
 
     expect(await screen.findByText(/поданные заявки/i)).toBeInTheDocument();
     expect(screen.getByText("Иван Волонтер")).toBeInTheDocument();
-    expect(screen.getByText("Мария Петрова")).toBeInTheDocument();
+    expect(screen.queryByText("Мария Петрова")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /отклонить заявку/i }));
 
@@ -281,18 +278,15 @@ describe("EventOpenPage", () => {
       expect(mockRejectApplication).toHaveBeenCalledWith(201);
     });
 
-    expect(await screen.findAllByText(/отклонена/i)).toHaveLength(2);
+    expect(
+      await screen.findByText(/пока нет заявок для отображения/i)
+    ).toBeInTheDocument();
 
-    const restoreButtons = await screen.findAllByRole("button", {
-      name: /восстановить заявку/i,
-    });
-    fireEvent.click(restoreButtons[0]);
+    fireEvent.click(screen.getByLabelText(/показывать отклоненные заявки/i));
 
-    await waitFor(() => {
-      expect(mockRestoreApplication).toHaveBeenCalled();
-    });
-
-    expect(await screen.findByText(/подана/i)).toBeInTheDocument();
+    expect(await screen.findByText("Иван Волонтер")).toBeInTheDocument();
+    expect(screen.getByText("Мария Петрова")).toBeInTheDocument();
+    expect(screen.getAllByText(/отклонена/i)).toHaveLength(2);
   });
 
   it("shows completed event state for volunteer without interaction buttons", async () => {
@@ -305,7 +299,7 @@ describe("EventOpenPage", () => {
           {
             id: 101,
             event_id: 55,
-            status: "active",
+            status: "pending",
           },
         ]);
       }
@@ -315,7 +309,9 @@ describe("EventOpenPage", () => {
     renderPage();
 
     expect(await screen.findByText(/мероприятие завершено/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /принять участие/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /принять участие/i })
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /отозвать/i })).not.toBeInTheDocument();
   });
 
@@ -334,7 +330,7 @@ describe("EventOpenPage", () => {
             last_name: "Волонтер",
             email: "ivan@example.com",
             phone: "+79990000001",
-            status: "active",
+            status: "pending",
           },
           {
             id: 202,
@@ -358,14 +354,17 @@ describe("EventOpenPage", () => {
       screen.getByText(/просмотр заявок доступен, изменение статусов отключено/i)
     ).toBeInTheDocument();
 
+    const acceptButton = screen.getByRole("button", { name: /принять заявку/i });
     const rejectButton = screen.getByRole("button", { name: /отклонить заявку/i });
-    const restoreButton = screen.getByRole("button", { name: /восстановить заявку/i });
 
+    expect(acceptButton).toBeDisabled();
     expect(rejectButton).toBeDisabled();
-    expect(restoreButton).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /восстановить заявку/i })
+    ).not.toBeInTheDocument();
 
+    fireEvent.click(acceptButton);
     fireEvent.click(rejectButton);
-    fireEvent.click(restoreButton);
 
     expect(mockRejectApplication).not.toHaveBeenCalled();
     expect(mockRestoreApplication).not.toHaveBeenCalled();
@@ -387,34 +386,32 @@ describe("EventOpenPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: /принять участие/i }));
 
-    expect(
-      await screen.findByText(/не удалось подать заявку/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/не удалось подать заявку/i)).toBeInTheDocument();
   });
 
   it("shows volunteer hidden contacts hint", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 22, role: "volunteer" }));
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(hiddenContactsEvent);
       if (path === "/applications/my") return Promise.resolve([]);
       return Promise.resolve(null);
     });
-  
+
     renderPage();
-  
+
     expect(
       await screen.findByText(
         /контактные данные откроются после подачи заявки на это мероприятие/i
       )
     ).toBeInTheDocument();
   });
-  
+
   it("shows applications loading state and then empty list for manager", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
-  
+
     let resolveApplications;
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(futureEvent);
       if (path === "/applications/event/55") {
@@ -424,22 +421,22 @@ describe("EventOpenPage", () => {
       }
       return Promise.resolve(null);
     });
-  
+
     renderPage();
-  
+
     expect(await screen.findByText(/поданные заявки/i)).toBeInTheDocument();
     expect(screen.getByText(/загрузка заявок/i)).toBeInTheDocument();
-  
+
     resolveApplications([]);
-  
+
     expect(
-      await screen.findByText(/пока нет поданных заявок на это мероприятие/i)
+      await screen.findByText(/пока нет заявок для отображения/i)
     ).toBeInTheDocument();
   });
-  
+
   it("shows fallback task, category, description and location values", async () => {
     mockGetToken.mockReturnValue(null);
-  
+
     mockApiFetch.mockResolvedValue({
       ...futureEvent,
       tasks: [],
@@ -450,13 +447,13 @@ describe("EventOpenPage", () => {
       available_slots: 0,
       participant_limit: 0,
     });
-  
+
     renderPage();
-  
+
     expect(
       await screen.findByText(/список задач пока не заполнен/i)
     ).toBeInTheDocument();
-  
+
     expect(screen.getByText(/категория не указана/i)).toBeInTheDocument();
     expect(screen.getByText(/описание отсутствует/i)).toBeInTheDocument();
     expect(screen.getByText(/место не указано/i)).toBeInTheDocument();
@@ -464,10 +461,10 @@ describe("EventOpenPage", () => {
       screen.queryByLabelText(/перейти в профиль координатора/i)
     ).not.toBeInTheDocument();
   });
-  
+
   it("shows fallback error when reject request fails without message", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 10, role: "admin" }));
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(futureEvent);
       if (path === "/applications/event/55") {
@@ -480,27 +477,25 @@ describe("EventOpenPage", () => {
             last_name: "Волонтер",
             email: "ivan@example.com",
             phone: "+79990000001",
-            status: "active",
+            status: "pending",
           },
         ]);
       }
       return Promise.resolve(null);
     });
-  
+
     mockRejectApplication.mockRejectedValueOnce({});
-  
+
     renderPage();
-  
+
     fireEvent.click(await screen.findByRole("button", { name: /отклонить заявку/i }));
-  
-    expect(
-      await screen.findByText(/не удалось отклонить заявку/i)
-    ).toBeInTheDocument();
+
+    expect(await screen.findByText(/не удалось отклонить заявку/i)).toBeInTheDocument();
   });
-  
-  it("shows fallback error when restore request fails without message", async () => {
+
+  it("hides rejected applications by default and shows them after toggle", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 10, role: "admin" }));
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(futureEvent);
       if (path === "/applications/event/55") {
@@ -519,23 +514,27 @@ describe("EventOpenPage", () => {
       }
       return Promise.resolve(null);
     });
-  
-    mockRestoreApplication.mockRejectedValueOnce({});
-  
+
     renderPage();
-  
-    fireEvent.click(
-      await screen.findByRole("button", { name: /восстановить заявку/i })
-    );
-  
+
+    expect(await screen.findByText(/поданные заявки/i)).toBeInTheDocument();
+    expect(screen.queryByText("Мария Петрова")).not.toBeInTheDocument();
     expect(
-      await screen.findByText(/не удалось восстановить заявку/i)
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: /восстановить заявку/i })
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/показывать отклоненные заявки/i));
+
+    expect(await screen.findByText("Мария Петрова")).toBeInTheDocument();
+    expect(screen.getByText(/отклонена/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /восстановить заявку/i })
+    ).not.toBeInTheDocument();
   });
-  
+
   it("shows fallback error when withdraw request fails without message", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 22, role: "volunteer" }));
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(futureEvent);
       if (path === "/applications/my") {
@@ -543,36 +542,34 @@ describe("EventOpenPage", () => {
           {
             id: 101,
             event_id: 55,
-            status: "active",
+            status: "pending",
           },
         ]);
       }
       return Promise.resolve(null);
     });
-  
+
     mockDeleteApplication.mockRejectedValueOnce({});
-  
+
     renderPage();
-  
+
     fireEvent.click(await screen.findByRole("button", { name: /отозвать/i }));
-  
-    expect(
-      await screen.findByText(/не удалось отозвать заявку/i)
-    ).toBeInTheDocument();
+
+    expect(await screen.findByText(/не удалось отозвать заявку/i)).toBeInTheDocument();
   });
 
   it("treats invalid token as guest", async () => {
     mockGetToken.mockReturnValue("broken.token.value");
     mockApiFetch.mockResolvedValue(futureEvent);
-  
+
     renderPage();
-  
+
     expect(await screen.findByText(futureEvent.title)).toBeInTheDocument();
-  
+
     expect(
       screen.queryByRole("link", { name: /редактировать мероприятие/i })
     ).not.toBeInTheDocument();
-  
+
     expect(
       screen.queryByRole("button", { name: /отклонить заявку/i })
     ).not.toBeInTheDocument();
@@ -580,55 +577,231 @@ describe("EventOpenPage", () => {
 
   it("keeps page visible when manager applications request fails", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 10, role: "admin" }));
-  
+
     mockApiFetch.mockImplementation((path) => {
       if (path === "/events/55") return Promise.resolve(futureEvent);
       if (path === "/applications/event/55") return Promise.reject(new Error("boom"));
       return Promise.resolve(null);
     });
-  
+
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-  
+
     renderPage();
-  
+
     expect(await screen.findByText(futureEvent.title)).toBeInTheDocument();
     expect(consoleSpy).toHaveBeenCalled();
-  
+
     consoleSpy.mockRestore();
   });
 
   it("shows generic hidden contacts message for admin when contacts are unavailable", async () => {
     mockGetToken.mockReturnValue(makeToken({ id: 1, role: "admin" }));
-  
-    mockApiFetch.mockResolvedValue({
-      ...futureEvent,
-      email: "",
-      phone: "",
+
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") {
+        return Promise.resolve({
+          ...futureEvent,
+          email: "",
+          phone: "",
+        });
+      }
+      if (path === "/applications/event/55") return Promise.resolve([]);
+      return Promise.resolve(null);
     });
-  
+
     const { container } = renderPage();
-  
+
     await screen.findByText(futureEvent.title);
-  
+
     const hiddenContacts = screen.getAllByText(/контактные данные скрыты/i);
     expect(hiddenContacts.length).toBeGreaterThan(0);
-  
-    expect(
-      container.querySelector(".coordinator-card__hint")
-    ).toHaveTextContent("Контактные данные скрыты");
+
+    expect(container.querySelector(".coordinator-card__hint")).toHaveTextContent(
+      "Контактные данные скрыты"
+    );
   });
 
   it("renders event with unknown category name", async () => {
     mockGetToken.mockReturnValue(null);
-  
+
     mockApiFetch.mockResolvedValue({
       ...futureEvent,
       category_name: "Другое",
     });
+
+    renderPage();
+
+    expect(await screen.findByText(futureEvent.title)).toBeInTheDocument();
+    expect(screen.getByText("Другое")).toBeInTheDocument();
+  });
+
+  it("shows approved volunteer application status", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 22, role: "volunteer" }));
+  
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(futureEvent);
+  
+      if (path === "/applications/my") {
+        return Promise.resolve([
+          {
+            id: 7,
+            event_id: 55,
+            status: "approved",
+            created_at: "2099-01-01T10:00:00.000Z",
+          },
+        ]);
+      }
+  
+      return Promise.resolve(null);
+    });
   
     renderPage();
   
-    expect(await screen.findByText(futureEvent.title)).toBeInTheDocument();
-    expect(screen.getByText("Другое")).toBeInTheDocument();
+    expect(await screen.findByText(/вы участвуете в мероприятии/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /отозвать/i })).not.toBeInTheDocument();
+  });
+  
+  it("shows fallback volunteer application status for unknown status", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 22, role: "volunteer" }));
+  
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(futureEvent);
+  
+      if (path === "/applications/my") {
+        return Promise.resolve([
+          {
+            id: 7,
+            event_id: 55,
+            status: "unknown",
+            created_at: "2099-01-01T10:00:00.000Z",
+          },
+        ]);
+      }
+  
+      return Promise.resolve(null);
+    });
+  
+    renderPage();
+  
+    expect(await screen.findByText(/вы подали заявку/i)).toBeInTheDocument();
+  });
+  
+  it("uses latest application by date and id", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 22, role: "volunteer" }));
+  
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(futureEvent);
+  
+      if (path === "/applications/my") {
+        return Promise.resolve([
+          {
+            id: 1,
+            event_id: 55,
+            status: "rejected",
+            created_at: "2099-01-01T10:00:00.000Z",
+          },
+          {
+            id: 2,
+            event_id: 55,
+            status: "pending",
+            updated_at: "2099-01-02T10:00:00.000Z",
+          },
+          {
+            id: 3,
+            event_id: 999,
+            status: "approved",
+            created_at: "2099-01-03T10:00:00.000Z",
+          },
+        ]);
+      }
+  
+      return Promise.resolve(null);
+    });
+  
+    renderPage();
+  
+    expect(
+      await screen.findByText(/заявка отправлена и ожидает решения координатора/i)
+    ).toBeInTheDocument();
+  });
+  
+  it("accepts pending application and refreshes manager data", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
+  
+    let applications = [
+      {
+        id: 100,
+        user_id: 22,
+        first_name: "Иван",
+        last_name: "Волонтер",
+        email: "ivan@example.com",
+        phone: "+79990000000",
+        status: "pending",
+        created_at: "2099-01-01T10:00:00.000Z",
+      },
+    ];
+  
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(futureEvent);
+      if (path === "/applications/event/55") return Promise.resolve(applications);
+      return Promise.resolve(null);
+    });
+  
+    mockAcceptApplication.mockImplementation(() => {
+      applications = [
+        {
+          ...applications[0],
+          status: "approved",
+        },
+      ];
+  
+      return Promise.resolve({ success: true });
+    });
+  
+    renderPage();
+  
+    expect(await screen.findByText("Иван Волонтер")).toBeInTheDocument();
+  
+    fireEvent.click(screen.getByRole("button", { name: /принять заявку/i }));
+  
+    await waitFor(() => {
+      expect(mockAcceptApplication).toHaveBeenCalledWith(100);
+    });
+  
+    expect(await screen.findByText(/принята/i)).toBeInTheDocument();
+  });
+  
+  it("shows fallback error when accept request fails without message", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
+  
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(futureEvent);
+  
+      if (path === "/applications/event/55") {
+        return Promise.resolve([
+          {
+            id: 100,
+            user_id: 22,
+            first_name: "Иван",
+            last_name: "Волонтер",
+            email: "ivan@example.com",
+            phone: "+79990000000",
+            status: "pending",
+          },
+        ]);
+      }
+  
+      return Promise.resolve(null);
+    });
+  
+    mockAcceptApplication.mockRejectedValue({});
+  
+    renderPage();
+  
+    expect(await screen.findByText("Иван Волонтер")).toBeInTheDocument();
+  
+    fireEvent.click(screen.getByRole("button", { name: /принять заявку/i }));
+  
+    expect(await screen.findByText(/не удалось принять заявку/i)).toBeInTheDocument();
   });
 });

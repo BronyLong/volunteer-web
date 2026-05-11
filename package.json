@@ -6,8 +6,8 @@
     "dev": "concurrently -k -n SERVER,WEB -c blue,green \"npm --prefix server run dev\" \"npm --prefix react-volunteer-app run dev\"",
     "start": "concurrently -k -n SERVER,WEB -c blue,green \"npm --prefix server run start\" \"npm --prefix react-volunteer-app run dev\"",
     "install:all": "npm install && npm --prefix server install && npm --prefix react-volunteer-app install",
-    "test": "npm --prefix server run test:run && npm --prefix react-volunteer-app run test:run",
-    "coverage": "npm --prefix server run coverage && npm --prefix react-volunteer-app run coverage"
+    "coverage": "npm run coverage --prefix react-volunteer-app && npm run coverage --prefix server",
+    "test": "npm test --prefix react-volunteer-app && npm test --prefix server"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

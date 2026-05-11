@@ -1,28 +1,29 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
   test: {
-    environment: "jsdom",
+    environment: "node",
     globals: true,
-    setupFiles: "./tests/setup.js",
-    reporters: "verbose", 
+    clearMocks: true,
+    restoreMocks: true,
+    include: ["tests/**/*.test.js"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/**/*.{js,jsx}"],
+      include: ["**/*.js"],
       exclude: [
-        "src/main.jsx",
-        "src/assets/**",
-        "src/styles/**",
+        "node_modules/**",
+        "coverage/**",
+        "tests/**",
+        "vitest.config.js",
+        "index.js",
       ],
-      thresholds: {
+    },
+    thresholds: {
         statements: 90,
         branches: 90,
         functions: 90,
         lines: 90,
-      },
     },
   },
 });

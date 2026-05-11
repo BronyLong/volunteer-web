@@ -13,42 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Выполненные задачи/15.03.2026.md",
+                "file": "Необходимые данные для проекта/Эксплуатационная документация.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "15.03.2026"
+              "title": "Эксплуатационная документация"
             }
           },
           {
-            "id": "caf6273ac7b0c845",
+            "id": "04c0bfd2f96de41f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Выполненные задачи/16.03.2026.md",
+                "file": "Нужно сделать.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "16.03.2026"
-            }
-          },
-          {
-            "id": "2c1f96c7beab7c95",
-            "type": "leaf",
-            "state": {
-              "type": "image",
-              "state": {
-                "file": "Выполненные задачи/ДизайнНа17Марта.png"
-              },
-              "icon": "lucide-image",
-              "title": "ДизайнНа17Марта"
+              "title": "Нужно сделать"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -210,11 +198,26 @@
       "bases:Создать новую базу": false
     }
   },
-  "active": "2c1f96c7beab7c95",
+  "active": "04c0bfd2f96de41f",
   "lastOpenFiles": [
-    "Выполненные задачи/главная2.png",
+    "Необходимые данные для проекта/Эксплуатационная документация.md",
+    "Нужно сделать.md",
+    "Выполненные задачи/главная1.png",
+    "Выполненные задачи/064 10.05.2026.md",
+    "Выполненные задачи/063 05.05.2026 - 09.05.2026.md",
+    "Необходимые данные для проекта/! Задачи на преддипломную практику.md",
+    "Необходимые данные для проекта/!Задачи проекта и длительность их выполнения.md",
+    "Необходимые данные для проекта/Цели создания проекта.md",
+    "Необходимые данные для проекта/Записка-отзыв.md",
+    "Выполненные задачи/062 04.05.2026.md",
+    "Выполненные задачи/061 03.05.2026.md",
+    "Выполненные задачи/060 02.05.2026.md",
+    "Выполненные задачи/059 01.05.2026.md",
+    "Выполненные задачи/058 29.04.2026 - 30.04.2026.md",
     "Выполненные задачи/057 28.04.2026.md",
     "Выполненные задачи/056 27.04.2026.md",
+    "Выполненные задачи/ДизайнНа17Марта.png",
+    "Выполненные задачи/главная2.png",
     "Выполненные задачи/055 26.04.2026.md",
     "Выполненные задачи/054 25.04.2026.md",
     "Выполненные задачи/053 24.04.2026.md",
@@ -226,18 +229,6 @@
     "Выполненные задачи/047 18.04.2026.md",
     "Выполненные задачи/046 17.04.2026.md",
     "Выполненные задачи/045 16.04.2026.md",
-    "Выполненные задачи/044 15.04.2026.md",
-    "Выполненные задачи/043 14.04.2026.md",
-    "Выполненные задачи/042 13.04.2026.md",
-    "Выполненные задачи/041 12.04.2026.md",
-    "Выполненные задачи/040 11.04.2026.md",
-    "Выполненные задачи/039 10.04.2026.md",
-    "Выполненные задачи/038 09.04.2026.md",
-    "Выполненные задачи/037 08.04.2026.md",
-    "Выполненные задачи/036 07.04.2026.md",
-    "Выполненные задачи/035 06.04.2026.md",
-    "Выполненные задачи/034 05.04.2026.md",
-    "Выполненные задачи/026 28.03.2026.md",
     "Diagrams/UML/state.png",
     "Diagrams/UML/sequence.png",
     "Diagrams/UML/deployment.png",
@@ -245,8 +236,6 @@
     "Diagrams/UML/class.png",
     "Diagrams/UML/activity.png",
     "Diagrams/Aris/Use Case/use_case_volunteer.png",
-    "Diagrams/Aris/Use Case/use_case_overall.png",
-    "Diagrams/Aris/Use Case/use_case_coordinator.png",
     "Diagrams/Aris/Data Models/commands.txt",
     "Diagrams/Aris/Use Case/commands.txt",
     "Diagrams/Aris/Use Case/use_case_volunteer.dot",
@@ -254,7 +243,6 @@
     "Diagrams/Aris/Use Case/use_case_coordinator.dot",
     "Diagrams/Aris/Use Case",
     "Diagrams/Aris/Data Models/logical_data_model.dot",
-    "Diagrams/Aris/Data Models/conceptual_data_model.png",
     "Diagrams/Aris/Data Models/conceptual_data_model.dot",
     "Diagrams/Aris/Data Models/physical_data_model.dot",
     "Diagrams/Aris/Data Models",

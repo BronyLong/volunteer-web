@@ -315,4 +315,149 @@ describe("Header", () => {
       screen.getAllByRole("link", { name: /регистрация/i }).length
     ).toBeGreaterThan(0);
   });
+
+  it("marks private profile navigation as active on profile route", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 15,
+      avatar_url: "",
+    });
+  
+    renderHeader({
+      route: "/profiles/15",
+      token: "token",
+      localStorageToken: makeToken({ id: 15 }),
+    });
+  
+    const profileLinks = await screen.findAllByText("Профиль");
+  
+    expect(profileLinks[0]).toHaveClass("header__nav-link--active");
+  });
+  
+  it("opens private mobile menu and closes it by mobile link click", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 15,
+      avatar_url: "",
+    });
+  
+    const { container } = renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 15 }),
+    });
+  
+    await screen.findAllByRole("link", { name: /открыть профиль/i });
+  
+    const menuButton = screen.getByRole("button", { name: /открыть меню/i });
+    fireEvent.click(menuButton);
+  
+    const mobileMenu = container.querySelector("#mobileMenu");
+    expect(mobileMenu).toHaveClass("is-open");
+  
+    const mobileEventsLink = screen.getAllByRole("link", { name: /мероприятия/i }).at(-1);
+    fireEvent.click(mobileEventsLink);
+  
+    expect(mobileMenu).not.toHaveClass("is-open");
+  });
+  
+  it("logs out from private mobile menu", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 15,
+      avatar_url: "",
+    });
+  
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 15 }),
+    });
+  
+    await screen.findAllByRole("link", { name: /открыть профиль/i });
+  
+    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+  
+    const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
+    fireEvent.click(logoutButtons.at(-1));
+  
+    expect(mockRemoveToken).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+  });
+
+  it("keeps public help dropdown open when clicking inside it", () => {
+    renderHeader();
+  
+    const helpButton = screen.getAllByRole("button", { name: /нужна помощь/i })[0];
+  
+    fireEvent.click(helpButton);
+    expect(helpButton).toHaveAttribute("aria-expanded", "true");
+  
+    fireEvent.mouseDown(screen.getByText(/контакты/i));
+  
+    expect(helpButton).toHaveAttribute("aria-expanded", "true");
+  });
+  
+  it("uses login profile link when token payload has no id", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      avatar_url: "",
+    });
+  
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ role: "volunteer" }),
+    });
+  
+    const profileLinks = await screen.findAllByRole("link", {
+      name: /открыть профиль/i,
+    });
+  
+    expect(profileLinks[0]).toHaveAttribute("href", "/login");
+  });
+  
+  it("opens private mobile menu and closes it by profile link click", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 22,
+      avatar_url: "",
+    });
+  
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 22 }),
+    });
+  
+    await screen.findAllByRole("link", { name: /открыть профиль/i });
+  
+    const menuButton = screen.getByRole("button", { name: /открыть меню/i });
+  
+    fireEvent.click(menuButton);
+  
+    const mobileMenu = document.querySelector("#mobileMenu");
+    expect(mobileMenu).toHaveClass("is-open");
+  
+    expect(screen.getAllByRole("link", { name: /главная/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /мероприятия/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /профиль/i }).length).toBeGreaterThan(0);
+  
+    fireEvent.click(screen.getAllByRole("link", { name: /профиль/i }).at(-1));
+  
+    expect(mobileMenu).not.toHaveClass("is-open");
+  });
+  
+  it("logs out from private mobile menu", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 22,
+      avatar_url: "",
+    });
+  
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 22 }),
+    });
+  
+    await screen.findAllByRole("link", { name: /открыть профиль/i });
+  
+    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+  
+    const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
+    fireEvent.click(logoutButtons.at(-1));
+  
+    expect(mockRemoveToken).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+  });
 });

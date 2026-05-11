@@ -213,4 +213,73 @@ describe("HomePage", () => {
     expect(screen.getAllByText(/0 из 0/i).length).toBeGreaterThan(0);
     expect(container.querySelector(".hero__slider-dots--green")).toBeInTheDocument();
   });
+
+  it("logs error when home events request fails", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  
+    mockApiFetch.mockRejectedValue(new Error("network failed"));
+  
+    render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <HomePage />
+      </MemoryRouter>
+    );
+  
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Не удалось загрузить мероприятия:",
+        expect.any(Error)
+      );
+    });
+  
+    consoleSpy.mockRestore();
+  });
+  
+  it("fills hero slides with remaining events when preferred categories are missing", async () => {
+    mockApiFetch.mockResolvedValue([
+      {
+        id: 1,
+        title: "Первое мероприятие",
+        start_at: "2099-05-10T10:00:00.000Z",
+        location: "Москва",
+        available_slots: 5,
+        participant_limit: 20,
+        category_name: "Другое",
+      },
+      {
+        id: 2,
+        title: "Второе мероприятие",
+        start_at: "2099-05-11T10:00:00.000Z",
+        location: "Казань",
+        available_slots: 3,
+        participant_limit: 10,
+        category_name: "Еще категория",
+      },
+    ]);
+  
+    const { container } = render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <HomePage />
+      </MemoryRouter>
+    );
+  
+    await waitFor(() => {
+      expect(container.querySelector(".hero__event-title")?.textContent).toBe(
+        "Первое мероприятие"
+      );
+    });
+  
+    expect(screen.getAllByRole("link", { name: /подать заявку|подробнее/i }).length)
+      .toBeGreaterThan(0);
+  });
 });

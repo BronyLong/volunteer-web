@@ -63,7 +63,7 @@ describe("api.js", () => {
       await api.apiFetch("/profile/me");
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/profile/me",
+        "/api/profile/me",
         expect.objectContaining({
           cache: "no-store",
           headers: expect.objectContaining({
@@ -80,7 +80,7 @@ describe("api.js", () => {
       await api.apiFetch("/profile/me");
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/profile/me",
+        "/api/profile/me",
         expect.objectContaining({
           headers: expect.not.objectContaining({
             Authorization: expect.anything(),
@@ -95,7 +95,7 @@ describe("api.js", () => {
       await api.apiFetch("/categories", { method: "GET" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/categories",
+        "/api/categories",
         expect.objectContaining({
           cache: "no-store",
         })
@@ -111,7 +111,7 @@ describe("api.js", () => {
       });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events",
+        "/api/events",
         expect.objectContaining({
           cache: "default",
           method: "POST",
@@ -129,7 +129,7 @@ describe("api.js", () => {
       });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events",
+        "/api/events",
         expect.objectContaining({
           headers: expect.objectContaining({
             "Content-Type": "application/json",
@@ -188,7 +188,7 @@ describe("api.js", () => {
       await api.loginUser({ email: "a@a.ru", password: "123" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/auth/login",
+        "/api/auth/login",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "a@a.ru", password: "123" }),
@@ -202,7 +202,7 @@ describe("api.js", () => {
       await api.registerUser({ firstName: "Иван" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/auth/register",
+        "/api/auth/register",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ firstName: "Иван" }),
@@ -216,8 +216,10 @@ describe("api.js", () => {
       await api.getMyProfile();
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/profile/me",
-        expect.any(Object)
+        "/api/profile/me",
+        expect.objectContaining({
+          cache: "no-store",
+        })
       );
     });
 
@@ -227,8 +229,10 @@ describe("api.js", () => {
       await api.getProfileById(5);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/profile/5",
-        expect.any(Object)
+        "/api/profile/5",
+        expect.objectContaining({
+          cache: "no-store",
+        })
       );
     });
 
@@ -238,7 +242,7 @@ describe("api.js", () => {
       await api.updateMyProfile({ city: "Москва" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/profile/me",
+        "/api/profile/me",
         expect.objectContaining({
           method: "PUT",
           body: JSON.stringify({ city: "Москва" }),
@@ -252,8 +256,10 @@ describe("api.js", () => {
       await api.getCategories();
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/categories",
-        expect.any(Object)
+        "/api/categories",
+        expect.objectContaining({
+          cache: "no-store",
+        })
       );
     });
 
@@ -263,8 +269,10 @@ describe("api.js", () => {
       await api.getEventById(9);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events/9",
-        expect.any(Object)
+        "/api/events/9",
+        expect.objectContaining({
+          cache: "no-store",
+        })
       );
     });
 
@@ -274,7 +282,7 @@ describe("api.js", () => {
       await api.createEvent({ title: "Новое мероприятие" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events",
+        "/api/events",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ title: "Новое мероприятие" }),
@@ -288,7 +296,7 @@ describe("api.js", () => {
       await api.updateEvent(10, { title: "Обновлено" });
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events/10",
+        "/api/events/10",
         expect.objectContaining({
           method: "PUT",
           body: JSON.stringify({ title: "Обновлено" }),
@@ -302,7 +310,7 @@ describe("api.js", () => {
       await api.deleteEvent(7);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/events/7",
+        "/api/events/7",
         expect.objectContaining({
           method: "DELETE",
         })
@@ -315,9 +323,22 @@ describe("api.js", () => {
       await api.deleteApplication(11);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/applications/11",
+        "/api/applications/11",
         expect.objectContaining({
           method: "DELETE",
+        })
+      );
+    });
+
+    it("acceptApplication calls PATCH /applications/:id/accept", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.acceptApplication(10);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/applications/10/accept",
+        expect.objectContaining({
+          method: "PATCH",
         })
       );
     });
@@ -328,22 +349,110 @@ describe("api.js", () => {
       await api.rejectApplication(13);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/applications/13/reject",
+        "/api/applications/13/reject",
         expect.objectContaining({
           method: "PATCH",
         })
       );
     });
 
-    it("restoreApplication calls PATCH /applications/:id/restore", async () => {
-      mockJsonResponse({ success: true });
+    it("getAdminUsers calls /admin/users", async () => {
+      mockJsonResponse([]);
 
-      await api.restoreApplication(14);
+      await api.getAdminUsers();
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:5000/api/applications/14/restore",
+        "/api/admin/users",
+        expect.objectContaining({
+          cache: "no-store",
+        })
+      );
+    });
+
+    it("updateAdminUserRole calls PATCH /admin/users/:id/role", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.updateAdminUserRole(7, "coordinator");
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/users/7/role",
         expect.objectContaining({
           method: "PATCH",
+          body: JSON.stringify({ role: "coordinator" }),
+        })
+      );
+    });
+
+    it("updateAdminUserActive calls PATCH /admin/users/:id/active", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.updateAdminUserActive(7, false);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/users/7/active",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ is_active: false }),
+        })
+      );
+    });
+
+    it("getAdminEvents calls /admin/events", async () => {
+      mockJsonResponse([]);
+
+      await api.getAdminEvents();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/events",
+        expect.objectContaining({
+          cache: "no-store",
+        })
+      );
+    });
+
+    it("updateAdminEventCoordinator calls PATCH /admin/events/:id/coordinator", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.updateAdminEventCoordinator(9, 2);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/events/9/coordinator",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ coordinator_id: 2 }),
+        })
+      );
+    });
+
+    it("getAdminLogs calls /admin/logs without query when filters are empty", async () => {
+      mockJsonResponse([]);
+
+      await api.getAdminLogs();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/logs",
+        expect.objectContaining({
+          cache: "no-store",
+        })
+      );
+    });
+
+    it("getAdminLogs builds query from non-empty filters", async () => {
+      mockJsonResponse([]);
+
+      await api.getAdminLogs({
+        user_id: 1,
+        action: "UPDATE",
+        empty: "",
+        spaces: "   ",
+        nullable: null,
+        missing: undefined,
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/logs?user_id=1&action=UPDATE",
+        expect.objectContaining({
+          cache: "no-store",
         })
       );
     });
@@ -398,5 +507,22 @@ describe("api.js", () => {
 
       expect(api.getUserFromToken()).toBeNull();
     });
+  });
+
+  it("handles missing content-type header as text response", async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      headers: {
+        get: () => null,
+      },
+      json: async () => {
+        throw new Error("json should not be called");
+      },
+      text: async () => "",
+    });
+  
+    const result = await api.apiFetch("/health");
+  
+    expect(result).toBeNull();
   });
 });

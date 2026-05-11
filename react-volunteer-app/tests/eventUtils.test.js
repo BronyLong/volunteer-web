@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   formatDate,
+  formatDuration,
   formatTime,
   getCoordinatorName,
   getDisplayValue,
@@ -98,5 +99,26 @@ describe("eventUtils", () => {
 
       expect(isEventPast("2026-04-15T12:00:00.000Z")).toBe(false);
     });
+  });
+});
+
+describe("eventUtils > formatDuration", () => {
+  it("returns fallback for empty, invalid and non-positive values", () => {
+    expect(formatDuration()).toBe("Не указано");
+    expect(formatDuration("abc")).toBe("Не указано");
+    expect(formatDuration(0)).toBe("Не указано");
+    expect(formatDuration(-10)).toBe("Не указано");
+  });
+
+  it("formats hours and minutes", () => {
+    expect(formatDuration(125)).toBe("2 ч 5 мин");
+  });
+
+  it("formats hours only", () => {
+    expect(formatDuration(120)).toBe("2 ч");
+  });
+
+  it("formats minutes only", () => {
+    expect(formatDuration(45)).toBe("45 мин");
   });
 });

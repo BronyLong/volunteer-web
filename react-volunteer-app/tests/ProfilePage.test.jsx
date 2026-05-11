@@ -300,9 +300,7 @@ describe("ProfilePage", () => {
     expect(screen.getByText("+79990001122")).toBeInTheDocument();
     expect(screen.getByText("anna@example.com")).toBeInTheDocument();
     expect(screen.getByText("Москва")).toBeInTheDocument();
-    expect(
-      screen.getByText("Организую волонтерские мероприятия")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Организую волонтерские мероприятия")).toBeInTheDocument();
 
     expect(screen.getByRole("link", { name: "VK" })).toHaveAttribute(
       "href",
@@ -320,9 +318,10 @@ describe("ProfilePage", () => {
     expect(
       screen.getByRole("heading", { name: /мои мероприятия/i })
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /добавить мероприятие/i })
-    ).toHaveAttribute("href", "/create");
+    expect(screen.getByRole("link", { name: /добавить мероприятие/i })).toHaveAttribute(
+      "href",
+      "/create"
+    );
 
     const editLinks = screen.getAllByRole("link", { name: /изменить/i });
     expect(editLinks).toHaveLength(2);
@@ -383,24 +382,19 @@ describe("ProfilePage", () => {
   it("renders visible volunteer contacts and volunteer events title for owner", async () => {
     mockGetProfileById.mockResolvedValue({
       ...publicVolunteerProfile,
-      id: 9,
       is_owner: true,
-      can_view_contacts: true,
       access_level: "contact",
+      can_view_contacts: true,
       bio: "Помогаю на мероприятиях",
     });
 
-    renderPage("/profiles/9");
+    renderPage("/profiles/8");
+
+    expect(await screen.findByText("Контактные данные доступны.")).toBeInTheDocument();
 
     expect(
-      await screen.findByRole("heading", { name: "Иван Петров" })
+      screen.getByRole("heading", { name: /мои мероприятия/i })
     ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("heading", { name: /мероприятия, в которых я участвую/i })
-    ).toBeInTheDocument();
-
-    expect(screen.getByText("Контактные данные доступны.")).toBeInTheDocument();
     expect(screen.getByText("+79990000001")).toBeInTheDocument();
     expect(screen.getByText("ivan@example.com")).toBeInTheDocument();
     expect(screen.getByText("Казань")).toBeInTheDocument();
@@ -438,22 +432,22 @@ describe("ProfilePage", () => {
         },
       ],
     });
-  
+
     renderPage("/profiles/99");
-  
+
     expect(
       await screen.findByRole("heading", { name: "Пользователь" })
     ).toBeInTheDocument();
     expect(screen.getAllByText("Пользователь")).toHaveLength(2);
-  
+
     expect(screen.getAllByText("Не указано")).toHaveLength(4);
     expect(screen.getByText("Пока не заполнено")).toBeInTheDocument();
-  
+
     expect(
       screen.getByRole("heading", { name: /мероприятия пользователя/i })
     ).toBeInTheDocument();
     expect(screen.getByText("Дата не указана")).toBeInTheDocument();
-  
+
     expect(screen.getByRole("link", { name: "VK" })).toHaveAttribute(
       "href",
       "https://vk.com/custom-user"
@@ -471,16 +465,16 @@ describe("ProfilePage", () => {
 
     renderPage();
 
-    expect(
-      await screen.findByText(/здесь пока нет мероприятий/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/здесь пока нет мероприятий/i)).toBeInTheDocument();
     expect(screen.getByText(/социальные сети не указаны/i)).toBeInTheDocument();
   });
 
   it("clicking editable avatar triggers hidden file input click", async () => {
     mockGetProfileById.mockResolvedValue(ownerCoordinatorProfile);
 
-    const clickSpy = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+    const clickSpy = vi
+      .spyOn(HTMLInputElement.prototype, "click")
+      .mockImplementation(() => {});
 
     renderPage();
 
@@ -496,7 +490,9 @@ describe("ProfilePage", () => {
   it("pressing Enter and Space on editable avatar triggers hidden file input click", async () => {
     mockGetProfileById.mockResolvedValue(ownerCoordinatorProfile);
 
-    const clickSpy = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+    const clickSpy = vi
+      .spyOn(HTMLInputElement.prototype, "click")
+      .mockImplementation(() => {});
 
     renderPage();
 
@@ -600,9 +596,7 @@ describe("ProfilePage", () => {
       target: { files: [goodFile] },
     });
 
-    expect(
-      await screen.findByText(/не удалось обновить аватар/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/не удалось обновить аватар/i)).toBeInTheDocument();
   });
 
   it("does not show add event button for admin owner", async () => {
@@ -619,7 +613,7 @@ describe("ProfilePage", () => {
       screen.queryByRole("link", { name: /добавить мероприятие/i })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /мои мероприятия/i })
+      screen.getByRole("heading", { name: /администрирование/i })
     ).toBeInTheDocument();
   });
 
@@ -636,34 +630,32 @@ describe("ProfilePage", () => {
       bio: "",
       volunteer_events: [],
     });
-  
+
     const { container } = renderPage("/profiles/77");
-  
+
     expect(
       await screen.findByRole("heading", { name: "Пользователь" })
     ).toBeInTheDocument();
-  
-    expect(
-      container.querySelector(".profile-summary__access-note")
-    ).toBeInTheDocument();
+
+    expect(container.querySelector(".profile-summary__access-note")).toBeInTheDocument();
   });
-  
+
   it("shows image processing error when canvas context is unavailable", async () => {
     mockCanvasContextError();
-  
+
     const { container } = renderPage();
-  
+
     await screen.findByText("Анна Иванова");
-  
+
     const input = container.querySelector(".profile-summary__avatar-input");
     expect(input).toBeInTheDocument();
-  
+
     const file = new File(["avatar"], "avatar.png", { type: "image/png" });
-  
+
     fireEvent.change(input, {
       target: { files: [file] },
     });
-  
+
     expect(
       await screen.findByText(/не удалось обработать изображение/i)
     ).toBeInTheDocument();
@@ -671,12 +663,10 @@ describe("ProfilePage", () => {
 
   it("shows loading error state when profile request fails without loaded profile", async () => {
     mockGetProfileById.mockRejectedValueOnce({});
-  
+
     renderPage("/profiles/77");
-  
-    expect(
-      await screen.findByText(/не удалось загрузить профиль/i)
-    ).toBeInTheDocument();
+
+    expect(await screen.findByText(/не удалось загрузить профиль/i)).toBeInTheDocument();
   });
 
   it("normalizes social links without protocol", async () => {
@@ -697,9 +687,9 @@ describe("ProfilePage", () => {
       social_max: "max.ru/anna",
       coordinator_events: [],
     });
-  
+
     renderPage("/profiles/77");
-  
+
     expect(await screen.findByLabelText("Одноклассники")).toHaveAttribute(
       "href",
       "https://ok.ru/anna"
@@ -716,7 +706,7 @@ describe("ProfilePage", () => {
 
   it("does not trigger avatar input click for non-owner profile", async () => {
     const clickSpy = vi.fn();
-  
+
     mockGetProfileById.mockResolvedValueOnce({
       id: 77,
       first_name: "Анна",
@@ -727,16 +717,172 @@ describe("ProfilePage", () => {
       can_view_contacts: false,
       coordinator_events: [],
     });
-  
+
     const { container } = renderPage("/profiles/77");
-  
+
     await screen.findByText("Анна Иванова");
-  
+
     const input = container.querySelector(".profile-summary__avatar-input");
     input.click = clickSpy;
-  
+
     fireEvent.click(screen.getByRole("img", { name: /аватар пользователя/i }));
+
+    expect(clickSpy).not.toHaveBeenCalled();
+  });
+
+  it("renders private contact access profile and coordinator events fallback", async () => {
+    mockGetProfileById.mockResolvedValue({
+      id: 20,
+      first_name: "Олег",
+      last_name: "Смирнов",
+      role: "coordinator",
+      access_level: "contact",
+      is_owner: false,
+      can_view_contacts: true,
+      phone: "",
+      email: "",
+      city: "",
+      bio: "",
+      social_vk: "",
+      social_ok: "",
+      social_max: "",
+      avatar_url: "",
+      coordinator_events: null,
+    });
+  
+    renderPage("/profiles/20");
+  
+    expect(await screen.findByText(/контактные данные доступны/i)).toBeInTheDocument();
+    expect(screen.getByText(/мероприятия координатора/i)).toBeInTheDocument();
+    expect(screen.getByText(/здесь пока нет мероприятий/i)).toBeInTheDocument();
+  });
+  
+  it("renders admin owner administration block", async () => {
+    mockGetProfileById.mockResolvedValue({
+      id: 1,
+      first_name: "Анна",
+      last_name: "Админ",
+      role: "admin",
+      access_level: "private",
+      is_owner: true,
+      can_view_contacts: true,
+      phone: "",
+      email: "admin@example.com",
+      city: "",
+      bio: "",
+      social_vk: "",
+      social_ok: "",
+      social_max: "",
+      avatar_url: "",
+    });
+  
+    renderPage("/profiles/1");
+  
+    expect(await screen.findByText(/администрирование/i)).toBeInTheDocument();
+  
+    const adminLink = screen.getByRole("link", { name: /перейти/i });
+    expect(adminLink).toHaveAttribute("href", "/admin");
+  });
+  
+  it("ignores avatar file change when no file is selected", async () => {
+    mockGetProfileById.mockResolvedValue(ownerCoordinatorProfile);
+  
+    renderPage();
+  
+    await screen.findByRole("button", { name: /изменить аватар пользователя/i });
+  
+    const input = document.querySelector('input[type="file"]');
+  
+    fireEvent.change(input, {
+      target: { files: [] },
+    });
+  
+    expect(mockUpdateMyProfile).not.toHaveBeenCalled();
+  });
+  
+  it("does not open avatar input while avatar is uploading", async () => {
+    mockGetProfileById.mockResolvedValue(ownerCoordinatorProfile);
+  
+    class FileReaderMock {
+      constructor() {
+        this.result = "data:image/png;base64,file";
+        this.onload = null;
+        this.onerror = null;
+      }
+  
+      readAsDataURL() {
+        this.onload?.();
+      }
+    }
+  
+    class ImageMock {
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+        this.width = 1200;
+        this.height = 800;
+      }
+  
+      set src(_) {
+        this.onload?.();
+      }
+    }
+  
+    const originalCreateElement = document.createElement.bind(document);
+  
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      if (tagName === "canvas") {
+        return {
+          width: 0,
+          height: 0,
+          getContext: () => ({
+            drawImage: vi.fn(),
+          }),
+          toDataURL: () => "data:image/jpeg;base64,new-avatar",
+        };
+      }
+  
+      return originalCreateElement(tagName);
+    });
+  
+    vi.stubGlobal("FileReader", FileReaderMock);
+    vi.stubGlobal("Image", ImageMock);
+  
+    let resolveUpdate;
+    mockUpdateMyProfile.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveUpdate = resolve;
+        })
+    );
+  
+    renderPage();
+  
+    const avatarButton = await screen.findByRole("button", {
+      name: /изменить аватар пользователя/i,
+    });
+  
+    const input = document.querySelector('input[type="file"]');
+    const clickSpy = vi.spyOn(input, "click");
+  
+    const file = new File(["image"], "avatar.png", { type: "image/png" });
+  
+    fireEvent.change(input, {
+      target: { files: [file] },
+    });
+  
+    await waitFor(() => {
+      expect(mockUpdateMyProfile).toHaveBeenCalled();
+    });
+  
+    fireEvent.click(avatarButton);
   
     expect(clickSpy).not.toHaveBeenCalled();
+  
+    resolveUpdate({ success: true });
+  
+    await waitFor(() => {
+      expect(avatarButton).not.toHaveClass("profile-summary__avatar-wrap--loading");
+    });
   });
 });
