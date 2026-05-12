@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import "./EventOpenPage.css";
 
 import ApplicationCard from "../components/ApplicationCard";
+import YandexEventMap from "../components/YandexEventMap";
+import ParticipationConfirmationCard from "../components/ParticipationConfirmationCard";
 
 import eventSettings from "../assets/SVG/cog.svg";
 import eventCheckmark from "../assets/SVG/checkmark.svg";
@@ -23,6 +25,8 @@ import { getProfileAvatar } from "../utils/avatarUtils";
 import {
   acceptApplication,
   apiFetch,
+  cancelApplicationParticipation,
+  confirmApplicationParticipation,
   deleteApplication,
   getToken,
   rejectApplication,
@@ -80,6 +84,19 @@ function getApplicationTime(application) {
   ).getTime();
 }
 
+function getEventCoordinates(eventData) {
+  if (!eventData) return null;
+
+  const latitude = Number(eventData.location_latitude);
+  const longitude = Number(eventData.location_longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return [latitude, longitude];
+}
+
 export default function EventOpenPage() {
   const params = useParams();
   const eventId = params.id || "1";
@@ -95,6 +112,8 @@ export default function EventOpenPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [acceptingId, setAcceptingId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
+  const [confirmingParticipationId, setConfirmingParticipationId] = useState(null);
+  const [cancellingParticipationId, setCancellingParticipationId] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -176,6 +195,10 @@ export default function EventOpenPage() {
     return getCategoryTheme(eventData?.category_name);
   }, [eventData]);
 
+  const eventCoordinates = useMemo(() => {
+    return getEventCoordinates(eventData);
+  }, [eventData]);
+
   const hasCoordinatorContactAccess = useMemo(() => {
     if (!eventData) return false;
     return Boolean(eventData.email);
@@ -229,6 +252,33 @@ export default function EventOpenPage() {
 
     return applications.filter((application) => application.status !== "rejected");
   }, [applications, showRejectedApplications]);
+
+  const confirmationApplications = useMemo(() => {
+    return applications.filter((application) => application.status !== "rejected");
+  }, [applications]);
+
+  const confirmationSummary = useMemo(() => {
+    const approvedApplications = confirmationApplications.filter(
+      (application) => application.status === "approved"
+    );
+    const confirmedCount = approvedApplications.filter(
+      (application) => application.participation_confirmed
+    ).length;
+
+    return {
+      approvedCount: approvedApplications.length,
+      confirmedCount,
+      unconfirmedCount: approvedApplications.length - confirmedCount,
+    };
+  }, [confirmationApplications]);
+
+  function getConfirmedByName(application) {
+    const firstName = application.confirmed_by_first_name?.trim() || "";
+    const middleName = application.confirmed_by_middle_name?.trim() || "";
+    const lastName = application.confirmed_by_last_name?.trim() || "";
+
+    return `${firstName} ${middleName} ${lastName}`.trim();
+  }
 
   async function refreshVolunteerApplicationData() {
     const refreshedEvent = await apiFetch(`/events/${eventId}`);
@@ -316,6 +366,38 @@ export default function EventOpenPage() {
       setError(err.message || "Не удалось отклонить заявку");
     } finally {
       setRejectingId(null);
+    }
+  }
+
+  async function handleConfirmParticipation(applicationId) {
+    if (!eventIsPast) return;
+
+    try {
+      setConfirmingParticipationId(applicationId);
+      setError("");
+
+      await confirmApplicationParticipation(applicationId);
+      await refreshManagerApplicationData();
+    } catch (err) {
+      setError(err.message || "Не удалось подтвердить участие");
+    } finally {
+      setConfirmingParticipationId(null);
+    }
+  }
+
+  async function handleCancelParticipation(applicationId) {
+    if (!eventIsPast) return;
+
+    try {
+      setCancellingParticipationId(applicationId);
+      setError("");
+
+      await cancelApplicationParticipation(applicationId);
+      await refreshManagerApplicationData();
+    } catch (err) {
+      setError(err.message || "Не удалось отменить подтверждение участия");
+    } finally {
+      setCancellingParticipationId(null);
     }
   }
 
@@ -492,6 +574,16 @@ export default function EventOpenPage() {
                   </span>
                   <p>{eventData.location || "Место не указано"}</p>
                 </div>
+              </div>
+
+              <div className="event-card__divider"></div>
+
+              <div className="event-card__map-box">
+                <YandexEventMap
+                  address={eventData.location || ""}
+                  coordinates={eventCoordinates}
+                  title={eventData.title}
+                />
               </div>
 
               <div className="event-card__divider"></div>
@@ -686,27 +778,65 @@ export default function EventOpenPage() {
             <section className="applications-section">
               <div className="applications-card">
                 <div className="applications-card__header">
-                  <h2 className="applications-card__title">Поданные заявки</h2>
+                  <h2 className="applications-card__title">
+                    {eventIsPast ? "Подтверждение заявок" : "Поданные заявки"}
+                  </h2>
 
-                  <label className="applications-card__toggle">
-                    <input
-                      type="checkbox"
-                      checked={showRejectedApplications}
-                      onChange={(event) => setShowRejectedApplications(event.target.checked)}
-                    />
-                    <span>Показывать отклоненные заявки</span>
-                  </label>
+                  {eventIsPast ? (
+                    <div className="applications-card__summary">
+                      <span>
+                        Принято заявок: {confirmationSummary.approvedCount}
+                      </span>
+                      <span>
+                        Подтверждено: {confirmationSummary.confirmedCount}
+                      </span>
+                      <span>
+                        Не подтверждено: {confirmationSummary.unconfirmedCount}
+                      </span>
+                    </div>
+                  ) : (
+                    <label className="applications-card__toggle">
+                      <input
+                        type="checkbox"
+                        checked={showRejectedApplications}
+                        onChange={(event) => setShowRejectedApplications(event.target.checked)}
+                      />
+                      <span>Показывать отклоненные заявки</span>
+                    </label>
+                  )}
                 </div>
-
-                {eventIsPast ? (
-                  <div className="applications-empty">
-                    Мероприятие завершено. Просмотр заявок доступен, изменение
-                    статусов отключено.
-                  </div>
-                ) : null}
 
                 {applicationsLoading ? (
                   <div className="applications-empty">Загрузка заявок...</div>
+                ) : eventIsPast ? (
+                  confirmationApplications.length > 0 ? (
+                    <div className="applications-list">
+                      {confirmationApplications.map((application) => (
+                        <ParticipationConfirmationCard
+                          key={application.id}
+                          id={application.id}
+                          userId={application.user_id}
+                          avatar={getProfileAvatar(application)}
+                          name={application.first_name || "Имя не указано"}
+                          secondName={`${application.middle_name || ""} ${application.last_name || ""}`.trim()}
+                          email={application.email || "Не указан"}
+                          phone={application.phone || "Не указан"}
+                          status={application.status}
+                          participationConfirmed={Boolean(application.participation_confirmed)}
+                          participationConfirmedAt={application.participation_confirmed_at}
+                          confirmedByName={getConfirmedByName(application)}
+                          onConfirm={handleConfirmParticipation}
+                          onCancel={handleCancelParticipation}
+                          isConfirming={confirmingParticipationId === application.id}
+                          isCancelling={cancellingParticipationId === application.id}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="applications-empty">
+                      Нет заявок для подтверждения участия
+                    </div>
+                  )
                 ) : visibleApplications.length > 0 ? (
                   <div className="applications-list">
                     {visibleApplications.map((application) => (

@@ -10,11 +10,22 @@ export default function ProfileEventCard({
   date = "1.01.1980",
   buttonText = "К мероприятию",
   link = "/event",
+  confirmationStatus = null,
 }) {
   return (
     <article className="profile-event-card">
       <div className="profile-event-card__content">
-        <h3 className="profile-event-card__title">{title}</h3>
+        <div className="profile-event-card__title-row">
+          <h3 className="profile-event-card__title">{title}</h3>
+
+          {confirmationStatus ? (
+            <span
+              className={`profile-event-card__confirmation profile-event-card__confirmation--${confirmationStatus.type}`}
+            >
+              {confirmationStatus.label}
+            </span>
+          ) : null}
+        </div>
 
         <div className="profile-event-card__meta">
           <div className="profile-event-card__row">

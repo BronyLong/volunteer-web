@@ -170,6 +170,9 @@ router.get("/my", authMiddleware, async (req, res) => {
       SELECT
         a.id,
         a.status,
+        a.participation_confirmed,
+        a.participation_confirmed_at,
+        a.participation_confirmed_by,
         a.created_at,
         e.id AS event_id,
         e.title,
@@ -220,6 +223,12 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       SELECT
         a.id,
         a.status,
+        a.participation_confirmed,
+        a.participation_confirmed_at,
+        a.participation_confirmed_by,
+        confirmed_by_profile.first_name AS confirmed_by_first_name,
+        confirmed_by_profile.last_name AS confirmed_by_last_name,
+        confirmed_by_profile.middle_name AS confirmed_by_middle_name,
         a.created_at,
         u.id AS user_id,
         u.email,
@@ -233,6 +242,8 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       FROM applications a
       JOIN users u ON u.id = a.user_id
       LEFT JOIN profiles p ON p.user_id = u.id
+      LEFT JOIN profiles confirmed_by_profile
+        ON confirmed_by_profile.user_id = a.participation_confirmed_by
       WHERE a.event_id = $1
       ORDER BY
         CASE a.status
@@ -261,6 +272,9 @@ async function getApplicationForManager(client, applicationId) {
       a.user_id,
       a.event_id,
       a.status,
+      a.participation_confirmed,
+      a.participation_confirmed_at,
+      a.participation_confirmed_by,
       e.created_by,
       e.participant_limit,
       e.start_at
@@ -331,7 +345,11 @@ router.patch("/:id/accept", authMiddleware, async (req, res) => {
     await client.query(
       `
       UPDATE applications
-      SET status = 'approved'
+      SET
+        status = 'approved',
+        participation_confirmed = FALSE,
+        participation_confirmed_at = NULL,
+        participation_confirmed_by = NULL
       WHERE id = $1
       `,
       [req.params.id]
@@ -400,7 +418,11 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
     await client.query(
       `
       UPDATE applications
-      SET status = 'rejected'
+      SET
+        status = 'rejected',
+        participation_confirmed = FALSE,
+        participation_confirmed_at = NULL,
+        participation_confirmed_by = NULL
       WHERE id = $1
       `,
       [req.params.id]
@@ -431,6 +453,150 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
     await client.query("ROLLBACK");
     console.error("Reject application error:", error);
     res.status(500).json({ message: "Ошибка при отклонении заявки" });
+  } finally {
+    client.release();
+  }
+});
+
+router.patch("/:id/confirm-participation", authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const application = await getApplicationForManager(client, req.params.id);
+
+    if (!application) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Заявка не найдена" });
+    }
+
+    if (!canManageApplication(req.user, application)) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ message: "Нет доступа к подтверждению участия" });
+    }
+
+    if (!isPastEvent(application.start_at)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Участие можно подтверждать только после завершения мероприятия",
+      });
+    }
+
+    if (application.status !== "approved") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Подтвердить участие можно только для принятой заявки",
+      });
+    }
+
+    await client.query(
+      `
+      UPDATE applications
+      SET
+        participation_confirmed = TRUE,
+        participation_confirmed_at = CURRENT_TIMESTAMP,
+        participation_confirmed_by = $2
+      WHERE id = $1
+      `,
+      [req.params.id, req.user.id]
+    );
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_participation_confirm",
+      entityType: "application",
+      entityId: req.params.id,
+      req,
+      details: {
+        event_id: application.event_id,
+        target_user_id: application.user_id,
+        previous_participation_confirmed: application.participation_confirmed,
+        new_participation_confirmed: true,
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Участие подтверждено" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Confirm participation error:", error);
+    res.status(500).json({ message: "Ошибка при подтверждении участия" });
+  } finally {
+    client.release();
+  }
+});
+
+router.patch("/:id/cancel-participation", authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const application = await getApplicationForManager(client, req.params.id);
+
+    if (!application) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Заявка не найдена" });
+    }
+
+    if (!canManageApplication(req.user, application)) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ message: "Нет доступа к изменению подтверждения участия" });
+    }
+
+    if (!isPastEvent(application.start_at)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Подтверждение участия можно менять только после завершения мероприятия",
+      });
+    }
+
+    if (application.status !== "approved") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Изменять подтверждение можно только для принятой заявки",
+      });
+    }
+
+    await client.query(
+      `
+      UPDATE applications
+      SET
+        participation_confirmed = FALSE,
+        participation_confirmed_at = NULL,
+        participation_confirmed_by = NULL
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "application_participation_cancel",
+      entityType: "application",
+      entityId: req.params.id,
+      req,
+      details: {
+        event_id: application.event_id,
+        target_user_id: application.user_id,
+        previous_participation_confirmed: application.participation_confirmed,
+        new_participation_confirmed: false,
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Подтверждение участия отменено" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Cancel participation error:", error);
+    res.status(500).json({ message: "Ошибка при отмене подтверждения участия" });
   } finally {
     client.release();
   }

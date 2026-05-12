@@ -115,6 +115,22 @@ function sortCompletedEvents(events) {
   });
 }
 
+function getCoordinatorConfirmationStatus(profile, event) {
+  if (profile?.role !== "coordinator" || !isCompletedEvent(event)) {
+    return null;
+  }
+
+  return event?.all_applications_confirmed
+    ? {
+        type: "confirmed",
+        label: "Все заявки подтверждены",
+      }
+    : {
+        type: "unconfirmed",
+        label: "Не все заявки подтверждены",
+      };
+}
+
 function getAccessMessage(profile) {
   if (!profile) return "";
 
@@ -657,6 +673,7 @@ export default function ProfilePage() {
                       date={formatEventDate(event.start_at)}
                       link={`/events/${event.id}`}
                       buttonText="К мероприятию"
+                      confirmationStatus={getCoordinatorConfirmationStatus(profile, event)}
                     />
                   ))}
                 </div>

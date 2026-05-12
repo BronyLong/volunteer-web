@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./EventEditPage.css";
 
+import YandexEventMap from "../components/YandexEventMap";
+
 import leafCategoryIcon from "../assets/SVG/leaf_category.svg";
 import childrenCategoryIcon from "../assets/SVG/childern_category.svg";
 import animalsCategoryIcon from "../assets/SVG/animals_category.svg";
@@ -100,6 +102,7 @@ export default function EventEditPage() {
   const [newTask, setNewTask] = useState("");
   const [preview, setPreview] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState("");
+  const [locationCoordinates, setLocationCoordinates] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -174,6 +177,15 @@ export default function EventEditPage() {
           durationMinutes: String(eventData.duration_minutes || "120"),
         });
 
+        if (eventData.location_latitude !== null && eventData.location_longitude !== null) {
+          setLocationCoordinates([
+            Number(eventData.location_latitude),
+            Number(eventData.location_longitude),
+          ]);
+        } else {
+          setLocationCoordinates(null);
+        }
+
         setTasks(Array.isArray(eventData.tasks) ? eventData.tasks : []);
         setPreview(eventData.image_url || "");
         setImageDataUrl(eventData.image_url || "");
@@ -224,6 +236,10 @@ export default function EventEditPage() {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "location") {
+      setLocationCoordinates(null);
+    }
   
     if (error) setError("");
   }
@@ -321,6 +337,8 @@ export default function EventEditPage() {
         description: formData.description.trim(),
         start_at: `${formData.date}T${formData.time}:00`,
         location: formData.location.trim(),
+        location_latitude: locationCoordinates ? locationCoordinates[0] : null,
+        location_longitude: locationCoordinates ? locationCoordinates[1] : null,
         tasks: tasks.map((task) => task.trim()).filter(Boolean),
         participant_limit: Number(formData.places),
         duration_minutes: Number(formData.durationMinutes),
@@ -542,6 +560,16 @@ export default function EventEditPage() {
                       value={formData.location}
                       onChange={handleChange}
                       disabled={saving || deleting}
+                    />
+                  </div>
+
+                  <div className="event-edit-form__map-field">
+                    <YandexEventMap
+                      address={formData.location}
+                      coordinates={locationCoordinates}
+                      title={formData.title || "Место проведения мероприятия"}
+                      editable
+                      onCoordinatesChange={setLocationCoordinates}
                     />
                   </div>
 

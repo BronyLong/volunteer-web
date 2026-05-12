@@ -1,0 +1,215 @@
+.participation-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.participation-card__user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.participation-card__avatar-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.participation-card__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.participation-card__avatar-link:hover .participation-card__avatar,
+.participation-card__avatar-link:focus-visible .participation-card__avatar {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 4px var(--green-accent-15);
+}
+
+.participation-card__info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.participation-card__name {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--black);
+}
+
+.participation-card__badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.participation-card__application-status,
+.participation-card__status {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.participation-card__application-status {
+  background: var(--white);
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--shadow-black-08);
+}
+
+.participation-card__status--confirmed {
+  background: var(--green-accent-15);
+  color: var(--green-600);
+}
+
+.participation-card__status--unconfirmed {
+  background: var(--red-shadow-10);
+  color: var(--red);
+}
+
+.participation-card__status--inactive {
+  background: var(--neutral);
+  color: var(--muted);
+}
+
+.participation-card__line,
+.participation-card__confirmation-note {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.participation-card__confirmation-note {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--green-600);
+}
+
+.participation-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.participation-card__confirm,
+.participation-card__cancel {
+  min-width: 170px;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 16px;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.participation-card__confirm {
+  background: var(--green);
+}
+
+.participation-card__confirm:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.participation-card__cancel {
+  background: var(--red);
+}
+
+.participation-card__cancel:hover {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+}
+
+.participation-card__confirm:disabled,
+.participation-card__cancel:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .participation-card {
+    padding: 16px;
+    gap: 12px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .participation-card__user {
+    width: 100%;
+  }
+
+  .participation-card__avatar {
+    width: 58px;
+    height: 58px;
+  }
+
+  .participation-card__name {
+    font-size: 18px;
+  }
+
+  .participation-card__application-status,
+  .participation-card__status {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .participation-card__line {
+    font-size: 14px;
+  }
+
+  .participation-card__confirmation-note {
+    font-size: 13px;
+  }
+
+  .participation-card__actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .participation-card__confirm,
+  .participation-card__cancel {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+}

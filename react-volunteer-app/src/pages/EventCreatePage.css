@@ -363,6 +363,15 @@
   transform: translateY(-1px);
 }
 
+
+.event-edit-form__map-field {
+  grid-column: 1 / -1;
+}
+
+.event-edit-form__map-field .yandex-event-map__container {
+  min-height: 320px;
+}
+
 @media (max-width: 1024px) {
   .event-edit-form {
     grid-template-columns: 1fr;

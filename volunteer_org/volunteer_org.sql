@@ -68,6 +68,8 @@ CREATE TABLE events (
     start_at TIMESTAMP NOT NULL,
     duration_minutes INTEGER NOT NULL DEFAULT 120,
     location VARCHAR(255) NOT NULL,
+    location_latitude NUMERIC(10, 7),
+    location_longitude NUMERIC(10, 7),
     tasks TEXT[] NOT NULL DEFAULT '{}',
     participant_limit INTEGER NOT NULL,
     available_slots INTEGER NOT NULL,
@@ -96,7 +98,20 @@ CREATE TABLE events (
         CHECK (available_slots >= 0),
 
     CONSTRAINT chk_events_available_slots_max
-        CHECK (available_slots <= participant_limit)
+        CHECK (available_slots <= participant_limit),
+
+    CONSTRAINT chk_events_location_latitude
+        CHECK (location_latitude IS NULL OR (location_latitude >= -90 AND location_latitude <= 90)),
+
+    CONSTRAINT chk_events_location_longitude
+        CHECK (location_longitude IS NULL OR (location_longitude >= -180 AND location_longitude <= 180)),
+
+    CONSTRAINT chk_events_location_coordinates_pair
+        CHECK (
+            (location_latitude IS NULL AND location_longitude IS NULL)
+            OR
+            (location_latitude IS NOT NULL AND location_longitude IS NOT NULL)
+        )
 );
 
 -- =========================================
@@ -107,6 +122,9 @@ CREATE TABLE applications (
     user_id UUID NOT NULL,
     event_id UUID NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    participation_confirmed BOOLEAN NOT NULL DEFAULT FALSE,
+    participation_confirmed_at TIMESTAMP,
+    participation_confirmed_by UUID,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_applications_user
@@ -118,6 +136,11 @@ CREATE TABLE applications (
         FOREIGN KEY (event_id)
         REFERENCES events(id)
         ON DELETE CASCADE,
+
+    CONSTRAINT fk_applications_confirmed_by
+        FOREIGN KEY (participation_confirmed_by)
+        REFERENCES users(id)
+        ON DELETE SET NULL,
 
     CONSTRAINT chk_applications_status
         CHECK (status IN ('pending', 'approved', 'rejected'))
@@ -170,6 +193,9 @@ CREATE INDEX IF NOT EXISTS idx_applications_user_id
 
 CREATE INDEX IF NOT EXISTS idx_applications_status
     ON applications(status);
+
+CREATE INDEX IF NOT EXISTS idx_applications_participation_confirmed
+    ON applications(participation_confirmed);
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_applications_user_event_active
     ON applications(user_id, event_id)

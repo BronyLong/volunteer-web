@@ -31,6 +31,49 @@ function getOptionalViewer(req) {
   }
 }
 
+function normalizeEventCoordinates(latitudeValue, longitudeValue) {
+  const hasLatitude = latitudeValue !== null && latitudeValue !== undefined && latitudeValue !== "";
+  const hasLongitude = longitudeValue !== null && longitudeValue !== undefined && longitudeValue !== "";
+
+  if (!hasLatitude && !hasLongitude) {
+    return {
+      isValid: true,
+      latitude: null,
+      longitude: null,
+    };
+  }
+
+  if (!hasLatitude || !hasLongitude) {
+    return {
+      isValid: false,
+      message: "Укажите и широту, и долготу места проведения",
+    };
+  }
+
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+    return {
+      isValid: false,
+      message: "Некорректная широта места проведения",
+    };
+  }
+
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return {
+      isValid: false,
+      message: "Некорректная долгота места проведения",
+    };
+  }
+
+  return {
+    isValid: true,
+    latitude,
+    longitude,
+  };
+}
+
 async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
   if (!viewer) return false;
 
@@ -47,13 +90,14 @@ async function canViewCoordinatorContacts(viewer, eventId, creatorId) {
   const applicationResult = await pool.query(
     `
     SELECT 1
-    FROM applications
-    WHERE user_id = $1
-      AND event_id = $2
-      AND status = 'approved'
+    FROM applications a
+    JOIN events e ON e.id = a.event_id
+    WHERE a.user_id = $1
+      AND e.created_by = $2
+      AND a.status = 'approved'
     LIMIT 1
     `,
-    [viewer.id, eventId]
+    [viewer.id, creatorId]
   );
 
   return applicationResult.rows.length > 0;
@@ -70,6 +114,8 @@ async function getEventForAudit(eventId, db = pool) {
       e.start_at,
       e.duration_minutes,
       e.location,
+      e.location_latitude,
+      e.location_longitude,
       e.tasks,
       e.participant_limit,
       e.available_slots,
@@ -102,6 +148,8 @@ router.get("/", async (req, res) => {
         e.start_at,
         e.duration_minutes,
         e.location,
+        e.location_latitude,
+        e.location_longitude,
         e.tasks,
         e.participant_limit,
         GREATEST(
@@ -151,6 +199,8 @@ router.get("/:id", async (req, res) => {
         e.start_at,
         e.duration_minutes,
         e.location,
+        e.location_latitude,
+        e.location_longitude,
         e.tasks,
         e.participant_limit,
         GREATEST(
@@ -214,6 +264,8 @@ router.post("/", authMiddleware, async (req, res) => {
     description,
     start_at,
     location,
+    location_latitude,
+    location_longitude,
     tasks = [],
     participant_limit,
     duration_minutes,
@@ -240,6 +292,15 @@ router.post("/", authMiddleware, async (req, res) => {
       .json({ message: "Не все обязательные поля заполнены" });
   }
 
+  const coordinates = normalizeEventCoordinates(
+    location_latitude,
+    location_longitude
+  );
+
+  if (!coordinates.isValid) {
+    return res.status(400).json({ message: coordinates.message });
+  }
+
   const client = await pool.connect();
 
   try {
@@ -254,13 +315,15 @@ router.post("/", authMiddleware, async (req, res) => {
         start_at,
         duration_minutes,
         location,
+        location_latitude,
+        location_longitude,
         tasks,
         participant_limit,
         available_slots,
         category_id,
         created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11, $12)
       RETURNING *
       `,
       [
@@ -270,6 +333,8 @@ router.post("/", authMiddleware, async (req, res) => {
         start_at,
         duration_minutes,
         location,
+        coordinates.latitude,
+        coordinates.longitude,
         tasks,
         Number(participant_limit),
         category_id,
@@ -312,6 +377,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
     description,
     start_at,
     location,
+    location_latitude,
+    location_longitude,
     tasks = [],
     participant_limit,
     duration_minutes,
@@ -336,6 +403,15 @@ router.put("/:id", authMiddleware, async (req, res) => {
     return res
       .status(400)
       .json({ message: "Не все обязательные поля заполнены" });
+  }
+
+  const coordinates = normalizeEventCoordinates(
+    location_latitude,
+    location_longitude
+  );
+
+  if (!coordinates.isValid) {
+    return res.status(400).json({ message: coordinates.message });
   }
 
   const client = await pool.connect();
@@ -398,11 +474,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
         start_at = $4,
         duration_minutes = $5,
         location = $6,
-        tasks = $7,
-        participant_limit = $8,
-        available_slots = $9,
-        category_id = $10
-      WHERE id = $11
+        location_latitude = $7,
+        location_longitude = $8,
+        tasks = $9,
+        participant_limit = $10,
+        available_slots = $11,
+        category_id = $12
+      WHERE id = $13
       RETURNING *
       `,
       [
@@ -412,6 +490,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
         start_at,
         duration_minutes,
         location,
+        coordinates.latitude,
+        coordinates.longitude,
         tasks,
         newLimit,
         newAvailableSlots,

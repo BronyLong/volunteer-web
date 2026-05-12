@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./EventCreatePage.css";
 
+import YandexEventMap from "../components/YandexEventMap";
+
 import leafCategoryIcon from "../assets/SVG/leaf_category.svg";
 import childrenCategoryIcon from "../assets/SVG/childern_category.svg";
 import animalsCategoryIcon from "../assets/SVG/animals_category.svg";
@@ -79,6 +81,7 @@ export default function EventCreatePage() {
   const [newTask, setNewTask] = useState("");
   const [preview, setPreview] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState("");
+  const [locationCoordinates, setLocationCoordinates] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -175,6 +178,10 @@ export default function EventCreatePage() {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "location") {
+      setLocationCoordinates(null);
+    }
   
     if (error) setError("");
   }
@@ -272,6 +279,8 @@ export default function EventCreatePage() {
         description: formData.description.trim(),
         start_at: `${formData.date}T${formData.time}:00`,
         location: formData.location.trim(),
+        location_latitude: locationCoordinates ? locationCoordinates[0] : null,
+        location_longitude: locationCoordinates ? locationCoordinates[1] : null,
         tasks: tasks
           .map((task) => task.trim())
           .filter(Boolean),
@@ -468,6 +477,16 @@ export default function EventCreatePage() {
                       value={formData.location}
                       onChange={handleChange}
                       disabled={saving}
+                    />
+                  </div>
+
+                  <div className="event-edit-form__map-field">
+                    <YandexEventMap
+                      address={formData.location}
+                      coordinates={locationCoordinates}
+                      title={formData.title || "Место проведения мероприятия"}
+                      editable
+                      onCoordinatesChange={setLocationCoordinates}
                     />
                   </div>
 

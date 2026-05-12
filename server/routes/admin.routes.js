@@ -141,6 +141,8 @@ router.get("/events", async (req, res) => {
         e.description,
         e.start_at,
         e.location,
+        e.location_latitude,
+        e.location_longitude,
         e.tasks,
         e.participant_limit,
         GREATEST(e.participant_limit - COALESCE(active_applications.count, 0), 0) AS available_slots,

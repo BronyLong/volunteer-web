@@ -112,6 +112,18 @@ export async function rejectApplication(id) {
     method: "PATCH",
   });
 }
+
+export async function confirmApplicationParticipation(id) {
+  return apiFetch(`/applications/${id}/confirm-participation`, {
+    method: "PATCH",
+  });
+}
+
+export async function cancelApplicationParticipation(id) {
+  return apiFetch(`/applications/${id}/cancel-participation`, {
+    method: "PATCH",
+  });
+}
 export function saveToken(token) {
   localStorage.setItem("token", token);
 }

@@ -82,7 +82,9 @@ async function getProfileByUserId(userId, db = pool) {
             'location', e.location,
             'start_at', e.start_at,
             'duration_minutes', e.duration_minutes,
-            'application_status', a.status
+            'application_status', a.status,
+            'participation_confirmed', a.participation_confirmed,
+            'participation_confirmed_at', a.participation_confirmed_at
           )
           ORDER BY e.start_at ASC
         )
@@ -99,6 +101,7 @@ async function getProfileByUserId(userId, db = pool) {
           JOIN events e ON e.id = a.event_id
           WHERE a.user_id = u.id
             AND a.status = 'approved'
+            AND a.participation_confirmed = TRUE
             AND e.start_at < CURRENT_TIMESTAMP
         ), 0),
         'completed_minutes', COALESCE((
@@ -109,6 +112,7 @@ async function getProfileByUserId(userId, db = pool) {
             JOIN events e ON e.id = a.event_id
             WHERE a.user_id = u.id
               AND a.status = 'approved'
+              AND a.participation_confirmed = TRUE
               AND e.start_at < CURRENT_TIMESTAMP
           ) AS completed_events
         ), 0),
@@ -129,11 +133,24 @@ async function getProfileByUserId(userId, db = pool) {
             'title', e.title,
             'location', e.location,
             'start_at', e.start_at,
-            'duration_minutes', e.duration_minutes
+            'duration_minutes', e.duration_minutes,
+            'approved_applications_count', COALESCE(application_summary.approved_count, 0),
+            'confirmed_applications_count', COALESCE(application_summary.confirmed_count, 0),
+            'unconfirmed_applications_count', COALESCE(application_summary.unconfirmed_count, 0),
+            'all_applications_confirmed', COALESCE(application_summary.unconfirmed_count, 0) = 0
           )
           ORDER BY e.start_at ASC
         )
         FROM events e
+        LEFT JOIN (
+          SELECT
+            event_id,
+            COUNT(*) FILTER (WHERE status = 'approved')::int AS approved_count,
+            COUNT(*) FILTER (WHERE status = 'approved' AND participation_confirmed = TRUE)::int AS confirmed_count,
+            COUNT(*) FILTER (WHERE status = 'approved' AND participation_confirmed = FALSE)::int AS unconfirmed_count
+          FROM applications
+          GROUP BY event_id
+        ) AS application_summary ON application_summary.event_id = e.id
         WHERE e.created_by = u.id
       ), '[]'::json) AS coordinator_events
     FROM users u
