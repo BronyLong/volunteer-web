@@ -11,8 +11,6 @@ function getYandexMapsApiKey() {
   return import.meta.env.VITE_YANDEX_MAPS_API_KEY || "";
 }
 
-
-
 function loadYandexMaps() {
   if (window.ymaps) {
     return Promise.resolve(window.ymaps);
@@ -96,12 +94,21 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function getGeoObjectAddress(geoObject, fallback = "") {
+  return (
+    geoObject?.getAddressLine?.() ||
+    geoObject?.properties?.get("text") ||
+    fallback
+  );
+}
+
 export default function YandexEventMap({
   address = "",
   coordinates = null,
   title = "Место проведения",
   editable = false,
   onCoordinatesChange,
+  onAddressChange,
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -142,7 +149,7 @@ export default function YandexEventMap({
       if (editable) {
         placemarkRef.current.events.add("dragend", () => {
           const next = placemarkRef.current.geometry.getCoordinates();
-          onCoordinatesChange?.(next);
+          handleMapCoordinateSelect(ymaps, next);
         });
       }
 
@@ -156,6 +163,42 @@ export default function YandexEventMap({
       hintContent: placemarkAddress || title,
     });
     placemarkRef.current.options.set("draggable", editable);
+  }
+
+
+  async function reverseGeocodeCoordinates(ymaps, nextCoordinates) {
+    try {
+      setStatus("loading");
+      setMessage("Определяем адрес по выбранной точке...");
+
+      const result = await ymaps.geocode(nextCoordinates, { results: 1 });
+      const firstGeoObject = result.geoObjects.get(0);
+
+      if (!firstGeoObject) {
+        setStatus("ready");
+        setMessage("Метка установлена, но адрес определить не удалось");
+        return;
+      }
+
+      const foundAddress = getGeoObjectAddress(firstGeoObject, address);
+
+      if (foundAddress) {
+        onAddressChange?.(foundAddress);
+        setPlacemark(ymaps, nextCoordinates, foundAddress);
+      }
+
+      setStatus("ready");
+      setMessage("");
+    } catch (error) {
+      setStatus("ready");
+      setMessage("Метка установлена, но адрес определить не удалось");
+    }
+  }
+
+  function handleMapCoordinateSelect(ymaps, nextCoordinates) {
+    onCoordinatesChange?.(nextCoordinates);
+    setPlacemark(ymaps, nextCoordinates, "Определяем адрес...");
+    reverseGeocodeCoordinates(ymaps, nextCoordinates);
   }
 
   async function geocodeAddress() {
@@ -183,10 +226,10 @@ export default function YandexEventMap({
       }
 
       const nextCoordinates = firstGeoObject.geometry.getCoordinates();
-      const foundAddress =
-        firstGeoObject.getAddressLine?.() || firstGeoObject.properties.get("text") || trimmedAddress;
+      const foundAddress = getGeoObjectAddress(firstGeoObject, trimmedAddress);
 
       onCoordinatesChange?.(nextCoordinates);
+      onAddressChange?.(foundAddress);
       setPlacemark(ymaps, nextCoordinates, foundAddress);
       mapRef.current?.setCenter(nextCoordinates, 15, { duration: 250 });
       setStatus("ready");
@@ -227,10 +270,7 @@ export default function YandexEventMap({
         if (editable) {
           clickHandlerRef.current = (event) => {
             const nextCoordinates = event.get("coords");
-            onCoordinatesChange?.(nextCoordinates);
-            setPlacemark(ymaps, nextCoordinates);
-            setStatus("ready");
-            setMessage("");
+            handleMapCoordinateSelect(ymaps, nextCoordinates);
           };
 
           mapRef.current.events.add("click", clickHandlerRef.current);
@@ -249,8 +289,7 @@ export default function YandexEventMap({
 
           if (firstGeoObject) {
             const nextCoordinates = firstGeoObject.geometry.getCoordinates();
-            const foundAddress =
-              firstGeoObject.getAddressLine?.() || firstGeoObject.properties.get("text") || address;
+            const foundAddress = getGeoObjectAddress(firstGeoObject, address);
 
             setPlacemark(ymaps, nextCoordinates, foundAddress);
             mapRef.current.setCenter(nextCoordinates, 15, { duration: 250 });

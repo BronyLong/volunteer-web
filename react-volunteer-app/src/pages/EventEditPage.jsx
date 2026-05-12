@@ -210,6 +210,15 @@ export default function EventEditPage() {
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
+  function handleLocationAddressChange(nextAddress) {
+    setFormData((prev) => ({
+      ...prev,
+      location: nextAddress,
+    }));
+
+    if (error) setError("");
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
   
@@ -570,6 +579,7 @@ export default function EventEditPage() {
                       title={formData.title || "Место проведения мероприятия"}
                       editable
                       onCoordinatesChange={setLocationCoordinates}
+                      onAddressChange={handleLocationAddressChange}
                     />
                   </div>
 
