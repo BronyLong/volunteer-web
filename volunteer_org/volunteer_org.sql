@@ -5,6 +5,10 @@
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+DROP TABLE IF EXISTS auth_email_tokens CASCADE;
+DROP TABLE IF EXISTS notification_category_settings CASCADE;
+DROP TABLE IF EXISTS notification_settings CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS applications CASCADE;
 DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
@@ -21,6 +25,7 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     role VARCHAR(32) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -70,6 +75,7 @@ CREATE TABLE events (
     location VARCHAR(255) NOT NULL,
     location_latitude NUMERIC(10, 7),
     location_longitude NUMERIC(10, 7),
+    is_urgent BOOLEAN NOT NULL DEFAULT FALSE,
     tasks TEXT[] NOT NULL DEFAULT '{}',
     participant_limit INTEGER NOT NULL,
     available_slots INTEGER NOT NULL,
@@ -146,8 +152,115 @@ CREATE TABLE applications (
         CHECK (status IN ('pending', 'approved', 'rejected'))
 );
 
+
 -- =========================================
--- 6. AUDIT_LOGS
+-- 6. NOTIFICATION_SETTINGS
+-- =========================================
+CREATE TABLE notification_settings (
+    user_id UUID PRIMARY KEY,
+    receive_notifications BOOLEAN NOT NULL DEFAULT TRUE,
+    notify_new_events BOOLEAN NOT NULL DEFAULT TRUE,
+    notify_coordinator_messages BOOLEAN NOT NULL DEFAULT TRUE,
+    notify_application_status BOOLEAN NOT NULL DEFAULT TRUE,
+    notify_event_assignment BOOLEAN NOT NULL DEFAULT TRUE,
+    notify_new_applications BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_notification_settings_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- 7. NOTIFICATION_CATEGORY_SETTINGS
+-- =========================================
+CREATE TABLE notification_category_settings (
+    user_id UUID NOT NULL,
+    category_id INTEGER NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_notification_category_settings
+        PRIMARY KEY (user_id, category_id),
+
+    CONSTRAINT fk_notification_category_settings_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_notification_category_settings_category
+        FOREIGN KEY (category_id)
+        REFERENCES categories(id)
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- 8. AUTH_EMAIL_TOKENS
+-- =========================================
+CREATE TABLE auth_email_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    purpose VARCHAR(40) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_auth_email_tokens_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_auth_email_tokens_purpose
+        CHECK (purpose IN ('registration_confirmation', 'password_reset'))
+);
+
+-- =========================================
+-- 9. NOTIFICATIONS
+-- =========================================
+CREATE TABLE notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    event_id UUID,
+    application_id BIGINT,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_notifications_event
+        FOREIGN KEY (event_id)
+        REFERENCES events(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_notifications_application
+        FOREIGN KEY (application_id)
+        REFERENCES applications(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT chk_notifications_type
+        CHECK (type IN (
+            'new_event',
+            'coordinator_event_invite',
+            'application_status',
+            'new_application',
+            'event_assignment',
+            'urgent_event'
+        ))
+);
+
+-- =========================================
+-- 10. AUDIT_LOGS
 -- =========================================
 CREATE TABLE audit_logs (
     id BIGSERIAL PRIMARY KEY,
@@ -185,6 +298,9 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at
 CREATE INDEX IF NOT EXISTS idx_events_category_id
     ON events(category_id);
 
+CREATE INDEX IF NOT EXISTS idx_events_is_urgent
+    ON events(is_urgent);
+
 CREATE INDEX IF NOT EXISTS idx_applications_event_id
     ON applications(event_id);
 
@@ -200,6 +316,34 @@ CREATE INDEX IF NOT EXISTS idx_applications_participation_confirmed
 CREATE UNIQUE INDEX IF NOT EXISTS uq_applications_user_event_active
     ON applications(user_id, event_id)
     WHERE status IN ('pending', 'approved');
+
+
+CREATE INDEX IF NOT EXISTS idx_notification_settings_user_id
+    ON notification_settings(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_notification_category_settings_category_id
+    ON notification_category_settings(category_id);
+
+CREATE INDEX IF NOT EXISTS idx_auth_email_tokens_user_id
+    ON auth_email_tokens(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_auth_email_tokens_token_hash
+    ON auth_email_tokens(token_hash);
+
+CREATE INDEX IF NOT EXISTS idx_auth_email_tokens_purpose
+    ON auth_email_tokens(purpose);
+
+CREATE INDEX IF NOT EXISTS idx_auth_email_tokens_expires_at
+    ON auth_email_tokens(expires_at);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id
+    ON notifications(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+    ON notifications(user_id, is_read);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at
+    ON notifications(created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id
     ON audit_logs(user_id);
@@ -226,5 +370,15 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_events_set_updated_at
 BEFORE UPDATE ON events
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_notification_settings_set_updated_at
+BEFORE UPDATE ON notification_settings
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_notification_category_settings_set_updated_at
+BEFORE UPDATE ON notification_category_settings
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();

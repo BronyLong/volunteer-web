@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
+import { notifyCoordinatorSelectedVolunteers, notifyNewEvent, notifyUrgentCoordinatorVolunteers } from "../utils/notifications.js";
 
 dotenv.config();
 
@@ -116,6 +117,7 @@ async function getEventForAudit(eventId, db = pool) {
       e.location,
       e.location_latitude,
       e.location_longitude,
+      e.is_urgent,
       e.tasks,
       e.participant_limit,
       e.available_slots,
@@ -150,6 +152,7 @@ router.get("/", async (req, res) => {
         e.location,
         e.location_latitude,
         e.location_longitude,
+        e.is_urgent,
         e.tasks,
         e.participant_limit,
         GREATEST(
@@ -201,6 +204,7 @@ router.get("/:id", async (req, res) => {
         e.location,
         e.location_latitude,
         e.location_longitude,
+        e.is_urgent,
         e.tasks,
         e.participant_limit,
         GREATEST(
@@ -270,6 +274,9 @@ router.post("/", authMiddleware, async (req, res) => {
     participant_limit,
     duration_minutes,
     category_id,
+    notify_volunteer_ids = [],
+    notify_specific_volunteers = false,
+    is_urgent = false,
   } = req.body;
 
   if (req.user.role !== "coordinator" && req.user.role !== "admin") {
@@ -301,6 +308,11 @@ router.post("/", authMiddleware, async (req, res) => {
     return res.status(400).json({ message: coordinates.message });
   }
 
+  const selectedVolunteerIds = Array.isArray(notify_volunteer_ids) ? notify_volunteer_ids : [];
+  const urgentEvent = is_urgent === true || is_urgent === "true";
+  const shouldNotifySelected =
+    !urgentEvent && (notify_specific_volunteers === true || notify_specific_volunteers === "true");
+
   const client = await pool.connect();
 
   try {
@@ -317,13 +329,14 @@ router.post("/", authMiddleware, async (req, res) => {
         location,
         location_latitude,
         location_longitude,
+        is_urgent,
         tasks,
         participant_limit,
         available_slots,
         category_id,
         created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11, $12, $13)
       RETURNING *
       `,
       [
@@ -335,12 +348,31 @@ router.post("/", authMiddleware, async (req, res) => {
         location,
         coordinates.latitude,
         coordinates.longitude,
+        urgentEvent,
         tasks,
         Number(participant_limit),
         category_id,
         req.user.id,
       ]
     );
+
+    const createdEvent = result.rows[0];
+
+    if (urgentEvent) {
+      await notifyUrgentCoordinatorVolunteers(client, {
+        event: createdEvent,
+        coordinatorId: req.user.id,
+        volunteerIds: selectedVolunteerIds,
+      });
+    } else if (shouldNotifySelected) {
+      await notifyCoordinatorSelectedVolunteers(client, {
+        event: createdEvent,
+        coordinatorId: req.user.id,
+        volunteerIds: selectedVolunteerIds,
+      });
+    } else {
+      await notifyNewEvent(client, createdEvent);
+    }
 
     await writeAuditLog({
       userId: req.user.id,

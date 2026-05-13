@@ -61,6 +61,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [urgentOnly, setUrgentOnly] = useState(false);
 
   useEffect(() => {
     apiFetch("/events")
@@ -77,9 +78,13 @@ export default function EventsPage() {
   }, []);
 
   const filteredEvents = useMemo(() => {
-    if (activeCategory === "all") return events;
-    return events.filter((event) => event.category_name === activeCategory);
-  }, [events, activeCategory]);
+    return events.filter((event) => {
+      const matchesCategory = activeCategory === "all" || event.category_name === activeCategory;
+      const matchesUrgent = !urgentOnly || event.is_urgent;
+
+      return matchesCategory && matchesUrgent;
+    });
+  }, [events, activeCategory, urgentOnly]);
 
   const totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
 
@@ -111,6 +116,11 @@ export default function EventsPage() {
 
   function handleFilterChange(categoryKey) {
     setActiveCategory(categoryKey);
+    setCurrentPage(1);
+  }
+
+  function handleUrgentFilterToggle() {
+    setUrgentOnly((prev) => !prev);
     setCurrentPage(1);
   }
 
@@ -147,6 +157,17 @@ export default function EventsPage() {
       <section className="events-catalog">
         <div className="container">
           <div className="events-filters">
+
+            <button
+              type="button"
+              className={`events-filters__button events-filters__button--urgent ${
+                urgentOnly ? "events-filters__button--active" : ""
+              }`}
+              onClick={handleUrgentFilterToggle}
+            >
+              Срочные
+            </button>
+
             {FILTERS.map((filter) => {
               const isActive = activeCategory === filter.key;
 
@@ -182,6 +203,7 @@ export default function EventsPage() {
                 places={`${event.available_slots} из ${event.participant_limit}`}
                 image={defaultEventImage}
                 category={getCategoryType(event.category_name)}
+                isUrgent={event.is_urgent}
                 link={`/events/${event.id}`}
               />
             ))}
@@ -189,7 +211,7 @@ export default function EventsPage() {
 
           {!paginatedEvents.length && (
             <div className="events-empty">
-              По выбранной категории мероприятий пока нет.
+По выбранным фильтрам мероприятий пока нет.
             </div>
           )}
 

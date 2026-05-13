@@ -2,6 +2,7 @@ import { Router } from "express";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
+import { notifyCoordinatorAssignment } from "../utils/notifications.js";
 
 const router = Router();
 
@@ -220,6 +221,11 @@ router.patch("/events/:id/coordinator", async (req, res) => {
       await client.query("ROLLBACK");
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
+
+    await notifyCoordinatorAssignment(client, {
+      coordinatorId,
+      event: eventResult.rows[0],
+    });
 
     await writeAuditLog({
       userId: req.user.id,

@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { registerUser, saveToken } from "../api";
+import { Link } from "react-router-dom";
+import { registerUser } from "../api";
 import "./RegisterPage.css";
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
-
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -17,6 +15,7 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   function handleChange(event) {
@@ -31,6 +30,7 @@ export default function RegisterPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setMessage("");
 
     if (form.password !== form.confirmPassword) {
       setError("Пароли не совпадают");
@@ -49,16 +49,19 @@ export default function RegisterPage() {
         password: form.password,
       });
 
-      if (data?.token) {
-        saveToken(data.token);
-      }
-
-      if (data?.user?.id) {
-        navigate(`/profiles/${data.user.id}`);
-        return;
-      }
-
-      navigate("/login");
+      setMessage(
+        data?.message ||
+          "Регистрация почти завершена. Мы отправили письмо со ссылкой для подтверждения аккаунта."
+      );
+      setForm({
+        firstName: "",
+        lastName: "",
+        middleName: "",
+        gender: "male",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
     } catch (err) {
       setError(err.message || "Не удалось выполнить регистрацию");
     } finally {
@@ -204,6 +207,7 @@ export default function RegisterPage() {
               </div>
 
               {error ? <p className="register-form__error">{error}</p> : null}
+              {message ? <p className="register-form__success">{message}</p> : null}
 
               <button
                 type="submit"

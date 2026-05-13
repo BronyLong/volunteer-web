@@ -113,6 +113,12 @@
   background: var(--orange-100);
 }
 
+.events-filters__button--urgent {
+  background: var(--white);
+  color: var(--red);
+  border-color: var(--red-shadow-20);
+}
+
 .events-filters__button--all.events-filters__button--active {
   background: var(--green);
   color: var(--white);
@@ -129,6 +135,12 @@
   background: var(--orange-100);
   border-color: var(--orange-shadow-35);
   color: var(--orange);
+}
+
+.events-filters__button--urgent.events-filters__button--active {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
 }
 
 .events-filters__icon-wrap {

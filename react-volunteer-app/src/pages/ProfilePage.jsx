@@ -570,6 +570,24 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {profile.is_owner && (profile.role === "volunteer" || profile.role === "coordinator") ? (
+            <section className="profile-notifications-card">
+              <div className="profile-notifications-card__content">
+                <h2 className="profile-notifications-card__title">Уведомления</h2>
+                <p className="profile-notifications-card__text">
+                  Просматривайте уведомления на сайте и настройте отправку уведомлений на email из профиля.
+                </p>
+              </div>
+
+              <Link
+                to={`/profiles/${profile.id}/notifications`}
+                className="profile-notifications-card__button"
+              >
+                Перейти
+              </Link>
+            </section>
+          ) : null}
+
           {profile.role === "admin" ? (
             profile.is_owner ? (
               <section className="profile-events">

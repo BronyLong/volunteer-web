@@ -52,6 +52,28 @@ export async function registerUser(payload) {
   });
 }
 
+
+export async function confirmRegistration(token) {
+  return apiFetch("/auth/confirm-registration", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export async function requestPasswordReset(email) {
+  return apiFetch("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(payload) {
+  return apiFetch("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getMyProfile() {
   return apiFetch("/profile/me");
 }
@@ -199,4 +221,39 @@ export async function getAdminLogs(filters = {}) {
 
   const query = params.toString();
   return apiFetch(`/admin/logs${query ? `?${query}` : ""}`);
+}
+
+export async function getNotifications() {
+  return apiFetch("/notifications");
+}
+
+export async function getUnreadNotificationsCount() {
+  return apiFetch("/notifications/unread-count");
+}
+
+export async function markNotificationAsRead(id) {
+  return apiFetch(`/notifications/${id}/read`, {
+    method: "PATCH",
+  });
+}
+
+export async function markAllNotificationsAsRead() {
+  return apiFetch("/notifications/read-all", {
+    method: "PATCH",
+  });
+}
+
+export async function getNotificationSettings() {
+  return apiFetch("/notifications/settings");
+}
+
+export async function updateNotificationSettings(payload) {
+  return apiFetch("/notifications/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getCoordinatorNotificationVolunteers() {
+  return apiFetch("/notifications/coordinator-volunteers");
 }

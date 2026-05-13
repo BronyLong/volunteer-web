@@ -2,6 +2,7 @@ import { Router } from "express";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
+import { notifyApplicationStatus, notifyNewApplication } from "../utils/notifications.js";
 
 const router = Router();
 
@@ -133,6 +134,8 @@ router.post("/", authMiddleware, async (req, res) => {
     );
 
     await updateEventAvailableSlots(client, event_id, event.participant_limit);
+
+    await notifyNewApplication(client, applicationResult.rows[0].id);
 
     await writeAuditLog({
       userId: req.user.id,
@@ -357,6 +360,8 @@ router.patch("/:id/accept", authMiddleware, async (req, res) => {
 
     await updateEventAvailableSlots(client, application.event_id, application.participant_limit);
 
+    await notifyApplicationStatus(client, req.params.id, "approved");
+
     await writeAuditLog({
       userId: req.user.id,
       userRole: req.user.role,
@@ -429,6 +434,8 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
     );
 
     await updateEventAvailableSlots(client, application.event_id, application.participant_limit);
+
+    await notifyApplicationStatus(client, req.params.id, "rejected");
 
     await writeAuditLog({
       userId: req.user.id,

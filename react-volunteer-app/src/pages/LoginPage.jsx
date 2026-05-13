@@ -102,6 +102,12 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              <p className="login-form__register-text login-form__forgot-text">
+                <Link to="/forgot-password" className="login-form__register-link">
+                  Забыли пароль?
+                </Link>
+              </p>
+
               {error ? <p className="login-form__error">{error}</p> : null}
 
               <button

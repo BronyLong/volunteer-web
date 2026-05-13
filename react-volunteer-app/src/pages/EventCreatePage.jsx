@@ -10,7 +10,13 @@ import animalsCategoryIcon from "../assets/SVG/animals_category.svg";
 import elderlyCategoryIcon from "../assets/SVG/elderly_category.svg";
 import uploadArrowIcon from "../assets/SVG/arrow.svg";
 
-import { createEvent, getCategories, getUserFromToken } from "../api";
+import {
+  createEvent,
+  getCategories,
+  getCoordinatorNotificationVolunteers,
+  getUserFromToken,
+} from "../api";
+import { getProfileAvatar } from "../utils/avatarUtils";
 
 const INITIAL_FORM = {
   title: "",
@@ -73,6 +79,52 @@ function resizeImage(file, maxWidth = 1200, maxHeight = 900, quality = 0.85) {
   });
 }
 
+function getVolunteerName(volunteer) {
+  return [volunteer.first_name, volunteer.middle_name, volunteer.last_name]
+    .filter(Boolean)
+    .join(" ") || volunteer.email || "Волонтёр";
+}
+
+function normalizeVolunteerSearchText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/\s+/g, " ");
+}
+
+function getVolunteerSearchFields(volunteer) {
+  return [
+    volunteer.first_name,
+    volunteer.last_name,
+    volunteer.middle_name,
+    volunteer.email,
+    getVolunteerName(volunteer),
+    [volunteer.last_name, volunteer.first_name, volunteer.middle_name]
+      .filter(Boolean)
+      .join(" "),
+    [volunteer.first_name, volunteer.middle_name, volunteer.last_name]
+      .filter(Boolean)
+      .join(" "),
+  ]
+    .map(normalizeVolunteerSearchText)
+    .filter(Boolean);
+}
+
+function isVolunteerMatchedBySearch(volunteer, searchValue) {
+  const queryParts = normalizeVolunteerSearchText(searchValue)
+    .split(" ")
+    .filter(Boolean);
+
+  if (queryParts.length === 0) {
+    return true;
+  }
+
+  const searchableText = getVolunteerSearchFields(volunteer).join(" ");
+
+  return queryParts.every((part) => searchableText.includes(part));
+}
+
 export default function EventCreatePage() {
   const navigate = useNavigate();
 
@@ -83,6 +135,12 @@ export default function EventCreatePage() {
   const [imageDataUrl, setImageDataUrl] = useState("");
   const [locationCoordinates, setLocationCoordinates] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [notificationVolunteers, setNotificationVolunteers] = useState([]);
+  const [selectedNotificationVolunteerIds, setSelectedNotificationVolunteerIds] = useState([]);
+  const [isUrgentEvent, setIsUrgentEvent] = useState(false);
+  const [notifySpecificVolunteers, setNotifySpecificVolunteers] = useState(false);
+  const [volunteerSearch, setVolunteerSearch] = useState("");
+  const [volunteerDropdownOpen, setVolunteerDropdownOpen] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -101,6 +159,31 @@ export default function EventCreatePage() {
     );
   }, [categories, formData.category]);
 
+  const availableNotificationVolunteers = useMemo(() => {
+    if (!isUrgentEvent) return notificationVolunteers;
+    return notificationVolunteers.filter((volunteer) => volunteer.can_receive_urgent);
+  }, [isUrgentEvent, notificationVolunteers]);
+
+  const selectedNotificationVolunteers = useMemo(
+    () =>
+      selectedNotificationVolunteerIds
+        .map((id) => availableNotificationVolunteers.find((volunteer) => String(volunteer.id) === String(id)))
+        .filter(Boolean),
+    [availableNotificationVolunteers, selectedNotificationVolunteerIds]
+  );
+
+  const filteredNotificationVolunteers = useMemo(() => {
+    return availableNotificationVolunteers
+      .filter((volunteer) => !selectedNotificationVolunteerIds.includes(volunteer.id))
+      .filter((volunteer) => isVolunteerMatchedBySearch(volunteer, volunteerSearch))
+      .slice(0, 8);
+  }, [availableNotificationVolunteers, selectedNotificationVolunteerIds, volunteerSearch]);
+
+  const showVolunteerPicker = notifySpecificVolunteers || isUrgentEvent;
+  const selectedVolunteerModeLabel = isUrgentEvent
+    ? "Выбранные волонтёры получат срочное уведомление. Если никого не выбрать, уведомление получат все подходящие волонтёры координатора."
+    : "Уведомление получат только выбранные волонтёры.";
+
   useEffect(() => {
     const currentUser = getUserFromToken();
 
@@ -114,7 +197,7 @@ export default function EventCreatePage() {
       return;
     }
 
-    async function loadCategories() {
+    async function loadInitialData() {
       try {
         setLoadingCategories(true);
         const data = await getCategories();
@@ -131,14 +214,19 @@ export default function EventCreatePage() {
             category: String(prepared[0].id),
           }));
         }
+
+        if (currentUser.role === "coordinator") {
+          const volunteers = await getCoordinatorNotificationVolunteers();
+          setNotificationVolunteers(Array.isArray(volunteers) ? volunteers : []);
+        }
       } catch (err) {
-        setError(err.message || "Не удалось загрузить категории");
+        setError(err.message || "Не удалось загрузить данные формы");
       } finally {
         setLoadingCategories(false);
       }
     }
 
-    loadCategories();
+    loadInitialData();
   }, [navigate]);
 
   useEffect(() => {
@@ -259,6 +347,50 @@ export default function EventCreatePage() {
     }
   }
 
+  function handleUrgentToggle(event) {
+    const checked = event.target.checked;
+    setIsUrgentEvent(checked);
+
+    if (checked) {
+      setNotifySpecificVolunteers(false);
+      setSelectedNotificationVolunteerIds((prev) => {
+        const urgentAllowedIds = new Set(
+          notificationVolunteers
+            .filter((volunteer) => volunteer.can_receive_urgent)
+            .map((volunteer) => String(volunteer.id))
+        );
+
+        return prev.filter((id) => urgentAllowedIds.has(String(id)));
+      });
+    }
+
+    if (error) setError("");
+  }
+
+  function handleNotifySpecificToggle(event) {
+    const checked = event.target.checked;
+    setNotifySpecificVolunteers(checked);
+
+    if (checked) {
+      setIsUrgentEvent(false);
+    }
+
+    if (error) setError("");
+  }
+
+  function handleAddNotificationVolunteer(volunteer) {
+    setSelectedNotificationVolunteerIds((prev) => {
+      if (prev.includes(volunteer.id)) return prev;
+      return [...prev, volunteer.id];
+    });
+    setVolunteerSearch("");
+    setVolunteerDropdownOpen(false);
+  }
+
+  function handleRemoveNotificationVolunteer(volunteerId) {
+    setSelectedNotificationVolunteerIds((prev) => prev.filter((id) => id !== volunteerId));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -296,6 +428,9 @@ export default function EventCreatePage() {
         participant_limit: Number(formData.places),
         duration_minutes: Number(formData.durationMinutes),
         category_id: formData.category,
+        is_urgent: isUrgentEvent,
+        notify_specific_volunteers: notifySpecificVolunteers,
+        notify_volunteer_ids: showVolunteerPicker ? selectedNotificationVolunteerIds : [],
       };
 
       const result = await createEvent(payload);
@@ -420,6 +555,144 @@ export default function EventCreatePage() {
                           +
                         </button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="event-edit-form__full">
+                  <div className="form-field">
+                    <span className="form-field__label">Уведомления</span>
+
+                    <div className="event-notification-box">
+                      <div className="event-notification-box__checks">
+                        <label className="event-notification-check">
+                          <input
+                            type="checkbox"
+                            checked={isUrgentEvent}
+                            onChange={handleUrgentToggle}
+                            disabled={saving}
+                          />
+                          <span className="event-notification-check__box" aria-hidden="true"></span>
+                          <span className="event-notification-check__content">
+                            <span className="event-notification-check__title">Срочное мероприятие</span>
+                            <span className="event-notification-check__text">
+                              Срочное уведомление нельзя отключить в настройках. Получателями будут выбранные волонтёры или все подходящие волонтёры координатора.
+                            </span>
+                          </span>
+                        </label>
+
+                        <label className="event-notification-check">
+                          <input
+                            type="checkbox"
+                            checked={notifySpecificVolunteers}
+                            onChange={handleNotifySpecificToggle}
+                            disabled={saving}
+                          />
+                          <span className="event-notification-check__box" aria-hidden="true"></span>
+                          <span className="event-notification-check__content">
+                            <span className="event-notification-check__title">Уведомить конкретных волонтёров</span>
+                            <span className="event-notification-check__text">
+                              Обычное уведомление получат только выбранные волонтёры.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+
+                      {showVolunteerPicker ? (
+                        <div className="event-volunteer-picker">
+                          <div className="event-volunteer-picker__head">
+                            <h2 className="event-volunteer-picker__title">Выбранные волонтёры</h2>
+                            <p className="event-volunteer-picker__text">
+                              В поиск попадают волонтёры, связанные с мероприятиями координатора. Для срочного уведомления доступны только волонтёры с принятой заявкой или подтвержденным участием.
+                            </p>
+                            <p className="event-volunteer-picker__mode">{selectedVolunteerModeLabel}</p>
+                          </div>
+
+                          <div className="event-volunteer-picker__search-wrap">
+                            <input
+                              type="text"
+                              className="event-volunteer-picker__search"
+                              placeholder="Введите ФИО или почту волонтёра"
+                              value={volunteerSearch}
+                              onChange={(event) => {
+                                setVolunteerSearch(event.target.value);
+                                setVolunteerDropdownOpen(true);
+                              }}
+                              onFocus={() => setVolunteerDropdownOpen(true)}
+                              onBlur={() => {
+                                window.setTimeout(() => setVolunteerDropdownOpen(false), 120);
+                              }}
+                              disabled={saving || availableNotificationVolunteers.length === 0}
+                            />
+
+                            {volunteerDropdownOpen ? (
+                              <div className="event-volunteer-picker__dropdown">
+                                {filteredNotificationVolunteers.length > 0 ? (
+                                  filteredNotificationVolunteers.map((volunteer) => (
+                                    <button
+                                      key={volunteer.id}
+                                      type="button"
+                                      className="event-volunteer-picker__option"
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onClick={() => handleAddNotificationVolunteer(volunteer)}
+                                      disabled={saving}
+                                    >
+                                      <img
+                                        src={getProfileAvatar(volunteer)}
+                                        alt=""
+                                        className="event-volunteer-picker__avatar"
+                                      />
+                                      <span className="event-volunteer-picker__option-content">
+                                        <span className="event-volunteer-picker__name">{getVolunteerName(volunteer)}</span>
+                                        <span className="event-volunteer-picker__email">{volunteer.email}</span>
+                                      </span>
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="event-volunteer-picker__empty">
+                                    Подходящие волонтёры не найдены
+                                  </div>
+                                )}
+                              </div>
+                            ) : null}
+                          </div>
+
+                          {selectedNotificationVolunteers.length > 0 ? (
+                            <div className="event-volunteer-picker__selected-list">
+                              {selectedNotificationVolunteers.map((volunteer) => (
+                                <div key={volunteer.id} className="event-volunteer-picker__selected-item">
+                                  <img
+                                    src={getProfileAvatar(volunteer)}
+                                    alt=""
+                                    className="event-volunteer-picker__selected-avatar"
+                                  />
+                                  <span className="event-volunteer-picker__selected-content">
+                                    <span className="event-volunteer-picker__selected-name">
+                                      {getVolunteerName(volunteer)}
+                                    </span>
+                                    <span className="event-volunteer-picker__selected-email">
+                                      {volunteer.email}
+                                    </span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="event-volunteer-picker__remove"
+                                    onClick={() => handleRemoveNotificationVolunteer(volunteer.id)}
+                                    disabled={saving}
+                                    aria-label={`Убрать ${getVolunteerName(volunteer)} из списка уведомления`}
+                                  >
+                                    −
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="event-volunteer-picker__notice">
+                              Волонтёры пока не выбраны.
+                            </p>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

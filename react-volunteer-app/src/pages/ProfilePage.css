@@ -637,3 +637,63 @@
     font-size: 14px;
   }
 }
+.profile-notifications-card {
+  margin: 34px 0 34px;
+  padding: 28px 32px;
+  border-radius: 28px;
+  background: var(--white);
+  box-shadow: 0 18px 42px var(--shadow-black-08);
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+}
+
+.profile-notifications-card__title {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.profile-notifications-card__text {
+  max-width: 680px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.profile-notifications-card__button {
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 8px 18px var(--green-shadow-20);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-notifications-card__button:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .profile-notifications-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  .profile-notifications-card__button {
+    width: 100%;
+  }
+}

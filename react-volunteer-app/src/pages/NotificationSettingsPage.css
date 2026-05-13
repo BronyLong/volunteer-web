@@ -1,0 +1,245 @@
+.notification-settings-page {
+  background: var(--page-bg);
+}
+
+.notification-settings-page__subtitle {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.notification-settings-section {
+  padding: 8px 0 56px;
+}
+
+.notification-settings-card {
+  background: var(--white);
+  border-radius: 42px;
+  box-shadow: 0 24px 60px var(--shadow-black-12);
+  padding: 42px;
+}
+
+.notification-settings-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.notification-settings-card__title {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.notification-settings-card__description {
+  max-width: 680px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.notification-settings-card__back,
+.notification-settings-card__button {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 8px 18px var(--green-shadow-20);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.notification-settings-card__back:hover,
+.notification-settings-card__button:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.notification-settings-card__button {
+  width: 100%;
+  margin-top: 24px;
+  min-height: 58px;
+}
+
+.notification-settings-card__button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+.notification-settings-card__divider {
+  width: 100%;
+  height: 1px;
+  margin: 24px 0;
+  background: var(--shadow-black-12);
+}
+
+.notification-settings-list {
+  display: grid;
+  gap: 14px;
+}
+
+.notification-checkbox {
+  min-height: 58px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 800;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-checkbox:hover {
+  border-color: var(--green-shadow-20);
+  background: var(--green-100);
+}
+
+.notification-checkbox--main {
+  background: var(--green-100);
+  border-color: var(--green-shadow-20);
+}
+
+.notification-checkbox input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.notification-checkbox span {
+  position: relative;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.notification-checkbox span::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--green);
+  background: var(--white);
+  flex: 0 0 22px;
+  box-sizing: border-box;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-checkbox span::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 7px;
+  height: 12px;
+  border: solid var(--white);
+  border-width: 0 3px 3px 0;
+  transform: translateY(-58%) rotate(45deg) scale(0);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+.notification-checkbox input:checked + span::before {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 5px 12px var(--green-shadow-20);
+}
+
+.notification-checkbox input:checked + span::after {
+  transform: translateY(-58%) rotate(45deg) scale(1);
+}
+
+.notification-checkbox input:focus-visible + span::before {
+  box-shadow: 0 0 0 4px var(--green-shadow-20);
+}
+
+.notification-settings-group {
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--white);
+  border: 1.5px solid var(--border-light);
+}
+
+.notification-settings-group__title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.notification-settings-group__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.notification-settings-card__success,
+.notification-settings-card__error,
+.notification-settings-page__state {
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  font-weight: 800;
+}
+
+.notification-settings-card__success {
+  background: var(--green-100);
+  color: var(--green-dark);
+}
+
+.notification-settings-card__error,
+.notification-settings-page__state--error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.notification-settings-page__state {
+  margin: 48px 0;
+  background: var(--white);
+  box-shadow: 0 12px 32px var(--shadow-black-08);
+  text-align: center;
+  font-size: 18px;
+}
+
+@media (max-width: 860px) {
+  .notification-settings-card {
+    padding: 28px 22px;
+    border-radius: 30px;
+  }
+
+  .notification-settings-card__header {
+    flex-direction: column;
+  }
+
+  .notification-settings-card__back {
+    width: 100%;
+  }
+
+  .notification-settings-group__list {
+    grid-template-columns: 1fr;
+  }
+}

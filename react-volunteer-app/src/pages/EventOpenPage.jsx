@@ -537,15 +537,21 @@ export default function EventOpenPage() {
 
               <div className="event-card__meta-grid">
                 <div className="event-card__meta-left">
-                  <div
-                    className={`event-card__category-pill event-card__category-pill--${categoryTheme}`}
-                  >
-                    <img
-                      src={categoryIcon}
-                      alt=""
-                      className="event-card__category-icon"
-                    />
-                    <span>{eventData.category_name || "Категория не указана"}</span>
+                  <div className="event-card__badges">
+                    <div
+                      className={`event-card__category-pill event-card__category-pill--${categoryTheme}`}
+                    >
+                      <img
+                        src={categoryIcon}
+                        alt=""
+                        className="event-card__category-icon"
+                      />
+                      <span>{eventData.category_name || "Категория не указана"}</span>
+                    </div>
+
+                    {eventData.is_urgent ? (
+                      <div className="event-card__urgent-pill">Срочно</div>
+                    ) : null}
                   </div>
 
                   <div className="event-card__places-box">

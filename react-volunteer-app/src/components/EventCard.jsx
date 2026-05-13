@@ -38,6 +38,7 @@ export default function EventCard({
   places = "20 из 20",
   image,
   category = "ecology",
+  isUrgent = false,
   link = "/event",
 }) {
   const currentCategory = categoryMap[category] || categoryMap.ecology;
@@ -71,14 +72,22 @@ export default function EventCard({
         </div>
 
         <div className="event-tile__category-row">
-          <div className="event-tile__category-pill">
-            <img src={currentCategory.icon} alt="" className="event-tile__category-icon" />
-            {currentCategory.label}
-              </div>
+          <div className="event-tile__badges">
+            <div className="event-tile__category-pill">
+              <img src={currentCategory.icon} alt="" className="event-tile__category-icon" />
+              {currentCategory.label}
             </div>
 
-            <Link to={link} className={`event-tile__button event-tile__button--${currentCategory.theme}`}>Подробнее</Link>
+            {isUrgent ? (
+              <div className="event-tile__urgent-pill">Срочно</div>
+            ) : null}
+          </div>
         </div>
+
+        <Link to={link} className={`event-tile__button event-tile__button--${currentCategory.theme}`}>
+          Подробнее
+        </Link>
+      </div>
     </article>
   );
 }

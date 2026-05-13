@@ -17,7 +17,7 @@ import okIcon from "../assets/SVG/odnoklassniki.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 
-import { getMyProfile, getToken, removeToken } from "../api";
+import { getMyProfile, getToken, getUnreadNotificationsCount, removeToken } from "../api";
 
 function getUserIdFromToken() {
   const token = localStorage.getItem("token");
@@ -45,6 +45,7 @@ export default function Header({
   const [authVariant, setAuthVariant] = useState("public");
   const [userId, setUserId] = useState(null);
   const [userAvatar, setUserAvatar] = useState(avatar);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
@@ -71,6 +72,7 @@ export default function Header({
         setAuthVariant("public");
         setUserId(null);
         setUserAvatar(avatar);
+        setHasUnreadNotifications(false);
         return;
       }
 
@@ -82,11 +84,23 @@ export default function Header({
         setAuthVariant("private");
         setUserId(profile?.id || tokenUserId);
         setUserAvatar(profile?.avatar_url || getProfileAvatar(profile));
+
+        if (profile?.role === "volunteer" || profile?.role === "coordinator") {
+          try {
+            const unreadData = await getUnreadNotificationsCount();
+            setHasUnreadNotifications(Number(unreadData?.count || 0) > 0);
+          } catch {
+            setHasUnreadNotifications(false);
+          }
+        } else {
+          setHasUnreadNotifications(false);
+        }
       } catch {
         removeToken();
         setAuthVariant("public");
         setUserId(null);
         setUserAvatar(avatar);
+        setHasUnreadNotifications(false);
       }
     }
 
@@ -100,6 +114,7 @@ export default function Header({
     setAuthVariant("public");
     setUserId(null);
     setUserAvatar(avatar);
+    setHasUnreadNotifications(false);
     navigate("/");
   }
 
@@ -257,6 +272,11 @@ export default function Header({
                 aria-label="Открыть профиль"
               >
                 <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
+                {hasUnreadNotifications ? (
+                  <span className="header__notification-badge" aria-label="Есть новые уведомления">
+                    <span className="header__notification-mark" aria-hidden="true"></span>
+                  </span>
+                ) : null}
               </Link>
 
               <button
@@ -276,6 +296,11 @@ export default function Header({
                 aria-label="Открыть профиль"
               >
                 <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
+                {hasUnreadNotifications ? (
+                  <span className="header__notification-badge" aria-label="Есть новые уведомления">
+                    <span className="header__notification-mark" aria-hidden="true"></span>
+                  </span>
+                ) : null}
               </Link>
 
               <button

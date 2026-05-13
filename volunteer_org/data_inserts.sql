@@ -7,11 +7,11 @@ INSERT INTO categories (name) VALUES
 ('Животным'),
 ('Пожилым');
 
-INSERT INTO users (email, password, role, is_active)
+INSERT INTO users (email, password, role, is_active, email_verified)
 VALUES
-('admin@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'admin', TRUE),
-('coordinator@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'coordinator', TRUE),
-('volunteer@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'volunteer', TRUE);
+('admin@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'admin', TRUE, TRUE),
+('coordinator@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'coordinator', TRUE, TRUE),
+('volunteer@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'volunteer', TRUE, TRUE);
 
 INSERT INTO profiles (
     user_id, first_name, last_name, middle_name, gender, phone, city, avatar_url, bio, social_vk, social_ok, social_max
@@ -598,3 +598,17 @@ SELECT * FROM categories;
 SELECT * FROM events;
 SELECT * FROM applications;
 SELECT * FROM audit_logs;
+
+-- =========================================
+-- НАСТРОЙКИ УВЕДОМЛЕНИЙ ПО УМОЛЧАНИЮ
+-- =========================================
+INSERT INTO notification_settings (user_id)
+SELECT id
+FROM users
+ON CONFLICT (user_id) DO NOTHING;
+
+INSERT INTO notification_category_settings (user_id, category_id, enabled)
+SELECT u.id, c.id, TRUE
+FROM users u
+CROSS JOIN categories c
+ON CONFLICT (user_id, category_id) DO NOTHING;

@@ -117,7 +117,15 @@
   padding: 8px;
 }
 
-.event-tile__category-pill {
+.event-tile__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-tile__category-pill,
+.event-tile__urgent-pill {
   min-height: 44px;
   border-radius: 999px;
   display: inline-flex;
@@ -129,6 +137,12 @@
   font-weight: 900;
   box-shadow: var(--shadow);
   max-width: 100%;
+}
+
+.event-tile__urgent-pill {
+  background: var(--red);
+  color: var(--white);
+  box-shadow: 0 8px 18px var(--red-shadow-20);
 }
 
 .event-tile__category-icon {
