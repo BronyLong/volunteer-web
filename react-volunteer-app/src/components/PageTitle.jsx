@@ -20,6 +20,7 @@ const titles = [
   { path: "/profiles/:id", title: "Профиль" },
   { path: "/events/:id/edit", title: "Редактирование мероприятия" },
   { path: "/events/:id", title: "Мероприятие" },
+  { path: "/privacy", title: "Политика" },
 ];
 
 export default function PageTitle() {
