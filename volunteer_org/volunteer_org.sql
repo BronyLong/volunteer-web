@@ -21,8 +21,8 @@ DROP TABLE IF EXISTS audit_logs CASCADE;
 -- =========================================
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT NOT NULL,
-    email_hash TEXT,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    email_hash TEXT UNIQUE,
     password TEXT NOT NULL,
     role VARCHAR(32) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -38,12 +38,12 @@ CREATE TABLE users (
 -- =========================================
 CREATE TABLE profiles (
     user_id UUID PRIMARY KEY,
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    middle_name TEXT,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100),
     gender VARCHAR(20) NOT NULL DEFAULT 'male',
-    phone TEXT,
-    city TEXT,
+    phone VARCHAR(30),
+    city VARCHAR(120),
     avatar_url TEXT,
     bio TEXT,
     social_vk TEXT,
@@ -290,6 +290,9 @@ CREATE TABLE audit_logs (
 -- =========================================
 -- ИНДЕКСЫ
 -- =========================================
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email
+    ON users(email);
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_hash
     ON users(email_hash)
     WHERE email_hash IS NOT NULL;

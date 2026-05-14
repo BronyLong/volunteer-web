@@ -255,6 +255,21 @@
   gap: 8px;
 }
 
+.admin-actions-cell--vertical {
+  align-items: stretch;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.admin-actions-cell--vertical .admin-action {
+  width: 100%;
+}
+
+.admin-action:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
 .admin-muted {
   color: var(--muted);
   font-size: 12px;

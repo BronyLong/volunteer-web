@@ -199,6 +199,12 @@ export async function updateAdminUserActive(id, isActive) {
   });
 }
 
+export async function deleteAdminUserProfile(id) {
+  return apiFetch(`/admin/users/${id}/profile`, {
+    method: "DELETE",
+  });
+}
+
 export async function getAdminEvents() {
   return apiFetch("/admin/events");
 }

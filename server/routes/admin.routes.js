@@ -1,9 +1,17 @@
 import { Router } from "express";
+import crypto from "crypto";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { notifyCoordinatorAssignment } from "../utils/notifications.js";
-import { decryptPersonalData, decryptUserProfileRow, decryptUserProfileRows } from "../utils/personalData.js";
+import {
+  buildEncryptedProfilePayload,
+  decryptPersonalData,
+  decryptUserProfileRow,
+  decryptUserProfileRows,
+  encryptEmail,
+  hashPersonalLookupValue,
+} from "../utils/personalData.js";
 
 const router = Router();
 
@@ -139,6 +147,196 @@ router.patch("/users/:id/active", async (req, res) => {
   } catch (error) {
     console.error("Admin update user active error:", error);
     res.status(500).json({ message: "Не удалось изменить статус пользователя" });
+  }
+});
+
+router.delete("/users/:id/profile", async (req, res) => {
+  const targetUserId = req.params.id;
+
+  if (String(targetUserId) === String(req.user.id)) {
+    return res.status(400).json({
+      message: "Нельзя удалить профиль текущего администратора",
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const targetResult = await client.query(
+      `
+      SELECT
+        u.id,
+        u.email,
+        u.role,
+        u.is_active,
+        u.created_at,
+        p.first_name,
+        p.last_name,
+        p.middle_name,
+        p.gender,
+        p.phone,
+        p.city,
+        p.avatar_url,
+        p.bio,
+        p.social_vk,
+        p.social_ok,
+        p.social_max
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE u.id = $1
+      FOR UPDATE OF u
+      `,
+      [targetUserId]
+    );
+
+    if (targetResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+
+    const targetUser = decryptUserProfileRow(targetResult.rows[0]);
+
+    if (targetUser.role === "admin") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Нельзя удалить профиль администратора",
+      });
+    }
+
+    const deletedEmail = `deleted-${crypto.randomUUID()}@deleted.local`;
+    const deletedEmailHash = hashPersonalLookupValue(deletedEmail);
+
+    const encryptedProfile = buildEncryptedProfilePayload({
+      first_name: "Удаленный",
+      last_name: "пользователь",
+      middle_name: "",
+      phone: "",
+      city: "",
+      bio: "",
+      social_vk: "",
+      social_ok: "",
+      social_max: "",
+    });
+
+    await client.query(
+      `
+      UPDATE users
+      SET email = $1,
+          email_hash = $2,
+          is_active = FALSE,
+          email_verified = FALSE,
+          personal_data_consent = FALSE,
+          personal_data_consent_at = NULL,
+          personal_data_consent_version = NULL
+      WHERE id = $3
+      `,
+      [encryptEmail(deletedEmail), deletedEmailHash, targetUserId]
+    );
+
+    await client.query(
+      `
+      INSERT INTO profiles (
+        user_id,
+        first_name,
+        last_name,
+        middle_name,
+        gender,
+        phone,
+        city,
+        avatar_url,
+        bio,
+        social_vk,
+        social_ok,
+        social_max
+      )
+      VALUES ($1, $2, $3, $4, 'male', $5, $6, NULL, $7, $8, $9, $10)
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        middle_name = EXCLUDED.middle_name,
+        gender = EXCLUDED.gender,
+        phone = EXCLUDED.phone,
+        city = EXCLUDED.city,
+        avatar_url = NULL,
+        bio = EXCLUDED.bio,
+        social_vk = EXCLUDED.social_vk,
+        social_ok = EXCLUDED.social_ok,
+        social_max = EXCLUDED.social_max
+      `,
+      [
+        targetUserId,
+        encryptedProfile.first_name,
+        encryptedProfile.last_name,
+        encryptedProfile.middle_name,
+        encryptedProfile.phone,
+        encryptedProfile.city,
+        encryptedProfile.bio,
+        encryptedProfile.social_vk,
+        encryptedProfile.social_ok,
+        encryptedProfile.social_max,
+      ]
+    );
+
+    await client.query(
+      `
+      DELETE FROM auth_email_tokens
+      WHERE user_id = $1
+      `,
+      [targetUserId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM notifications
+      WHERE user_id = $1
+      `,
+      [targetUserId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM notification_category_settings
+      WHERE user_id = $1
+      `,
+      [targetUserId]
+    );
+
+    await client.query(
+      `
+      DELETE FROM notification_settings
+      WHERE user_id = $1
+      `,
+      [targetUserId]
+    );
+
+    await writeAuditLog({
+      userId: req.user.id,
+      userRole: req.user.role,
+      action: "admin_user_profile_delete",
+      entityType: "user",
+      entityId: targetUserId,
+      req,
+      details: {
+        deleted_user: targetUser,
+      },
+      db: client,
+    });
+
+    await client.query("COMMIT");
+
+    res.json({
+      message: "Профиль пользователя удален и обезличен",
+      user_id: targetUserId,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Admin delete user profile error:", error);
+    res.status(500).json({ message: "Не удалось удалить профиль пользователя" });
+  } finally {
+    client.release();
   }
 });
 

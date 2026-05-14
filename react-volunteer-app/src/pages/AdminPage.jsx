@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  deleteAdminUserProfile,
   deleteEvent,
   getAdminEvents,
   getAdminLogs,
@@ -391,6 +392,33 @@ export default function AdminPage() {
     }
   }
 
+
+  async function handleDeleteUserProfile(user) {
+    if (String(user.id) === String(currentUser?.id)) {
+      setError("Нельзя удалить профиль текущего администратора");
+      return;
+    }
+
+    if (user.role === "admin") {
+      setError("Нельзя удалить профиль администратора");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Удалить профиль пользователя? Персональные данные будут обезличены, аккаунт будет деактивирован, а вход в учетную запись станет невозможен."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      await deleteAdminUserProfile(user.id);
+      await Promise.all([reloadUsers(), getAdminLogs(filters).then(setLogs)]);
+    } catch (err) {
+      setError(err.message || "Не удалось удалить профиль пользователя");
+    }
+  }
+
   async function handleDeleteEvent(eventId) {
     const confirmed = window.confirm("Удалить мероприятие?");
     if (!confirmed) return;
@@ -574,23 +602,37 @@ export default function AdminPage() {
                       <td>{user.is_active ? "true" : "false"}</td>
                       <td>{formatDate(user.created_at)}</td>
                       <td>
-                        {user.is_active ? (
+                        <div className="admin-actions-cell admin-actions-cell--vertical">
+                          {user.is_active ? (
+                            <button
+                              type="button"
+                              className="admin-action admin-action--danger"
+                              onClick={() => handleActiveChange(user.id, false)}
+                            >
+                              Деактивировать
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="admin-action"
+                              onClick={() => handleActiveChange(user.id, true)}
+                            >
+                              Активировать
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             className="admin-action admin-action--danger"
-                            onClick={() => handleActiveChange(user.id, false)}
+                            disabled={
+                              String(user.id) === String(currentUser?.id) ||
+                              user.role === "admin"
+                            }
+                            onClick={() => handleDeleteUserProfile(user)}
                           >
-                            Деактивировать
+                            Удалить профиль
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="admin-action"
-                            onClick={() => handleActiveChange(user.id, true)}
-                          >
-                            Активировать
-                          </button>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))}
