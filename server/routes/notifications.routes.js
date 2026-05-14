@@ -2,6 +2,7 @@ import { Router } from "express";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { ensureNotificationSettings } from "../utils/notifications.js";
+import { decryptUserProfileRows } from "../utils/personalData.js";
 
 const router = Router();
 
@@ -287,7 +288,7 @@ router.get("/coordinator-volunteers", async (req, res) => {
       [req.user.id]
     );
 
-    res.json(result.rows);
+    res.json(decryptUserProfileRows(result.rows));
   } catch (error) {
     console.error("Get coordinator volunteers error:", error);
     res.status(500).json({ message: "Не удалось получить список волонтёров" });

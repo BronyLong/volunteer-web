@@ -3,8 +3,19 @@ import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { notifyApplicationStatus, notifyNewApplication } from "../utils/notifications.js";
+import { decryptPersonalData, decryptUserProfileRows } from "../utils/personalData.js";
 
 const router = Router();
+
+function decryptApplicationRows(rows) {
+  return decryptUserProfileRows(rows).map((row) => ({
+    ...row,
+    confirmed_by_first_name: decryptPersonalData(row.confirmed_by_first_name),
+    confirmed_by_last_name: decryptPersonalData(row.confirmed_by_last_name),
+    confirmed_by_middle_name: decryptPersonalData(row.confirmed_by_middle_name),
+  }));
+}
+
 
 function isPastEvent(startAt) {
   const eventDate = new Date(startAt);
@@ -260,7 +271,7 @@ router.get("/event/:eventId", authMiddleware, async (req, res) => {
       [req.params.eventId]
     );
 
-    res.json(result.rows);
+    res.json(decryptApplicationRows(result.rows));
   } catch (error) {
     console.error("Get event applications error:", error);
     res.status(500).json({ message: "Ошибка при получении заявок мероприятия" });

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
+import { buildEncryptedProfilePayload, decryptUserProfileRow, encryptEmail, hashPersonalLookupValue, normalizeEmail } from "../utils/personalData.js";
 
 dotenv.config();
 
@@ -160,7 +161,7 @@ async function getProfileByUserId(userId, db = pool) {
     [userId]
   );
 
-  return result.rows[0] || null;
+  return decryptUserProfileRow(result.rows[0]) || null;
 }
 
 async function getProfileAccessLevel(viewer, targetUserId) {
@@ -201,29 +202,35 @@ function sanitizeProfile(profile, accessLevel, viewer) {
   const isOwner = Boolean(viewer && String(viewer.id) === String(profile.id));
   const isAdmin = Boolean(viewer && viewer.role === "admin");
   const canViewContacts = accessLevel === "contact" || accessLevel === "private";
+  const canViewIdentity = canViewContacts || isOwner || isAdmin;
 
   return {
     id: profile.id,
     role: profile.role,
-    first_name: profile.first_name,
-    last_name: profile.last_name,
-    middle_name: profile.middle_name,
-    gender: profile.gender,
-    avatar_url: profile.avatar_url,
-    bio: profile.bio,
-    volunteer_events: Array.isArray(profile.volunteer_events)
+    first_name: canViewIdentity ? profile.first_name : null,
+    last_name: canViewIdentity ? profile.last_name : null,
+    middle_name: canViewIdentity ? profile.middle_name : null,
+    gender: canViewIdentity ? profile.gender : null,
+    avatar_url: canViewIdentity ? profile.avatar_url : null,
+    bio: canViewIdentity ? profile.bio : null,
+    volunteer_events: canViewIdentity && Array.isArray(profile.volunteer_events)
       ? profile.volunteer_events
       : [],
-    volunteer_stats: profile.volunteer_stats || {
+    volunteer_stats: canViewIdentity ? profile.volunteer_stats || {
+      completed_events_count: 0,
+      completed_minutes: 0,
+      upcoming_events_count: 0,
+    } : {
       completed_events_count: 0,
       completed_minutes: 0,
       upcoming_events_count: 0,
     },
-    coordinator_events: Array.isArray(profile.coordinator_events)
+    coordinator_events: canViewIdentity && Array.isArray(profile.coordinator_events)
       ? profile.coordinator_events
       : [],
 
     access_level: accessLevel,
+    can_view_identity: canViewIdentity,
     can_view_contacts: canViewContacts,
     is_owner: isOwner,
     is_admin_view: Boolean(!isOwner && isAdmin),
@@ -300,7 +307,7 @@ router.put("/me", authMiddleware, async (req, res) => {
   const normalizedLastName = String(last_name || "").trim();
   const normalizedMiddleName = middle_name ? String(middle_name).trim() : "";
   const normalizedGender = gender ? String(gender).trim() : "";
-  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedEmail = normalizeEmail(email);
   const normalizedPhone = phone ? String(phone).trim() : "";
   const normalizedCity = city ? String(city).trim() : "";
   const normalizedAvatarUrl = avatar_url ? String(avatar_url).trim() : "";
@@ -356,13 +363,15 @@ router.put("/me", authMiddleware, async (req, res) => {
 
     const oldProfile = await getProfileByUserId(req.user.id, client);
 
+    const normalizedEmailHash = hashPersonalLookupValue(normalizedEmail);
+
     const emailExists = await client.query(
       `
       SELECT id
       FROM users
-      WHERE LOWER(email) = LOWER($1) AND id <> $2
+      WHERE email_hash = $1 AND id <> $2
       `,
-      [normalizedEmail, req.user.id]
+      [normalizedEmailHash, req.user.id]
     );
 
     if (emailExists.rows.length > 0) {
@@ -375,11 +384,25 @@ router.put("/me", authMiddleware, async (req, res) => {
     await client.query(
       `
       UPDATE users
-      SET email = $1
-      WHERE id = $2
+      SET email = $1,
+          email_hash = $2
+      WHERE id = $3
       `,
-      [normalizedEmail, req.user.id]
+      [encryptEmail(normalizedEmail), normalizedEmailHash, req.user.id]
     );
+
+    const encryptedProfile = buildEncryptedProfilePayload({
+      first_name: normalizedFirstName,
+      last_name: normalizedLastName,
+      middle_name: normalizedMiddleName,
+      phone: normalizedPhone,
+      city: normalizedCity,
+      avatar_url: normalizedAvatarUrl,
+      bio: normalizedBio,
+      social_vk: normalizedVk,
+      social_ok: normalizedOk,
+      social_max: normalizedMax,
+    });
 
     await client.query(
       `
@@ -414,17 +437,17 @@ router.put("/me", authMiddleware, async (req, res) => {
       `,
       [
         req.user.id,
-        normalizedFirstName,
-        normalizedLastName,
-        normalizedMiddleName,
+        encryptedProfile.first_name,
+        encryptedProfile.last_name,
+        encryptedProfile.middle_name,
         normalizedGender,
-        normalizedPhone,
-        normalizedCity,
-        normalizedAvatarUrl,
-        normalizedBio,
-        normalizedVk,
-        normalizedOk,
-        normalizedMax,
+        encryptedProfile.phone,
+        encryptedProfile.city,
+        encryptedProfile.avatar_url,
+        encryptedProfile.bio,
+        encryptedProfile.social_vk,
+        encryptedProfile.social_ok,
+        encryptedProfile.social_max,
       ]
     );
 

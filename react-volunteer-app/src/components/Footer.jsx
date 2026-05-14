@@ -58,6 +58,9 @@ export default function Footer() {
                 Личный кабинет
               </Link>
             </li>
+            <li>
+              <Link to="/privacy">Политика конфиденциальности</Link>
+            </li>
           </ul>
         </div>
 

@@ -7,6 +7,7 @@ import { pool } from "../db.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { sendMail } from "../utils/email.js";
 import { ensureNotificationSettings } from "../utils/notifications.js";
+import { decryptEmail, encryptEmail, encryptPersonalData as encryptPersonal, hashPersonalLookupValue, normalizeEmail } from "../utils/personalData.js";
 
 dotenv.config();
 
@@ -106,17 +107,23 @@ async function createAuthToken({ userId, purpose, ttlHours, db = pool }) {
 }
 
 router.post("/register", async (req, res) => {
-  let { firstName, lastName, middleName, gender, email, password } = req.body;
+  let { firstName, lastName, middleName, gender, email, password, personalDataConsent } = req.body;
 
   firstName = firstName ? String(firstName).trim() : "";
   lastName = lastName ? String(lastName).trim() : "";
   middleName = middleName ? String(middleName).trim() : "";
   gender = gender ? String(gender).trim() : "";
-  email = email ? String(email).trim().toLowerCase() : "";
+  email = normalizeEmail(email);
   password = password ? String(password) : "";
 
   if (!firstName || !lastName || !gender || !email || !password) {
     return res.status(400).json({ message: "Заполни все обязательные поля" });
+  }
+
+  if (personalDataConsent !== true) {
+    return res.status(400).json({
+      message: "Для регистрации необходимо согласие на обработку персональных данных",
+    });
   }
 
   if (!["male", "female"].includes(gender)) {
@@ -136,6 +143,9 @@ router.post("/register", async (req, res) => {
     });
   }
 
+  const emailHash = hashPersonalLookupValue(email);
+  const encryptedEmail = encryptEmail(email);
+
   const client = await pool.connect();
   let confirmationToken = null;
   let user = null;
@@ -145,11 +155,11 @@ router.post("/register", async (req, res) => {
 
     const existingUser = await client.query(
       `
-      SELECT id, email, role, is_active, email_verified
+      SELECT id, email, email_hash, role, is_active, email_verified
       FROM users
-      WHERE LOWER(email) = LOWER($1)
+      WHERE email_hash = $1
       `,
-      [email]
+      [emailHash]
     );
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -167,13 +177,18 @@ router.post("/register", async (req, res) => {
       await client.query(
         `
         UPDATE users
-        SET password = $1,
+        SET email = $1,
+            email_hash = $2,
+            password = $3,
             role = 'volunteer',
             is_active = TRUE,
-            email_verified = FALSE
-        WHERE id = $2
+            email_verified = FALSE,
+            personal_data_consent = TRUE,
+            personal_data_consent_at = CURRENT_TIMESTAMP,
+            personal_data_consent_version = '2026-05-14'
+        WHERE id = $4
         `,
-        [hashedPassword, user.id]
+        [encryptedEmail, emailHash, hashedPassword, user.id]
       );
 
       await client.query(
@@ -186,7 +201,7 @@ router.post("/register", async (req, res) => {
             middle_name = EXCLUDED.middle_name,
             gender = EXCLUDED.gender
         `,
-        [user.id, firstName, lastName, middleName, gender]
+        [user.id, encryptPersonal(firstName), encryptPersonal(lastName), encryptPersonal(middleName), gender]
       );
 
       await client.query(
@@ -202,11 +217,21 @@ router.post("/register", async (req, res) => {
     } else {
       const userResult = await client.query(
         `
-        INSERT INTO users (email, password, role, is_active, email_verified)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, email, role, is_active, email_verified, created_at
+        INSERT INTO users (
+          email,
+          email_hash,
+          password,
+          role,
+          is_active,
+          email_verified,
+          personal_data_consent,
+          personal_data_consent_at,
+          personal_data_consent_version
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, TRUE, CURRENT_TIMESTAMP, '2026-05-14')
+        RETURNING id, email, email_hash, role, is_active, email_verified, created_at
         `,
-        [email, hashedPassword, "volunteer", true, false]
+        [encryptedEmail, emailHash, hashedPassword, "volunteer", true, false]
       );
 
       user = userResult.rows[0];
@@ -216,7 +241,7 @@ router.post("/register", async (req, res) => {
         INSERT INTO profiles (user_id, first_name, last_name, middle_name, gender)
         VALUES ($1, $2, $3, $4, $5)
         `,
-        [user.id, firstName, lastName, middleName, gender]
+        [user.id, encryptPersonal(firstName), encryptPersonal(lastName), encryptPersonal(middleName), gender]
       );
     }
 
@@ -237,7 +262,7 @@ router.post("/register", async (req, res) => {
       entityId: user.id,
       req,
       details: {
-        email: user.email,
+        email,
         first_name: firstName,
         last_name: lastName,
         middle_name: middleName,
@@ -353,7 +378,8 @@ router.post("/confirm-registration", async (req, res) => {
 
 router.post("/forgot-password", async (req, res) => {
   let { email } = req.body;
-  email = email ? String(email).trim().toLowerCase() : "";
+  email = normalizeEmail(email);
+  const emailHash = email ? hashPersonalLookupValue(email) : "";
 
   if (!email) {
     return res.status(400).json({ message: "Email обязателен" });
@@ -368,11 +394,11 @@ router.post("/forgot-password", async (req, res) => {
   try {
     const userResult = await pool.query(
       `
-      SELECT id, email, role, is_active, email_verified
+      SELECT id, email, email_hash, role, is_active, email_verified
       FROM users
-      WHERE LOWER(email) = LOWER($1)
+      WHERE email_hash = $1
       `,
-      [email]
+      [emailHash]
     );
 
     if (userResult.rows.length > 0) {
@@ -401,7 +427,7 @@ router.post("/forgot-password", async (req, res) => {
         const emailContent = buildPasswordResetEmail({ link: resetLink });
 
         await sendMail({
-          to: user.email,
+          to: decryptEmail(user.email),
           subject: emailContent.subject,
           text: emailContent.text,
           html: emailContent.html,
@@ -415,7 +441,7 @@ router.post("/forgot-password", async (req, res) => {
           entityId: user.id,
           req,
           details: {
-            email: user.email,
+            email,
           },
         });
       }
@@ -538,7 +564,8 @@ router.post("/reset-password", async (req, res) => {
 router.post("/login", async (req, res) => {
   let { email, password } = req.body;
 
-  email = email ? String(email).trim().toLowerCase() : "";
+  email = normalizeEmail(email);
+  const emailHash = email ? hashPersonalLookupValue(email) : "";
   password = password ? String(password) : "";
 
   if (!email || !password) {
@@ -548,11 +575,11 @@ router.post("/login", async (req, res) => {
   try {
     const result = await pool.query(
       `
-      SELECT id, email, password, role, is_active, email_verified
+      SELECT id, email, email_hash, password, role, is_active, email_verified
       FROM users
-      WHERE LOWER(email) = LOWER($1)
+      WHERE email_hash = $1
       `,
-      [email]
+      [emailHash]
     );
 
     if (result.rows.length === 0) {
@@ -582,7 +609,7 @@ router.post("/login", async (req, res) => {
         req,
         status: "failed",
         details: {
-          email: user.email,
+          email,
           reason: "account_inactive",
         },
       });
@@ -600,7 +627,7 @@ router.post("/login", async (req, res) => {
         req,
         status: "failed",
         details: {
-          email: user.email,
+          email,
           reason: "email_not_verified",
         },
       });
@@ -622,7 +649,7 @@ router.post("/login", async (req, res) => {
         req,
         status: "failed",
         details: {
-          email: user.email,
+          email,
           reason: "invalid_password",
         },
       });
@@ -640,12 +667,12 @@ router.post("/login", async (req, res) => {
       entityId: user.id,
       req,
       details: {
-        email: user.email,
+        email,
       },
     });
 
     const jwtToken = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: decryptEmail(user.email), role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -655,7 +682,7 @@ router.post("/login", async (req, res) => {
       token: jwtToken,
       user: {
         id: user.id,
-        email: user.email,
+        email,
         role: user.role,
       },
     });

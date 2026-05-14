@@ -1,0 +1,45 @@
+.privacy-page {
+  padding: 70px 0;
+  background: linear-gradient(135deg, var(--green-shadow-10), var(--white));
+}
+
+.privacy-card {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 44px;
+  border-radius: 32px;
+  background: var(--white);
+  box-shadow: 0 22px 55px var(--shadow-black-08);
+}
+
+.privacy-card h1 {
+  margin: 0 0 24px;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.05;
+}
+
+.privacy-card h2 {
+  margin: 28px 0 10px;
+  font-size: 24px;
+}
+
+.privacy-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.privacy-card__back {
+  margin-top: 32px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  text-decoration: none;
+}

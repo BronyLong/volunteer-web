@@ -40,12 +40,16 @@ export default function Header({
 
   const [isOpen, setIsOpen] = useState(false);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
   const helpMenuRef = useRef(null);
+  const desktopProfileMenuRef = useRef(null);
+  const mobileProfileMenuRef = useRef(null);
 
   const [authVariant, setAuthVariant] = useState("public");
   const [userId, setUserId] = useState(null);
   const [userAvatar, setUserAvatar] = useState(avatar);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
@@ -53,15 +57,39 @@ export default function Header({
   const toggleHelpMenu = () => setHelpMenuOpen((prev) => !prev);
   const closeHelpMenu = () => setHelpMenuOpen(false);
 
+  const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
+  const closeProfileMenu = () => setProfileMenuOpen(false);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) {
         closeHelpMenu();
       }
+
+      const clickedInsideDesktopMenu =
+        desktopProfileMenuRef.current && desktopProfileMenuRef.current.contains(event.target);
+      const clickedInsideMobileMenu =
+        mobileProfileMenuRef.current && mobileProfileMenuRef.current.contains(event.target);
+
+      if (!clickedInsideDesktopMenu && !clickedInsideMobileMenu) {
+        closeProfileMenu();
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        closeHelpMenu();
+        closeProfileMenu();
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   useEffect(() => {
@@ -72,7 +100,7 @@ export default function Header({
         setAuthVariant("public");
         setUserId(null);
         setUserAvatar(avatar);
-        setHasUnreadNotifications(false);
+        setUnreadNotificationsCount(0);
         return;
       }
 
@@ -88,19 +116,19 @@ export default function Header({
         if (profile?.role === "volunteer" || profile?.role === "coordinator") {
           try {
             const unreadData = await getUnreadNotificationsCount();
-            setHasUnreadNotifications(Number(unreadData?.count || 0) > 0);
+            setUnreadNotificationsCount(Number(unreadData?.count || 0));
           } catch {
-            setHasUnreadNotifications(false);
+            setUnreadNotificationsCount(0);
           }
         } else {
-          setHasUnreadNotifications(false);
+          setUnreadNotificationsCount(0);
         }
       } catch {
         removeToken();
         setAuthVariant("public");
         setUserId(null);
         setUserAvatar(avatar);
-        setHasUnreadNotifications(false);
+        setUnreadNotificationsCount(0);
       }
     }
 
@@ -111,15 +139,64 @@ export default function Header({
     removeToken();
     closeMenu();
     closeHelpMenu();
+    closeProfileMenu();
     setAuthVariant("public");
     setUserId(null);
     setUserAvatar(avatar);
-    setHasUnreadNotifications(false);
+    setUnreadNotificationsCount(0);
     navigate("/");
+  }
+
+  function handleProfileMenuLinkClick() {
+    closeProfileMenu();
+    closeMenu();
   }
 
   const variant = variantProp || authVariant;
   const profileLink = userId ? `/profiles/${userId}` : "/login";
+  const notificationsLink = userId ? `/profiles/${userId}/notifications` : "/login";
+  const hasUnreadNotifications = unreadNotificationsCount > 0;
+
+  const profileMenu = (
+    <div
+      className={`header-profile-menu ${profileMenuOpen ? "is-open" : ""}`}
+      role="dialog"
+      aria-label="Меню профиля"
+    >
+      <Link
+        to={profileLink}
+        className="header-profile-menu__item"
+        onClick={handleProfileMenuLinkClick}
+      >
+        <span>Профиль</span>
+      </Link>
+
+      <Link
+        to={notificationsLink}
+        className="header-profile-menu__item"
+        onClick={handleProfileMenuLinkClick}
+      >
+        <span>Уведомления</span>
+        <span
+          className="header-profile-menu__counter"
+          aria-label={`Непрочитанных уведомлений: ${unreadNotificationsCount}`}
+        >
+          {unreadNotificationsCount}
+        </span>
+      </Link>
+
+      <div className="header-profile-menu__divider"></div>
+
+      <button
+        type="button"
+        className="header-profile-menu__item header-profile-menu__item--logout"
+        onClick={handleLogout}
+      >
+        <span>Выйти из аккаунта</span>
+        <img src={exitIcon} alt="" className="header-profile-menu__logout-icon" />
+      </button>
+    </div>
+  );
 
   return (
     <header className="header">
@@ -265,11 +342,14 @@ export default function Header({
               </NavLink>
             </nav>
 
-            <div className="header__user">
-              <Link
-                to={profileLink}
-                className="header__avatar-link"
-                aria-label="Открыть профиль"
+            <div className="header__user" ref={desktopProfileMenuRef}>
+              <button
+                type="button"
+                className="header__button-reset header__avatar-link"
+                aria-label="Открыть меню профиля"
+                aria-haspopup="dialog"
+                aria-expanded={profileMenuOpen}
+                onClick={toggleProfileMenu}
               >
                 <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
                 {hasUnreadNotifications ? (
@@ -277,31 +357,31 @@ export default function Header({
                     <span className="header__notification-mark" aria-hidden="true"></span>
                   </span>
                 ) : null}
-              </Link>
-
-              <button
-                type="button"
-                className="header__button-reset header__logout-button"
-                onClick={handleLogout}
-                aria-label="Выйти"
-              >
-                <img src={exitIcon} alt="" className="header__logout-icon" />
               </button>
+
+              {profileMenu}
             </div>
 
             <div className="header__mobile">
-              <Link
-                to={profileLink}
-                className="header__avatar-link header__avatar-link--mobile"
-                aria-label="Открыть профиль"
-              >
-                <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
-                {hasUnreadNotifications ? (
-                  <span className="header__notification-badge" aria-label="Есть новые уведомления">
-                    <span className="header__notification-mark" aria-hidden="true"></span>
-                  </span>
-                ) : null}
-              </Link>
+              <div className="header__profile-menu-anchor" ref={mobileProfileMenuRef}>
+                <button
+                  type="button"
+                  className="header__button-reset header__avatar-link header__avatar-link--mobile"
+                  aria-label="Открыть меню профиля"
+                  aria-haspopup="dialog"
+                  aria-expanded={profileMenuOpen}
+                  onClick={toggleProfileMenu}
+                >
+                  <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
+                  {hasUnreadNotifications ? (
+                    <span className="header__notification-badge" aria-label="Есть новые уведомления">
+                      <span className="header__notification-mark" aria-hidden="true"></span>
+                    </span>
+                  ) : null}
+                </button>
+
+                {profileMenu}
+              </div>
 
               <button
                 className={`menu-toggle ${isOpen ? "is-active" : ""}`}
@@ -394,14 +474,6 @@ export default function Header({
               <Link to={profileLink} className="mobile-menu__link" onClick={closeMenu}>
                 Профиль
               </Link>
-
-              <button
-                type="button"
-                className="mobile-menu__link mobile-menu__link--button"
-                onClick={handleLogout}
-              >
-                Выйти
-              </button>
             </nav>
           </div>
         </div>

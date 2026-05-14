@@ -1,4 +1,5 @@
 import { sendMail } from "./email.js";
+import { decryptEmail, decryptProfilePersonalFields } from "./personalData.js";
 
 const APP_NAME = "Рука помощи";
 
@@ -75,7 +76,7 @@ export async function createNotification(db, {
           [userId]
         );
 
-    const email = userResult.rows[0]?.email;
+    const email = userResult.rows[0]?.email ? decryptEmail(userResult.rows[0].email) : null;
 
     if (email) {
       const link = eventId ? `${getAppUrl()}/events/${eventId}` : `${getAppUrl()}/profiles/${userId}/notifications`;
@@ -276,18 +277,14 @@ export async function notifyNewApplication(db, applicationId) {
     [applicationId]
   );
 
-  const data = result.rows[0];
+  const data = result.rows[0] ? decryptProfilePersonalFields(result.rows[0]) : null;
   if (!data) return;
-
-  const volunteerName = [data.first_name, data.middle_name, data.last_name]
-    .filter(Boolean)
-    .join(" ") || "Волонтёр";
 
   await createNotification(db, {
     userId: data.coordinator_id,
     type: "new_application",
     title: "Новая заявка",
-    body: `${volunteerName} подал заявку на мероприятие «${data.event_title}».`,
+    body: `Поступила новая заявка на мероприятие «${data.event_title}».`,
     eventId: data.event_id,
     applicationId: data.id,
   });

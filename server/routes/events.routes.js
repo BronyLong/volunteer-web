@@ -5,6 +5,7 @@ import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { notifyCoordinatorSelectedVolunteers, notifyNewEvent, notifyUrgentCoordinatorVolunteers } from "../utils/notifications.js";
+import { decryptUserProfileRow } from "../utils/personalData.js";
 
 dotenv.config();
 
@@ -242,7 +243,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Мероприятие не найдено" });
     }
 
-    const event = result.rows[0];
+    const event = decryptUserProfileRow(result.rows[0]);
 
     const canViewContacts = await canViewCoordinatorContacts(
       viewer,
@@ -252,6 +253,12 @@ router.get("/:id", async (req, res) => {
 
     res.json({
       ...event,
+      can_view_coordinator_identity: canViewContacts,
+      first_name: canViewContacts ? event.first_name : null,
+      last_name: canViewContacts ? event.last_name : null,
+      middle_name: canViewContacts ? event.middle_name : null,
+      avatar_url: canViewContacts ? event.avatar_url : null,
+      gender: event.gender,
       email: canViewContacts ? event.email : null,
       phone: canViewContacts ? event.phone : null,
     });

@@ -20,7 +20,7 @@ import dateIcon from "../assets/SVG/calendar_card.svg";
 import timeIcon from "../assets/SVG/clock.svg";
 
 import defaultEventImage from "../assets/images/default_event.png";
-import { getProfileAvatar } from "../utils/avatarUtils";
+import { getDefaultAvatarByGender, getProfileAvatar } from "../utils/avatarUtils";
 
 import {
   acceptApplication,
@@ -82,6 +82,12 @@ function getApplicationTime(application) {
       application.application_date ||
       0
   ).getTime();
+}
+
+
+function getCoordinatorAvatar(eventData) {
+  if (!eventData) return getDefaultAvatarByGender();
+  return eventData.avatar_url || getDefaultAvatarByGender(eventData.gender);
 }
 
 function getEventCoordinates(eventData) {
@@ -217,7 +223,7 @@ export default function EventOpenPage() {
     }
 
     if (isVolunteer) {
-      return "Контактные данные откроются после подачи заявки на это мероприятие";
+      return "Контактные данные откроются после приема заявки на это мероприятие";
     }
 
     return "Контактные данные скрыты";
@@ -650,7 +656,7 @@ export default function EventOpenPage() {
                       >
                         <div className="coordinator-card__avatar-wrap">
                           <img
-                            src={getProfileAvatar(eventData)}
+                            src={getCoordinatorAvatar(eventData)}
                             alt="Координатор"
                             className="coordinator-card__avatar"
                           />
@@ -659,7 +665,7 @@ export default function EventOpenPage() {
                     ) : (
                       <div className="coordinator-card__avatar-wrap">
                         <img
-                          src={getProfileAvatar(eventData)}
+                          src={getCoordinatorAvatar(eventData)}
                           alt="Координатор"
                           className="coordinator-card__avatar"
                         />

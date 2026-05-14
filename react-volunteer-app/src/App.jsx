@@ -18,6 +18,7 @@ import EventEditPage from "./pages/EventEditPage";
 import EventCreatePage from "./pages/EventCreatePage";
 import AdminPage from "./pages/AdminPage";
 import PageTitle from "./components/PageTitle";
+import PrivacyPage from "./pages/PrivacyPage";
 
 import "./styles/reset.css";
 import "./styles/variables.css";
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/confirm-registration" element={<RegistrationConfirmPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
 
           <Route path="/profiles/:id" element={<ProfilePage />} />
           <Route path="/profiles/:id/settings" element={<ProfileSettings />} />

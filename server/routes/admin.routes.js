@@ -3,6 +3,7 @@ import { pool } from "../db.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { notifyCoordinatorAssignment } from "../utils/notifications.js";
+import { decryptPersonalData, decryptUserProfileRow, decryptUserProfileRows } from "../utils/personalData.js";
 
 const router = Router();
 
@@ -18,6 +19,16 @@ function normalizeBoolean(value) {
   if (value === true || value === "true") return true;
   if (value === false || value === "false") return false;
   return null;
+}
+
+
+function decryptAdminEventRows(rows) {
+  return rows.map((row) => ({
+    ...row,
+    coordinator_email: row.coordinator_email ? decryptUserProfileRow({ email: row.coordinator_email }).email : row.coordinator_email,
+    coordinator_first_name: row.coordinator_first_name ? decryptUserProfileRow({ first_name: row.coordinator_first_name }).first_name : row.coordinator_first_name,
+    coordinator_last_name: row.coordinator_last_name ? decryptUserProfileRow({ last_name: row.coordinator_last_name }).last_name : row.coordinator_last_name,
+  }));
 }
 
 router.use(authMiddleware, requireAdmin);
@@ -45,7 +56,7 @@ router.get("/users", async (req, res) => {
       `
     );
 
-    res.json(result.rows);
+    res.json(decryptUserProfileRows(result.rows));
   } catch (error) {
     console.error("Admin get users error:", error);
     res.status(500).json({ message: "Не удалось получить пользователей" });
@@ -85,7 +96,7 @@ router.patch("/users/:id/role", async (req, res) => {
       details: { role },
     });
 
-    res.json(result.rows[0]);
+    res.json(decryptUserProfileRow(result.rows[0]));
   } catch (error) {
     console.error("Admin update user role error:", error);
     res.status(500).json({ message: "Не удалось изменить роль пользователя" });
@@ -124,7 +135,7 @@ router.patch("/users/:id/active", async (req, res) => {
       details: { is_active: isActive },
     });
 
-    res.json(result.rows[0]);
+    res.json(decryptUserProfileRow(result.rows[0]));
   } catch (error) {
     console.error("Admin update user active error:", error);
     res.status(500).json({ message: "Не удалось изменить статус пользователя" });
@@ -169,7 +180,7 @@ router.get("/events", async (req, res) => {
       `
     );
 
-    res.json(result.rows);
+    res.json(decryptAdminEventRows(result.rows));
   } catch (error) {
     console.error("Admin get events error:", error);
     res.status(500).json({ message: "Не удалось получить мероприятия" });
@@ -297,7 +308,11 @@ router.get("/logs", async (req, res) => {
       values
     );
 
-    res.json(result.rows);
+    res.json(result.rows.map((row) => ({
+      ...row,
+      ip_address: decryptPersonalData(row.ip_address),
+      user_agent: decryptPersonalData(row.user_agent),
+    })));
   } catch (error) {
     console.error("Admin get logs error:", error);
     res.status(500).json({ message: "Не удалось получить логи" });

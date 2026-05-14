@@ -12,6 +12,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    personalDataConsent: false,
   });
 
   const [error, setError] = useState("");
@@ -19,11 +20,11 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
@@ -47,6 +48,7 @@ export default function RegisterPage() {
         gender: form.gender,
         email: form.email,
         password: form.password,
+        personalDataConsent: form.personalDataConsent,
       });
 
       setMessage(
@@ -61,6 +63,7 @@ export default function RegisterPage() {
         email: "",
         password: "",
         confirmPassword: "",
+        personalDataConsent: false,
       });
     } catch (err) {
       setError(err.message || "Не удалось выполнить регистрацию");
@@ -205,6 +208,23 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
+
+
+              <label className="register-form__consent">
+                <input
+                  name="personalDataConsent"
+                  type="checkbox"
+                  checked={form.personalDataConsent}
+                  onChange={handleChange}
+                  required
+                />
+                <span>
+                  Я даю согласие на обработку персональных данных и ознакомлен с{" "}
+                  <Link to="/privacy" className="register-form__consent-link">
+                    политикой обработки персональных данных
+                  </Link>
+                </span>
+              </label>
 
               {error ? <p className="register-form__error">{error}</p> : null}
               {message ? <p className="register-form__success">{message}</p> : null}

@@ -25,7 +25,7 @@ export function getCoordinatorName(eventData) {
   const lastName = eventData?.last_name?.trim() || "";
   const fullName = `${firstName} ${middleName} ${lastName}`.trim();
 
-  return fullName || "Координатор не указан";
+  return fullName || "Координатор мероприятия";
 }
 
 export function getDisplayValue(value) {

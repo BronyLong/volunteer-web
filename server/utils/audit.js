@@ -1,4 +1,5 @@
 import { pool } from "../db.js";
+import { encryptPersonalData, sanitizeAuditDetails } from "./personalData.js";
 
 function getClientIp(req) {
   const forwarded = req?.headers?.["x-forwarded-for"];
@@ -51,10 +52,10 @@ export async function writeAuditLog({
         entityId !== null && entityId !== undefined ? String(entityId) : null,
         req?.method || null,
         req?.originalUrl || null,
-        req ? getClientIp(req) : null,
-        req?.headers?.["user-agent"] || null,
+        encryptPersonalData(req ? getClientIp(req) : null),
+        encryptPersonalData(req?.headers?.["user-agent"] || null),
         status,
-        JSON.stringify(details || {}),
+        JSON.stringify(sanitizeAuditDetails(details || {})),
       ]
     );
   } catch (error) {
