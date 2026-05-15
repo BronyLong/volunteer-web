@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminPage from "../src/pages/AdminPage";
@@ -544,21 +544,35 @@ describe("AdminPage", () => {
 
     await screen.findByText("admin@example.com");
 
-    fireEvent.click(screen.getByRole("button", { name: /логи/i }));
-    fireEvent.click(screen.getByRole("button", { name: "UPDATE" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /логи/i }));
+    });
+
+    await screen.findByRole("heading", { name: /логи audit_logs/i });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "UPDATE" }));
+    });
 
     const chip = await screen.findByText(/action: UPDATE ×/i);
-    fireEvent.click(chip);
+
+    await act(async () => {
+      fireEvent.click(chip);
+    });
 
     await waitFor(() => {
       expect(screen.queryByText(/action: UPDATE ×/i)).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /сбросить фильтры/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /сбросить фильтры/i }));
+    });
 
-    expect(
-      screen.getByText(/нажмите на значение в таблице, чтобы добавить фильтр/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/нажмите на значение в таблице, чтобы добавить фильтр/i)
+      ).toBeInTheDocument();
+    });
   });
 
   it("shows logs fallback error", async () => {

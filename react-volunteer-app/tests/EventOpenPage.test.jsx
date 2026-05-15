@@ -9,6 +9,8 @@ const mockRejectApplication = vi.fn();
 const mockRestoreApplication = vi.fn();
 const mockGetToken = vi.fn();
 const mockAcceptApplication = vi.fn();
+const mockConfirmApplicationParticipation = vi.fn();
+const mockCancelApplicationParticipation = vi.fn();
 
 vi.mock("../src/api", async () => {
   const actual = await vi.importActual("../src/api");
@@ -20,6 +22,8 @@ vi.mock("../src/api", async () => {
     restoreApplication: (...args) => mockRestoreApplication(...args),
     getToken: (...args) => mockGetToken(...args),
     acceptApplication: (...args) => mockAcceptApplication(...args),
+    confirmApplicationParticipation: (...args) => mockConfirmApplicationParticipation(...args),
+    cancelApplicationParticipation: (...args) => mockCancelApplicationParticipation(...args),
   };
 });
 
@@ -349,22 +353,18 @@ describe("EventOpenPage", () => {
 
     renderPage();
 
-    expect(await screen.findByText(/поданные заявки/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/просмотр заявок доступен, изменение статусов отключено/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/подтверждение заявок/i)).toBeInTheDocument();
+    expect(screen.getByText(/принято заявок: 0/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/подтверждено: 0/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/не подтверждено: 0/i)).toBeInTheDocument();
 
-    const acceptButton = screen.getByRole("button", { name: /принять заявку/i });
-    const rejectButton = screen.getByRole("button", { name: /отклонить заявку/i });
+    expect(screen.getByText(/иван волонтер/i)).toBeInTheDocument();
+    expect(screen.getByText(/заявка ожидает решения/i)).toBeInTheDocument();
+    expect(screen.getByText(/участие не засчитывается/i)).toBeInTheDocument();
 
-    expect(acceptButton).toBeDisabled();
-    expect(rejectButton).toBeDisabled();
-    expect(
-      screen.queryByRole("button", { name: /восстановить заявку/i })
-    ).not.toBeInTheDocument();
-
-    fireEvent.click(acceptButton);
-    fireEvent.click(rejectButton);
+    expect(screen.queryByRole("button", { name: /принять заявку/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /отклонить заявку/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /восстановить заявку/i })).not.toBeInTheDocument();
 
     expect(mockRejectApplication).not.toHaveBeenCalled();
     expect(mockRestoreApplication).not.toHaveBeenCalled();
@@ -402,7 +402,7 @@ describe("EventOpenPage", () => {
 
     expect(
       await screen.findByText(
-        /контактные данные откроются после подачи заявки на это мероприятие/i
+        /контактные данные откроются после приема заявки на это мероприятие/i
       )
     ).toBeInTheDocument();
   });

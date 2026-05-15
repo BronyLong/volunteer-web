@@ -222,7 +222,7 @@ describe("EventsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /детям/i }));
 
     expect(
-      screen.getByText(/по выбранной категории мероприятий пока нет/i)
+      screen.getByText(/по выбранным фильтрам мероприятий пока нет/i)
     ).toBeInTheDocument();
   });
 

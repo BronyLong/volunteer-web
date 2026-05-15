@@ -6,6 +6,7 @@ import EventCreatePage from "../src/pages/EventCreatePage";
 const mockCreateEvent = vi.fn();
 const mockGetCategories = vi.fn();
 const mockGetUserFromToken = vi.fn();
+const mockGetCoordinatorNotificationVolunteers = vi.fn();
 const mockNavigate = vi.fn();
 
 vi.mock("../src/api", async () => {
@@ -16,6 +17,7 @@ vi.mock("../src/api", async () => {
     createEvent: (...args) => mockCreateEvent(...args),
     getCategories: (...args) => mockGetCategories(...args),
     getUserFromToken: (...args) => mockGetUserFromToken(...args),
+    getCoordinatorNotificationVolunteers: (...args) => mockGetCoordinatorNotificationVolunteers(...args),
   };
 });
 
@@ -190,6 +192,7 @@ describe("EventCreatePage", () => {
     });
 
     mockGetCategories.mockResolvedValue(categories);
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue([]);
 
     mockCreateEvent.mockResolvedValue({
       event: {
@@ -450,10 +453,15 @@ describe("EventCreatePage", () => {
         description: "Описание мероприятия",
         start_at: "2099-05-10T10:30:00",
         location: "Парк Победы",
+        location_latitude: null,
+        location_longitude: null,
         tasks: ["Собрать мусор"],
         participant_limit: 25,
         duration_minutes: 150,
         category_id: "1",
+        is_urgent: false,
+        notify_specific_volunteers: false,
+        notify_volunteer_ids: [],
       });
     });
 
@@ -516,10 +524,15 @@ describe("EventCreatePage", () => {
         description: "Описание мероприятия",
         start_at: "2099-05-10T10:30:00",
         location: "Парк Победы",
+        location_latitude: null,
+        location_longitude: null,
         tasks: [],
         participant_limit: 25,
         duration_minutes: 120,
         category_id: "1",
+        is_urgent: false,
+        notify_specific_volunteers: false,
+        notify_volunteer_ids: [],
       });
     });
 

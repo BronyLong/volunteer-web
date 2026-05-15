@@ -59,7 +59,7 @@ describe("eventUtils", () => {
     });
 
     it('returns fallback when coordinator name is missing', () => {
-      expect(getCoordinatorName({})).toBe("Координатор не указан");
+      expect(getCoordinatorName({})).toBe("Координатор мероприятия");
     });
   });
 

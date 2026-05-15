@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Header from "../src/components/Header";
@@ -150,7 +150,7 @@ describe("Header", () => {
     });
 
     const profileLinks = await screen.findAllByRole("link", {
-      name: /открыть профиль/i,
+      name: /^профиль$/i,
     });
 
     expect(profileLinks.length).toBeGreaterThan(0);
@@ -174,7 +174,7 @@ describe("Header", () => {
     });
 
     const profileLinks = await screen.findAllByRole("link", {
-      name: /открыть профиль/i,
+      name: /^профиль$/i,
     });
 
     expect(profileLinks[0]).toHaveAttribute("href", "/profiles/77");
@@ -231,7 +231,7 @@ describe("Header", () => {
   it("opens mobile public menu", () => {
     renderHeader();
 
-    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
 
     expect(screen.getAllByText(/хочу помочь/i).length).toBeGreaterThan(1);
     expect(screen.getAllByText(/регистрация/i).length).toBeGreaterThan(1);
@@ -240,7 +240,7 @@ describe("Header", () => {
   it("opens mobile help section in public menu", () => {
     renderHeader();
 
-    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
 
     const mobileHelpButton = screen.getAllByRole("button", { name: /нужна помощь/i })[0];
     fireEvent.click(mobileHelpButton);
@@ -273,7 +273,7 @@ describe("Header", () => {
     });
   
     const profileLinks = await screen.findAllByRole("link", {
-      name: /открыть профиль/i,
+      name: /^профиль$/i,
     });
   
     expect(profileLinks[0]).toHaveAttribute("href", "/login");
@@ -287,7 +287,7 @@ describe("Header", () => {
     renderHeader({ token: "token", localStorageToken: null });
   
     const profileLinks = await screen.findAllByRole("link", {
-      name: /открыть профиль/i,
+      name: /^профиль$/i,
     });
   
     expect(profileLinks[0]).toHaveAttribute("href", "/login");
@@ -296,7 +296,7 @@ describe("Header", () => {
   it("opens public mobile menu", () => {
     renderHeader();
   
-    const menuButton = screen.getByRole("button", { name: /открыть меню/i });
+    const menuButton = screen.getByRole("button", { name: "Открыть меню" });
     fireEvent.click(menuButton);
   
     expect(
@@ -344,18 +344,26 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 15 }),
     });
   
-    await screen.findAllByRole("link", { name: /открыть профиль/i });
+    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
   
-    const menuButton = screen.getByRole("button", { name: /открыть меню/i });
-    fireEvent.click(menuButton);
+    const menuButton = screen.getByRole("button", { name: "Открыть меню" });
+
+    await act(async () => {
+      fireEvent.click(menuButton);
+    });
   
     const mobileMenu = container.querySelector("#mobileMenu");
     expect(mobileMenu).toHaveClass("is-open");
   
     const mobileEventsLink = screen.getAllByRole("link", { name: /мероприятия/i }).at(-1);
-    fireEvent.click(mobileEventsLink);
+
+    await act(async () => {
+      fireEvent.click(mobileEventsLink);
+    });
   
-    expect(mobileMenu).not.toHaveClass("is-open");
+    await waitFor(() => {
+      expect(mobileMenu).not.toHaveClass("is-open");
+    });
   });
   
   it("logs out from private mobile menu", async () => {
@@ -369,15 +377,22 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 15 }),
     });
   
-    await screen.findAllByRole("link", { name: /открыть профиль/i });
+    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
   
-    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
+    });
   
     const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
-    fireEvent.click(logoutButtons.at(-1));
+
+    await act(async () => {
+      fireEvent.click(logoutButtons.at(-1));
+    });
   
-    expect(mockRemoveToken).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith("/");
+    await waitFor(() => {
+      expect(mockRemoveToken).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
   });
 
   it("keeps public help dropdown open when clicking inside it", () => {
@@ -404,7 +419,7 @@ describe("Header", () => {
     });
   
     const profileLinks = await screen.findAllByRole("link", {
-      name: /открыть профиль/i,
+      name: /^профиль$/i,
     });
   
     expect(profileLinks[0]).toHaveAttribute("href", "/login");
@@ -421,11 +436,13 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 22 }),
     });
   
-    await screen.findAllByRole("link", { name: /открыть профиль/i });
+    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
   
-    const menuButton = screen.getByRole("button", { name: /открыть меню/i });
+    const menuButton = screen.getByRole("button", { name: "Открыть меню" });
   
-    fireEvent.click(menuButton);
+    await act(async () => {
+      fireEvent.click(menuButton);
+    });
   
     const mobileMenu = document.querySelector("#mobileMenu");
     expect(mobileMenu).toHaveClass("is-open");
@@ -434,9 +451,13 @@ describe("Header", () => {
     expect(screen.getAllByRole("link", { name: /мероприятия/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /профиль/i }).length).toBeGreaterThan(0);
   
-    fireEvent.click(screen.getAllByRole("link", { name: /профиль/i }).at(-1));
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("link", { name: /профиль/i }).at(-1));
+    });
   
-    expect(mobileMenu).not.toHaveClass("is-open");
+    await waitFor(() => {
+      expect(mobileMenu).not.toHaveClass("is-open");
+    });
   });
   
   it("logs out from private mobile menu", async () => {
@@ -450,14 +471,21 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 22 }),
     });
   
-    await screen.findAllByRole("link", { name: /открыть профиль/i });
+    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
   
-    fireEvent.click(screen.getByRole("button", { name: /открыть меню/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
+    });
   
     const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
-    fireEvent.click(logoutButtons.at(-1));
+
+    await act(async () => {
+      fireEvent.click(logoutButtons.at(-1));
+    });
   
-    expect(mockRemoveToken).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith("/");
+    await waitFor(() => {
+      expect(mockRemoveToken).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
   });
 });
