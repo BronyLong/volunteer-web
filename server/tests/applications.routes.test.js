@@ -12,12 +12,36 @@ const mocks = vi.hoisted(() => {
     },
     mockVerify: vi.fn(),
     mockWriteAuditLog: vi.fn(),
+    mockNotifyNewApplication: vi.fn(),
+    mockNotifyApplicationStatus: vi.fn(),
   };
 });
 
 vi.mock("../db.js", () => ({ pool: mocks.mockPool }));
 vi.mock("../utils/audit.js", () => ({ writeAuditLog: mocks.mockWriteAuditLog }));
+
+vi.mock("../utils/notifications.js", () => ({
+  notifyNewApplication: mocks.mockNotifyNewApplication,
+  notifyApplicationStatus: mocks.mockNotifyApplicationStatus,
+}));
 vi.mock("jsonwebtoken", () => ({ default: { verify: mocks.mockVerify } }));
+
+vi.mock("../middleware/auth.js", () => ({
+  authMiddleware: (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Требуется авторизация" });
+    }
+
+    try {
+      req.user = mocks.mockVerify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+      return next();
+    } catch {
+      return res.status(401).json({ message: "Недействительный токен" });
+    }
+  },
+}));
 
 const applicationsRoutes = (await import("../routes/applications.routes.js")).default;
 const app = createTestApp("/api/applications", applicationsRoutes);
@@ -34,6 +58,10 @@ function resetMocks() {
   mocks.mockClient.release.mockReset();
   mocks.mockVerify.mockReset();
   mocks.mockWriteAuditLog.mockReset();
+  mocks.mockNotifyNewApplication.mockReset();
+  mocks.mockNotifyNewApplication.mockResolvedValue(undefined);
+  mocks.mockNotifyApplicationStatus.mockReset();
+  mocks.mockNotifyApplicationStatus.mockResolvedValue(undefined);
 }
 
 describe("applications.routes", () => {

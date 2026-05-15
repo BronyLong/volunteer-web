@@ -19,6 +19,23 @@ vi.mock("../db.js", () => ({ pool: mocks.mockPool }));
 vi.mock("../utils/audit.js", () => ({ writeAuditLog: mocks.mockWriteAuditLog }));
 vi.mock("jsonwebtoken", () => ({ default: { verify: mocks.mockVerify } }));
 
+vi.mock("../middleware/auth.js", () => ({
+  authMiddleware: (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Требуется авторизация" });
+    }
+
+    try {
+      req.user = mocks.mockVerify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+      return next();
+    } catch {
+      return res.status(401).json({ message: "Недействительный токен" });
+    }
+  },
+}));
+
 const adminRoutes = (await import("../routes/admin.routes.js")).default;
 const app = createTestApp("/api/admin", adminRoutes);
 
@@ -365,5 +382,33 @@ describe("admin.routes", () => {
     expect(response.body).toEqual({
       message: "Не удалось получить мероприятия",
     });
+  });
+});
+
+describe("admin.routes coverage branches", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    resetMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("returns admin events with coordinator personal fields", async () => {
+    const rows = [
+      {
+        id: 9,
+        title: "Субботник",
+        coordinator_email: "coord@mail.ru",
+        coordinator_first_name: "Анна",
+        coordinator_last_name: "Иванова",
+      },
+    ];
+    mocks.mockPool.query.mockResolvedValue({ rows });
+
+    const response = await request(app)
+      .get("/api/admin/events")
+      .set(auth())
+      .expect(200);
+
+    expect(response.body).toEqual(rows);
   });
 });

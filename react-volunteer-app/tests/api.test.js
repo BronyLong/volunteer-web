@@ -356,6 +356,74 @@ describe("api.js", () => {
       );
     });
 
+    it("confirmRegistration calls /auth/confirm-registration", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.confirmRegistration("confirm-token");
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/auth/confirm-registration",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ token: "confirm-token" }),
+        })
+      );
+    });
+
+    it("requestPasswordReset calls /auth/forgot-password", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.requestPasswordReset("user@mail.ru");
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/auth/forgot-password",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ email: "user@mail.ru" }),
+        })
+      );
+    });
+
+    it("resetPassword calls /auth/reset-password", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.resetPassword({ token: "reset-token", password: "12345678" });
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/auth/reset-password",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ token: "reset-token", password: "12345678" }),
+        })
+      );
+    });
+
+    it("confirmApplicationParticipation calls /applications/:id/confirm-participation", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.confirmApplicationParticipation(10);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/applications/10/confirm-participation",
+        expect.objectContaining({
+          method: "PATCH",
+        })
+      );
+    });
+
+    it("cancelApplicationParticipation calls /applications/:id/cancel-participation", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.cancelApplicationParticipation(10);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/applications/10/cancel-participation",
+        expect.objectContaining({
+          method: "PATCH",
+        })
+      );
+    });
+
     it("getAdminUsers calls /admin/users", async () => {
       mockJsonResponse([]);
 
@@ -454,6 +522,87 @@ describe("api.js", () => {
         expect.objectContaining({
           cache: "no-store",
         })
+      );
+    });
+
+    it("getNotifications calls /notifications", async () => {
+      mockJsonResponse([]);
+
+      await api.getNotifications();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications",
+        expect.objectContaining({ cache: "no-store" })
+      );
+    });
+
+    it("getUnreadNotificationsCount calls /notifications/unread-count", async () => {
+      mockJsonResponse({ count: 3 });
+
+      await api.getUnreadNotificationsCount();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/unread-count",
+        expect.objectContaining({ cache: "no-store" })
+      );
+    });
+
+    it("markNotificationAsRead calls PATCH /notifications/:id/read", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.markNotificationAsRead(5);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/5/read",
+        expect.objectContaining({ method: "PATCH" })
+      );
+    });
+
+    it("markAllNotificationsAsRead calls PATCH /notifications/read-all", async () => {
+      mockJsonResponse({ success: true });
+
+      await api.markAllNotificationsAsRead();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/read-all",
+        expect.objectContaining({ method: "PATCH" })
+      );
+    });
+
+    it("getNotificationSettings calls /notifications/settings", async () => {
+      mockJsonResponse({ settings: {}, categories: [] });
+
+      await api.getNotificationSettings();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/settings",
+        expect.objectContaining({ cache: "no-store" })
+      );
+    });
+
+    it("updateNotificationSettings calls PUT /notifications/settings", async () => {
+      mockJsonResponse({ settings: {}, categories: [] });
+      const payload = { receive_notifications: true };
+
+      await api.updateNotificationSettings(payload);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/settings",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify(payload),
+        })
+      );
+    });
+
+    it("getCoordinatorNotificationVolunteers calls /notifications/coordinator-volunteers", async () => {
+      mockJsonResponse([]);
+
+      await api.getCoordinatorNotificationVolunteers();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/notifications/coordinator-volunteers",
+        expect.objectContaining({ cache: "no-store" })
       );
     });
   });

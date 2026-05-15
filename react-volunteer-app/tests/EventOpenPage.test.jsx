@@ -804,4 +804,152 @@ describe("EventOpenPage", () => {
   
     expect(await screen.findByText(/не удалось принять заявку/i)).toBeInTheDocument();
   });
+
+  it("renders explicit tasks and coordinator fallback avatar without profile link", async () => {
+    mockGetToken.mockReturnValue(null);
+    mockApiFetch.mockResolvedValue({
+      ...futureEvent,
+      creator_id: null,
+      gender: "female",
+      tasks: ["Выдать инвентарь", "Собрать мусор"],
+      duration_minutes: 180,
+    });
+
+    renderPage();
+
+    expect(await screen.findByText("Выдать инвентарь")).toBeInTheDocument();
+    expect(screen.getByText("Собрать мусор")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/перейти в профиль координатора/i)).not.toBeInTheDocument();
+    expect(screen.getByText("3 ч")).toBeInTheDocument();
+  });
+
+  it("confirms and cancels participation for completed approved application", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
+
+    let applications = [
+      {
+        id: 100,
+        user_id: 22,
+        first_name: "Иван",
+        middle_name: "Иванович",
+        last_name: "Волонтер",
+        email: "ivan@example.com",
+        phone: "+79990000000",
+        status: "approved",
+        participation_confirmed: false,
+      },
+    ];
+
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(pastEvent);
+      if (path === "/applications/event/55") return Promise.resolve(applications);
+      return Promise.resolve(null);
+    });
+
+    mockConfirmApplicationParticipation.mockImplementation(async () => {
+      applications = [
+        {
+          ...applications[0],
+          participation_confirmed: true,
+          participation_confirmed_at: "2099-05-10T12:00:00.000Z",
+          confirmed_by_first_name: "Анна",
+          confirmed_by_middle_name: "",
+          confirmed_by_last_name: "Координатор",
+        },
+      ];
+      return { success: true };
+    });
+
+    mockCancelApplicationParticipation.mockImplementation(async () => {
+      applications = [
+        {
+          ...applications[0],
+          participation_confirmed: false,
+          participation_confirmed_at: null,
+          confirmed_by_first_name: null,
+          confirmed_by_middle_name: null,
+          confirmed_by_last_name: null,
+        },
+      ];
+      return { success: true };
+    });
+
+    renderPage();
+
+    expect(await screen.findByText(/подтверждение заявок/i)).toBeInTheDocument();
+    expect(screen.getByText(/не подтверждено: 1/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /подтвердить/i }));
+
+    await waitFor(() => {
+      expect(mockConfirmApplicationParticipation).toHaveBeenCalledWith(100);
+    });
+
+    expect(await screen.findByText(/участие подтверждено/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/анна\s+координатор/i).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("button", { name: /отменить/i }));
+
+    await waitFor(() => {
+      expect(mockCancelApplicationParticipation).toHaveBeenCalledWith(100);
+    });
+
+    expect(await screen.findByText(/участие не подтверждено/i)).toBeInTheDocument();
+  });
+
+  it("shows fallback errors when participation confirmation actions fail", async () => {
+    mockGetToken.mockReturnValue(makeToken({ id: 10, role: "coordinator" }));
+
+    let applications = [
+      {
+        id: 100,
+        user_id: 22,
+        first_name: "Иван",
+        last_name: "Волонтер",
+        email: "ivan@example.com",
+        phone: "+79990000000",
+        status: "approved",
+        participation_confirmed: false,
+      },
+    ];
+
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(pastEvent);
+      if (path === "/applications/event/55") return Promise.resolve(applications);
+      return Promise.resolve(null);
+    });
+
+    mockConfirmApplicationParticipation.mockRejectedValueOnce({});
+
+    const firstView = renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /подтвердить/i }));
+
+    expect(await screen.findByText(/не удалось подтвердить участие/i)).toBeInTheDocument();
+
+    firstView.unmount();
+
+    applications = [
+      {
+        ...applications[0],
+        participation_confirmed: true,
+        participation_confirmed_at: "2099-05-10T12:00:00.000Z",
+      },
+    ];
+    mockCancelApplicationParticipation.mockRejectedValueOnce({});
+
+    mockApiFetch.mockImplementation((path) => {
+      if (path === "/events/55") return Promise.resolve(pastEvent);
+      if (path === "/applications/event/55") return Promise.resolve(applications);
+      return Promise.resolve(null);
+    });
+
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /отменить/i }));
+
+    expect(
+      await screen.findByText(/не удалось отменить подтверждение участия/i)
+    ).toBeInTheDocument();
+  });
 });

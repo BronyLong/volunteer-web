@@ -30,6 +30,21 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+vi.mock("../src/components/YandexEventMap", () => ({
+  default: ({ address, title, onCoordinatesChange, onAddressChange }) => (
+    <div data-testid="mock-yandex-map">
+      <span>{title}</span>
+      <span>{address || "Адрес не указан"}</span>
+      <button type="button" onClick={() => onCoordinatesChange?.([47.22, 39.72])}>
+        Выбрать точку на карте
+      </button>
+      <button type="button" onClick={() => onAddressChange?.("Адрес с карты")}>
+        Подставить адрес с карты
+      </button>
+    </div>
+  ),
+}));
+
 function renderPage(route = "/events/create") {
   return render(
     <MemoryRouter
@@ -59,7 +74,70 @@ const categories = [
     id: 2,
     name: "Животные",
   },
+  {
+    id: 3,
+    name: "Детям",
+  },
+  {
+    id: 4,
+    name: "Помощь пожилым",
+  },
+  {
+    id: 5,
+    name: "Другое",
+  },
 ];
+
+const notificationVolunteers = [
+  {
+    id: 101,
+    first_name: "Иван",
+    middle_name: "Петрович",
+    last_name: "Смирнов",
+    email: "ivan@example.com",
+    avatar_url: "",
+    gender: "male",
+    can_receive_urgent: true,
+  },
+  {
+    id: 102,
+    first_name: "Мария",
+    middle_name: "",
+    last_name: "Иванова",
+    email: "maria@example.com",
+    avatar_url: "",
+    gender: "female",
+    can_receive_urgent: false,
+  },
+  {
+    id: 103,
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    email: "empty@example.com",
+    avatar_url: "",
+    gender: "unknown",
+    can_receive_urgent: true,
+  },
+];
+
+async function fillRequiredCreateFields() {
+  fireEvent.change(await screen.findByLabelText(/название мероприятия/i), {
+    target: { value: "Срочный субботник" },
+  });
+  fireEvent.change(screen.getByLabelText(/описание мероприятия/i), {
+    target: { value: "Описание срочного мероприятия" },
+  });
+  fireEvent.change(screen.getByLabelText(/место проведения/i), {
+    target: { value: "Парк Горького" },
+  });
+  fireEvent.change(screen.getByLabelText(/дата проведения/i), {
+    target: { value: "2099-07-20" },
+  });
+  fireEvent.change(screen.getByLabelText(/время проведения/i), {
+    target: { value: "14:30" },
+  });
+}
 
 function mockCanvasSuccess(dataUrl = "data:image/jpeg;base64,resized-image") {
   const originalCreateElement = document.createElement.bind(document);
@@ -932,6 +1010,198 @@ describe("EventCreatePage", () => {
       expect(mockCreateEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           tasks: ["Обновленная задача"],
+        })
+      );
+    });
+  });
+
+  it("loads coordinator volunteers and creates urgent event for selected urgent volunteer", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue(notificationVolunteers);
+    mockCreateEvent.mockResolvedValue({ event: { id: 77 } });
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    await waitFor(() => {
+      expect(mockGetCoordinatorNotificationVolunteers).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByLabelText(/срочное мероприятие/i));
+
+    expect(
+      screen.getByText(/выбранные волонтёры получат срочное уведомление/i)
+    ).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText(/введите фио или почту волонтёра/i);
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "иван смирнов" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: /иван петрович смирнов/i }));
+
+    expect(screen.getByText("ivan@example.com")).toBeInTheDocument();
+    expect(screen.queryByText("maria@example.com")).not.toBeInTheDocument();
+
+    await fillRequiredCreateFields();
+
+    fireEvent.click(screen.getByRole("button", { name: /выбрать точку на карте/i }));
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Срочный субботник",
+          location: "Парк Горького",
+          location_latitude: 47.22,
+          location_longitude: 39.72,
+          is_urgent: true,
+          notify_specific_volunteers: false,
+          notify_volunteer_ids: [101],
+        })
+      );
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith("/events/77");
+  });
+
+  it("creates regular event with specific volunteer notification and removes selected volunteer", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue(notificationVolunteers);
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    fireEvent.click(screen.getByLabelText(/уведомить конкретных волонтёров/i));
+
+    expect(
+      screen.getAllByText(/уведомление получат только выбранные волонтёры/i).length
+    ).toBeGreaterThan(0);
+
+    const searchInput = screen.getByPlaceholderText(/введите фио или почту волонтёра/i);
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "Мария" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: /мария иванова/i }));
+    expect(screen.getByText("maria@example.com")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/убрать мария иванова из списка уведомления/i));
+    expect(screen.getByText(/волонтёры пока не выбраны/i)).toBeInTheDocument();
+
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "empty@example.com" } });
+    fireEvent.click(await screen.findByRole("button", { name: /empty@example.com/i }));
+
+    await fillRequiredCreateFields();
+
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          is_urgent: false,
+          notify_specific_volunteers: true,
+          notify_volunteer_ids: [103],
+        })
+      );
+    });
+  });
+
+  it("shows empty volunteer dropdown when search does not match anyone", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue(notificationVolunteers);
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    fireEvent.click(screen.getByLabelText(/уведомить конкретных волонтёров/i));
+
+    const searchInput = screen.getByPlaceholderText(/введите фио или почту волонтёра/i);
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "несуществующий пользователь" } });
+
+    expect(await screen.findByText(/подходящие волонтёры не найдены/i)).toBeInTheDocument();
+  });
+
+  it("disables volunteer search when coordinator has no notification volunteers", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue([]);
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    fireEvent.click(screen.getByLabelText(/уведомить конкретных волонтёров/i));
+
+    expect(screen.getByPlaceholderText(/введите фио или почту волонтёра/i)).toBeDisabled();
+    expect(screen.getByText(/волонтёры пока не выбраны/i)).toBeInTheDocument();
+  });
+
+  it("does not request coordinator notification volunteers for admin", async () => {
+    mockGetUserFromToken.mockReturnValue({
+      id: 1,
+      role: "admin",
+    });
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    expect(mockGetCoordinatorNotificationVolunteers).not.toHaveBeenCalled();
+  });
+
+  it("uses empty list when volunteers response is not an array", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue(null);
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    fireEvent.click(screen.getByLabelText(/срочное мероприятие/i));
+
+    expect(screen.getByPlaceholderText(/введите фио или почту волонтёра/i)).toBeDisabled();
+  });
+
+  it("switches notification modes and clears urgent-only selected volunteers", async () => {
+    mockGetCoordinatorNotificationVolunteers.mockResolvedValue(notificationVolunteers);
+
+    renderPage();
+
+    await screen.findByRole("heading", { name: /новое мероприятие/i });
+
+    const urgentCheckbox = screen.getByLabelText(/срочное мероприятие/i);
+    const specificCheckbox = screen.getByLabelText(/уведомить конкретных волонтёров/i);
+
+    fireEvent.click(specificCheckbox);
+    expect(specificCheckbox).toBeChecked();
+    expect(urgentCheckbox).not.toBeChecked();
+
+    fireEvent.click(urgentCheckbox);
+    expect(urgentCheckbox).toBeChecked();
+    expect(specificCheckbox).not.toBeChecked();
+
+    const searchInput = screen.getByPlaceholderText(/введите фио или почту волонтёра/i);
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "Мария" } });
+
+    expect(await screen.findByText(/подходящие волонтёры не найдены/i)).toBeInTheDocument();
+  });
+
+  it("updates location from map address callback and sends it in payload", async () => {
+    renderPage();
+
+    await fillRequiredCreateFields();
+
+    fireEvent.click(screen.getByRole("button", { name: /подставить адрес с карты/i }));
+
+    expect(screen.getByLabelText(/место проведения/i)).toHaveValue("Адрес с карты");
+
+    fireEvent.click(screen.getByRole("button", { name: /создать мероприятие/i }));
+
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          location: "Адрес с карты",
+          location_latitude: null,
+          location_longitude: null,
         })
       );
     });

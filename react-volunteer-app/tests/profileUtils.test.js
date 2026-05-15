@@ -319,4 +319,54 @@ describe("profileUtils", () => {
       expect(hasValidationErrors(INITIAL_PROFILE_FIELD_ERRORS)).toBe(false);
     });
   });
+
+  describe("buildValidationErrors additional branches", () => {
+    it("returns middle name length error", () => {
+      const result = buildValidationErrors({
+        first_name: "Иван",
+        last_name: "Иванов",
+        middle_name: "А".repeat(101),
+        gender: "male",
+        email: "ivan@example.com",
+        phone: "",
+        social_vk: "",
+        social_ok: "",
+        social_max: "",
+      });
+
+      expect(result.middle_name).toBe("Отчество должно быть не длиннее 100 символов");
+    });
+
+    it("returns gender required error", () => {
+      const result = buildValidationErrors({
+        first_name: "Иван",
+        last_name: "Иванов",
+        middle_name: "",
+        gender: "",
+        email: "ivan@example.com",
+        phone: "",
+        social_vk: "",
+        social_ok: "",
+        social_max: "",
+      });
+
+      expect(result.gender).toBe("Выберите пол");
+    });
+
+    it("returns gender format error", () => {
+      const result = buildValidationErrors({
+        first_name: "Иван",
+        last_name: "Иванов",
+        middle_name: "",
+        gender: "unknown",
+        email: "ivan@example.com",
+        phone: "",
+        social_vk: "",
+        social_ok: "",
+        social_max: "",
+      });
+
+      expect(result.gender).toBe("Выберите корректное значение пола");
+    });
+  });
 });

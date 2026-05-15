@@ -19,6 +19,23 @@ vi.mock("../db.js", () => ({ pool: mocks.mockPool }));
 vi.mock("../utils/audit.js", () => ({ writeAuditLog: mocks.mockWriteAuditLog }));
 vi.mock("jsonwebtoken", () => ({ default: { verify: mocks.mockVerify } }));
 
+vi.mock("../middleware/auth.js", () => ({
+  authMiddleware: (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Требуется авторизация" });
+    }
+
+    try {
+      req.user = mocks.mockVerify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+      return next();
+    } catch {
+      return res.status(401).json({ message: "Недействительный токен" });
+    }
+  },
+}));
+
 const profileRoutes = (await import("../routes/profile.routes.js")).default;
 const app = createTestApp("/api/profile", profileRoutes);
 
@@ -30,6 +47,7 @@ const profile = {
   created_at: "2024-01-01T10:00:00.000Z",
   first_name: "Иван",
   last_name: "Иванов",
+  gender: "male",
   phone: "+7 (900) 000-00-00",
   city: "Москва",
   avatar_url: "avatar.png",
@@ -45,6 +63,7 @@ const profile = {
 const validUpdateBody = {
   first_name: " Иван ",
   last_name: " Иванов ",
+  gender: "male",
   email: " USER@MAIL.RU ",
   phone: "+7 (900) 000-00-00",
   city: " Москва ",
@@ -241,7 +260,7 @@ describe("profile.routes", () => {
       .send({ ...validUpdateBody, first_name: "" })
       .expect(400);
 
-    expect(response.body).toEqual({ message: "Имя, фамилия и email обязательны" });
+    expect(response.body).toEqual({ message: "Имя, фамилия, пол и email обязательны" });
   });
 
   it("validates profile email", async () => {
@@ -460,5 +479,74 @@ describe("profile.routes", () => {
         db: mocks.mockClient,
       })
     );
+  });
+});
+
+describe("profile.routes coverage branches", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    resetMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("returns private profile with default volunteer stats for owner", async () => {
+    mocks.mockPool.query.mockResolvedValue({
+      rows: [{ ...profile, volunteer_stats: null }],
+    });
+
+    const response = await request(app)
+      .get("/api/profile/1")
+      .set(auth("volunteer", 1))
+      .expect(200);
+
+    expect(response.body.volunteer_stats).toEqual({
+      completed_events_count: 0,
+      completed_minutes: 0,
+      upcoming_events_count: 0,
+    });
+  });
+
+  it("validates invalid gender value on profile update", async () => {
+    const response = await request(app)
+      .put("/api/profile/me")
+      .set(auth())
+      .send({ ...validUpdateBody, gender: "unknown" })
+      .expect(400);
+
+    expect(response.body).toEqual({ message: "Выберите корректное значение пола" });
+  });
+
+  it("validates missing last name and gender on profile update", async () => {
+    const response = await request(app)
+      .put("/api/profile/me")
+      .set(auth())
+      .send({ ...validUpdateBody, last_name: null, gender: null })
+      .expect(400);
+
+    expect(response.body).toEqual({ message: "Имя, фамилия, пол и email обязательны" });
+  });
+
+  it("trims middle name on successful profile update", async () => {
+    const updated = { ...profile, middle_name: "Сергеевич", email: "user@mail.ru" };
+    mocks.mockClient.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [profile] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [updated] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await request(app)
+      .put("/api/profile/me")
+      .set(auth("volunteer", 1))
+      .send({ ...validUpdateBody, middle_name: " Сергеевич " })
+      .expect(200);
+
+    const updateCall = mocks.mockClient.query.mock.calls.find((call) =>
+      String(call[0]).includes("INSERT INTO profiles")
+    );
+    expect(updateCall).toBeTruthy();
+    expect(updateCall[1][3]).toEqual(expect.any(String));
   });
 });

@@ -18,6 +18,8 @@ const mocks = vi.hoisted(() => {
     mockCompare: vi.fn(),
     mockSign: vi.fn(),
     mockWriteAuditLog: vi.fn(),
+    mockSendMail: vi.fn(),
+    mockEnsureNotificationSettings: vi.fn(),
   };
 });
 
@@ -27,6 +29,22 @@ vi.mock("../db.js", () => ({
 
 vi.mock("../utils/audit.js", () => ({
   writeAuditLog: mocks.mockWriteAuditLog,
+}));
+
+vi.mock("../utils/email.js", () => ({
+  sendMail: mocks.mockSendMail,
+}));
+
+vi.mock("../utils/notifications.js", () => ({
+  ensureNotificationSettings: mocks.mockEnsureNotificationSettings,
+}));
+
+vi.mock("../utils/personalData.js", () => ({
+  normalizeEmail: (email) => String(email || "").trim().toLowerCase(),
+  hashPersonalLookupValue: (email) => `hash:${String(email || "").trim().toLowerCase()}`,
+  encryptEmail: (email) => `encrypted:${String(email || "").trim().toLowerCase()}`,
+  decryptEmail: (email) => String(email || "").replace(/^encrypted:/, ""),
+  encryptPersonalData: (value) => value,
 }));
 
 vi.mock("bcrypt", () => ({
@@ -48,8 +66,11 @@ const app = createTestApp("/api/auth", authRoutes);
 const validRegisterBody = {
   firstName: " Анна ",
   lastName: " Админ ",
+  middleName: " Сергеевна ",
+  gender: "female",
   email: " ADMIN@EXAMPLE.COM ",
   password: "Password1!",
+  personalDataConsent: true,
 };
 
 function resetClient() {
@@ -58,6 +79,8 @@ function resetClient() {
   mocks.mockPool.query.mockReset();
   mocks.mockPool.connect.mockClear();
   mocks.mockWriteAuditLog.mockReset();
+  mocks.mockSendMail.mockReset();
+  mocks.mockEnsureNotificationSettings.mockReset();
   mocks.mockHash.mockReset();
   mocks.mockCompare.mockReset();
   mocks.mockSign.mockReset();
@@ -66,17 +89,24 @@ function resetClient() {
 describe("auth.routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
+    process.env.CLIENT_URL = "http://localhost:5173";
     resetClient();
+    mocks.mockHash.mockResolvedValue("hashed-password");
+    mocks.mockSendMail.mockResolvedValue(undefined);
+    mocks.mockEnsureNotificationSettings.mockResolvedValue(undefined);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("registers user, creates profile, writes audit log and returns token", async () => {
-    const user = { id: 1, email: "admin@example.com", role: "volunteer", is_active: true };
+  it("registers user, creates profile, writes audit log and sends confirmation email", async () => {
+    const user = {
+      id: 1,
+      email: "encrypted:admin@example.com",
+      role: "volunteer",
+      is_active: true,
+      email_verified: false,
+    };
 
-    mocks.mockHash.mockResolvedValue("hashed-password");
-    mocks.mockSign.mockReturnValue("jwt-token");
     mocks.mockClient.query
-      .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [user] })
       .mockResolvedValueOnce({ rows: [] })
@@ -88,23 +118,31 @@ describe("auth.routes", () => {
       .expect(201);
 
     expect(response.body).toEqual({
-      message: "Регистрация успешна",
-      token: "jwt-token",
-      user,
+      message:
+        "Регистрация почти завершена. Мы отправили письмо со ссылкой для подтверждения аккаунта.",
     });
     expect(mocks.mockClient.query).toHaveBeenNthCalledWith(1, "BEGIN");
     expect(mocks.mockHash).toHaveBeenCalledWith("Password1!", 10);
+    expect(mocks.mockEnsureNotificationSettings).toHaveBeenCalledWith(1, mocks.mockClient);
     expect(mocks.mockWriteAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 1,
         userRole: "volunteer",
-        action: "register",
+        action: "register_pending_confirmation",
         entityType: "user",
         entityId: 1,
         db: mocks.mockClient,
       })
     );
     expect(mocks.mockClient.query).toHaveBeenCalledWith("COMMIT");
+    expect(mocks.mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "admin@example.com",
+        subject: "Рука помощи: подтвердите регистрацию",
+        text: expect.stringContaining("/confirm-registration?token="),
+        html: expect.stringContaining("/confirm-registration?token="),
+      })
+    );
     expect(mocks.mockClient.release).toHaveBeenCalledTimes(1);
   });
 
@@ -139,7 +177,9 @@ describe("auth.routes", () => {
   it("returns 409 when register email already exists", async () => {
     mocks.mockClient.query
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ id: 1 }] });
+      .mockResolvedValueOnce({
+        rows: [{ id: 1, email_verified: true }],
+      });
 
     const response = await request(app)
       .post("/api/auth/register")
@@ -166,10 +206,11 @@ describe("auth.routes", () => {
   it("logs user in", async () => {
     const user = {
       id: 1,
-      email: "user@example.com",
+      email: "encrypted:user@example.com",
       password: "hashed",
       role: "volunteer",
       is_active: true,
+      email_verified: true,
     };
 
     mocks.mockPool.query.mockResolvedValue({ rows: [user] });
@@ -187,6 +228,7 @@ describe("auth.routes", () => {
       user: { id: 1, email: "user@example.com", role: "volunteer" },
     });
     expect(mocks.mockCompare).toHaveBeenCalledWith("Password1!", "hashed");
+    expect(mocks.mockEnsureNotificationSettings).toHaveBeenCalledWith(1, mocks.mockPool);
     expect(mocks.mockWriteAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({ action: "login", entityType: "auth", entityId: 1 })
     );
@@ -222,7 +264,16 @@ describe("auth.routes", () => {
 
   it("returns 403 when user is inactive", async () => {
     mocks.mockPool.query.mockResolvedValue({
-      rows: [{ id: 1, email: "u@mail.ru", password: "hash", role: "volunteer", is_active: false }],
+      rows: [
+        {
+          id: 1,
+          email: "encrypted:u@mail.ru",
+          password: "hash",
+          role: "volunteer",
+          is_active: false,
+          email_verified: true,
+        },
+      ],
     });
 
     const response = await request(app)
@@ -236,9 +287,49 @@ describe("auth.routes", () => {
     );
   });
 
+  it("returns 403 when email is not verified", async () => {
+    mocks.mockPool.query.mockResolvedValue({
+      rows: [
+        {
+          id: 1,
+          email: "encrypted:u@mail.ru",
+          password: "hash",
+          role: "volunteer",
+          is_active: true,
+          email_verified: false,
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "u@mail.ru", password: "Password1!" })
+      .expect(403);
+
+    expect(response.body).toEqual({
+      message: "Подтвердите регистрацию через ссылку из письма",
+    });
+    expect(mocks.mockWriteAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "login_blocked",
+        status: "failed",
+        details: expect.objectContaining({ reason: "email_not_verified" }),
+      })
+    );
+  });
+
   it("returns 401 when password is invalid", async () => {
     mocks.mockPool.query.mockResolvedValue({
-      rows: [{ id: 1, email: "u@mail.ru", password: "hash", role: "volunteer", is_active: true }],
+      rows: [
+        {
+          id: 1,
+          email: "encrypted:u@mail.ru",
+          password: "hash",
+          role: "volunteer",
+          is_active: true,
+          email_verified: true,
+        },
+      ],
     });
     mocks.mockCompare.mockResolvedValue(false);
 
@@ -265,5 +356,49 @@ describe("auth.routes", () => {
       .expect(500);
 
     expect(response.body).toEqual({ message: "Ошибка сервера при входе" });
+  });
+});
+
+describe("auth.routes coverage branches", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    delete process.env.CLIENT_URL;
+    resetClient();
+    mocks.mockHash.mockResolvedValue("hashed-password");
+    mocks.mockSendMail.mockResolvedValue(undefined);
+    mocks.mockEnsureNotificationSettings.mockResolvedValue(undefined);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("registers a new user through insert branch and uses default client url", async () => {
+    const user = {
+      id: 11,
+      email: "encrypted:new@example.com",
+      role: "volunteer",
+      is_active: true,
+      email_verified: false,
+    };
+
+    mocks.mockClient.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [user] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await request(app)
+      .post("/api/auth/register")
+      .send({ ...validRegisterBody, email: "NEW@EXAMPLE.COM" })
+      .expect(201);
+
+    expect(mocks.mockClient.query.mock.calls[2][0]).toContain("INSERT INTO users");
+    expect(mocks.mockClient.query.mock.calls[3][0]).toContain("INSERT INTO profiles");
+    expect(mocks.mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "new@example.com",
+        text: expect.stringContaining("http://localhost:5173/confirm-registration?token="),
+      })
+    );
   });
 });

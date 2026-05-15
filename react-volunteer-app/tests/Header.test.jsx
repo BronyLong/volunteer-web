@@ -7,6 +7,7 @@ const mockNavigate = vi.fn();
 const mockGetToken = vi.fn();
 const mockGetMyProfile = vi.fn();
 const mockRemoveToken = vi.fn();
+const mockGetUnreadNotificationsCount = vi.fn();
 
 let storage = {};
 
@@ -25,6 +26,7 @@ vi.mock("../src/api", async () => {
     getToken: (...args) => mockGetToken(...args),
     getMyProfile: (...args) => mockGetMyProfile(...args),
     removeToken: (...args) => mockRemoveToken(...args),
+    getUnreadNotificationsCount: (...args) => mockGetUnreadNotificationsCount(...args),
   };
 });
 
@@ -83,6 +85,7 @@ describe("Header", () => {
       id: 1,
       avatar_url: "",
     });
+    mockGetUnreadNotificationsCount.mockResolvedValue({ count: 0 });
   });
 
   it("renders guest navigation links", () => {
@@ -487,5 +490,112 @@ describe("Header", () => {
       expect(mockRemoveToken).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
+  });
+
+  it("closes public help dropdown on Escape", async () => {
+    renderHeader();
+
+    const helpButton = screen.getAllByRole("button", { name: /нужна помощь/i })[0];
+
+    await act(async () => {
+      fireEvent.click(helpButton);
+    });
+
+    expect(helpButton).toHaveAttribute("aria-expanded", "true");
+
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+
+    await waitFor(() => {
+      expect(helpButton).toHaveAttribute("aria-expanded", "false");
+    });
+  });
+
+  it("closes private profile dropdown on Escape", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 15,
+      role: "volunteer",
+      avatar_url: "",
+    });
+
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 15 }),
+    });
+
+    const profileButtons = await screen.findAllByRole("button", {
+      name: /открыть меню профиля/i,
+    });
+
+    await act(async () => {
+      fireEvent.click(profileButtons[0]);
+    });
+
+    expect(profileButtons[0]).toHaveAttribute("aria-expanded", "true");
+
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+
+    await waitFor(() => {
+      expect(profileButtons[0]).toHaveAttribute("aria-expanded", "false");
+    });
+  });
+
+  it("shows unread notifications counter for volunteer", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 31,
+      role: "volunteer",
+      avatar_url: "",
+    });
+    mockGetUnreadNotificationsCount.mockResolvedValue({ count: 7 });
+
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 31 }),
+    });
+
+    expect(
+      await screen.findAllByLabelText(/непрочитанных уведомлений: 7/i)
+    ).toHaveLength(2);
+    expect(mockGetUnreadNotificationsCount).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to zero unread notifications when counter request fails", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 32,
+      role: "coordinator",
+      avatar_url: "",
+    });
+    mockGetUnreadNotificationsCount.mockRejectedValue(new Error("Notifications failed"));
+
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 32 }),
+    });
+
+    expect(
+      await screen.findAllByLabelText(/непрочитанных уведомлений: 0/i)
+    ).toHaveLength(2);
+    expect(mockGetUnreadNotificationsCount).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not request unread notifications for admin profile", async () => {
+    mockGetMyProfile.mockResolvedValue({
+      id: 33,
+      role: "admin",
+      avatar_url: "",
+    });
+
+    renderHeader({
+      token: "token",
+      localStorageToken: makeToken({ id: 33 }),
+    });
+
+    expect(
+      await screen.findAllByLabelText(/непрочитанных уведомлений: 0/i)
+    ).toHaveLength(2);
+    expect(mockGetUnreadNotificationsCount).not.toHaveBeenCalled();
   });
 });

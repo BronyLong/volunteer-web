@@ -9,9 +9,14 @@ vi.mock("../db.js", () => ({
 }));
 
 const { writeAuditLog } = await import("../utils/audit.js");
+const { decryptPersonalData } = await import("../utils/personalData.js");
 
 describe("writeAuditLog", () => {
   beforeEach(() => {
+    process.env.PERSONAL_DATA_ENCRYPTION_KEY =
+      "7ocHqnLbAqeoy0d533QlKebzhRjFs7FMlm3YOng3/eE=";
+    process.env.PERSONAL_DATA_HASH_KEY =
+      "rWMjR0d2toP83nrZPvH6QhNdiBYOjuK1nUoMLSowjwc=";
     mockPool.query.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -50,7 +55,9 @@ describe("writeAuditLog", () => {
     });
 
     expect(mockPool.query).toHaveBeenCalledTimes(1);
-    expect(mockPool.query.mock.calls[0][1]).toEqual([
+    const values = mockPool.query.mock.calls[0][1];
+
+    expect(values).toEqual([
       1,
       "admin",
       "update",
@@ -58,11 +65,13 @@ describe("writeAuditLog", () => {
       "7",
       "PATCH",
       "/api/admin/users/7/role",
-      "10.0.0.1",
-      "vitest",
+      expect.any(String),
+      expect.any(String),
       "success",
       JSON.stringify({ role: "coordinator" }),
     ]);
+    expect(decryptPersonalData(values[7])).toBe("10.0.0.1");
+    expect(decryptPersonalData(values[8])).toBe("vitest");
   });
 
   it("falls back to socket remoteAddress and default values", async () => {
@@ -79,7 +88,9 @@ describe("writeAuditLog", () => {
       details: null,
     });
 
-    expect(mockPool.query.mock.calls[0][1]).toEqual([
+    const values = mockPool.query.mock.calls[0][1];
+
+    expect(values).toEqual([
       null,
       null,
       "login_failed",
@@ -87,11 +98,12 @@ describe("writeAuditLog", () => {
       null,
       null,
       null,
-      "::1",
+      expect.any(String),
       null,
       "failed",
       JSON.stringify({}),
     ]);
+    expect(decryptPersonalData(values[7])).toBe("::1");
   });
 
   it("logs internal audit error without throwing", async () => {
@@ -103,5 +115,31 @@ describe("writeAuditLog", () => {
     ).resolves.toBeUndefined();
 
     expect(console.error).toHaveBeenCalledWith("Audit log write error:", error);
+  });
+});
+
+describe("writeAuditLog null ip branch", () => {
+  beforeEach(() => {
+    process.env.PERSONAL_DATA_ENCRYPTION_KEY =
+      "7ocHqnLbAqeoy0d533QlKebzhRjFs7FMlm3YOng3/eE=";
+    process.env.PERSONAL_DATA_HASH_KEY =
+      "rWMjR0d2toP83nrZPvH6QhNdiBYOjuK1nUoMLSowjwc=";
+    mockPool.query.mockReset();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("stores null ip when request has no ip and socket address", async () => {
+    mockPool.query.mockResolvedValue({ rows: [] });
+
+    await writeAuditLog({
+      action: "system_action",
+      entityType: "system",
+      req: {
+        headers: {},
+      },
+    });
+
+    const values = mockPool.query.mock.calls[0][1];
+    expect(values[7]).toBeNull();
   });
 });

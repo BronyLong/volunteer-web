@@ -16,9 +16,10 @@ vi.mock("../src/api", async () => {
 });
 
 vi.mock("../src/components/ProfileEventCard", () => ({
-  default: ({ title, location, date, link, buttonText }) => (
+  default: ({ title, location, date, link, buttonText, confirmationStatus }) => (
     <div data-testid="profile-event-card">
       <div>{title}</div>
+      {confirmationStatus ? <div>{confirmationStatus.label}</div> : null}
       <div>{location}</div>
       <div>{date}</div>
       <a href={link}>{buttonText}</a>
@@ -886,5 +887,73 @@ describe("ProfilePage", () => {
     await waitFor(() => {
       expect(avatarButton).not.toHaveClass("profile-summary__avatar-wrap--loading");
     });
+  });
+
+  it("switches between upcoming and completed coordinator events with confirmation statuses", async () => {
+    mockGetProfileById.mockResolvedValue({
+      ...ownerCoordinatorProfile,
+      coordinator_events: [
+        {
+          id: 301,
+          title: "Будущее мероприятие",
+          location: "Парк",
+          start_at: "2099-05-10T10:30:00.000Z",
+        },
+        {
+          id: 302,
+          title: "Подтвержденное мероприятие",
+          location: "Штаб",
+          start_at: "2000-05-10T10:30:00.000Z",
+          all_applications_confirmed: true,
+        },
+        {
+          id: 303,
+          title: "Неподтвержденное мероприятие",
+          location: "Склад",
+          start_at: "2000-06-10T10:30:00.000Z",
+          all_applications_confirmed: false,
+        },
+      ],
+    });
+
+    renderPage();
+
+    expect(await screen.findByText("Будущее мероприятие")).toBeInTheDocument();
+    expect(screen.queryByText("Подтвержденное мероприятие")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /завершенные мероприятия/i }));
+
+    expect(await screen.findByText("Неподтвержденное мероприятие")).toBeInTheDocument();
+    expect(screen.getByText("Подтвержденное мероприятие")).toBeInTheDocument();
+    expect(screen.getByText("Все заявки подтверждены")).toBeInTheDocument();
+    expect(screen.getByText("Не все заявки подтверждены")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /предстоящие мероприятия/i }));
+
+    expect(await screen.findByText("Будущее мероприятие")).toBeInTheDocument();
+  });
+
+  it("shows completed empty state after switching tabs", async () => {
+    mockGetProfileById.mockResolvedValue({
+      ...publicVolunteerProfile,
+      is_owner: true,
+      can_view_contacts: true,
+      volunteer_events: [
+        {
+          id: 401,
+          title: "Будущая помощь",
+          location: "Штаб",
+          start_at: "2099-07-20T09:00:00.000Z",
+        },
+      ],
+    });
+
+    renderPage("/profiles/8");
+
+    expect(await screen.findByText("Будущая помощь")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /завершенные мероприятия/i }));
+
+    expect(await screen.findByText(/завершенных мероприятий пока нет/i)).toBeInTheDocument();
   });
 });
