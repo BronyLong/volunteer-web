@@ -20,10 +20,13 @@ export function formatTime(value) {
 }
 
 export function getCoordinatorName(eventData) {
-  const firstName = eventData?.first_name?.trim() || "";
-  const middleName = eventData?.middle_name?.trim() || "";
-  const lastName = eventData?.last_name?.trim() || "";
-  const fullName = `${firstName} ${middleName} ${lastName}`.trim();
+  const fullName = [
+    eventData?.first_name?.trim(),
+    eventData?.middle_name?.trim(),
+    eventData?.last_name?.trim(),
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return fullName || "Координатор мероприятия";
 }

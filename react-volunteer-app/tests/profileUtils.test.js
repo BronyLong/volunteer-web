@@ -39,6 +39,8 @@ describe("profileUtils", () => {
       const profile = {
         first_name: "Иван",
         last_name: "Иванов",
+        middle_name: "Иванович",
+        gender: "male",
         email: "ivan@example.com",
         phone: "+7 (999) 123-45-67",
         city: "Москва",
@@ -55,6 +57,8 @@ describe("profileUtils", () => {
       expect(mapProfileToForm(null)).toEqual({
         first_name: "",
         last_name: "",
+        middle_name: "",
+        gender: "male",
         email: "",
         phone: "",
         city: "",
@@ -211,6 +215,8 @@ describe("profileUtils", () => {
       const result = buildValidationErrors({
         first_name: "",
         last_name: "",
+        middle_name: "",
+        gender: "male",
         email: "",
         phone: "",
         social_vk: "",
@@ -227,6 +233,8 @@ describe("profileUtils", () => {
       const result = buildValidationErrors({
         first_name: "Иван",
         last_name: "Иванов",
+        middle_name: "Иванович",
+        gender: "male",
         email: "wrong-email",
         phone: "",
         social_vk: "",
@@ -243,6 +251,8 @@ describe("profileUtils", () => {
       const result = buildValidationErrors({
         first_name: "Иван",
         last_name: "Иванов",
+        middle_name: "Иванович",
+        gender: "male",
         email: "ivan@example.com",
         phone: "12345",
         social_vk: "",
@@ -257,6 +267,8 @@ describe("profileUtils", () => {
       const result = buildValidationErrors({
         first_name: "Иван",
         last_name: "Иванов",
+        middle_name: "Иванович",
+        gender: "male",
         email: "ivan@example.com",
         phone: "",
         social_vk: "https://google.com/test",
@@ -273,6 +285,8 @@ describe("profileUtils", () => {
       const result = buildValidationErrors({
         first_name: "Иван",
         last_name: "Иванов",
+        middle_name: "Иванович",
+        gender: "male",
         email: "ivan@example.com",
         phone: "+7 (999) 123-45-67",
         social_vk: "https://vk.com/test_user",
@@ -290,6 +304,8 @@ describe("profileUtils", () => {
         hasValidationErrors({
           first_name: "Введите имя",
           last_name: "",
+          middle_name: "",
+          gender: "",
           email: "",
           phone: "",
           social_vk: "",

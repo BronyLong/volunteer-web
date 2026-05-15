@@ -40,15 +40,24 @@ function renderPage() {
 function fillForm({
   firstName = "Иван",
   lastName = "Иванов",
+  middleName = "Иванович",
+  gender = "male",
   email = "ivan@test.ru",
   password = "Password123!",
   confirmPassword = "Password123!",
+  consent = true,
 } = {}) {
   fireEvent.change(screen.getByLabelText(/имя/i), {
     target: { value: firstName },
   });
   fireEvent.change(screen.getByLabelText(/фамилия/i), {
     target: { value: lastName },
+  });
+  fireEvent.change(screen.getByLabelText(/отчество/i), {
+    target: { value: middleName },
+  });
+  fireEvent.change(screen.getByLabelText(/^пол$/i), {
+    target: { value: gender },
   });
   fireEvent.change(screen.getByLabelText(/email/i), {
     target: { value: email },
@@ -59,6 +68,10 @@ function fillForm({
   fireEvent.change(screen.getByLabelText(/подтверждение пароля/i), {
     target: { value: confirmPassword },
   });
+
+  if (consent) {
+    fireEvent.click(screen.getByRole("checkbox", { name: /персональных данных/i }));
+  }
 }
 
 describe("RegisterPage", () => {
@@ -71,23 +84,33 @@ describe("RegisterPage", () => {
 
     expect(screen.getByLabelText(/имя/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/фамилия/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/отчество/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^пол$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^пароль$/i)).toBeInTheDocument();
     expect(
       screen.getByLabelText(/подтверждение пароля/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /персональных данных/i })
     ).toBeInTheDocument();
   });
 
   it("allows typing into fields", () => {
     renderPage();
 
-    fillForm();
+    fillForm({ gender: "female" });
 
     expect(screen.getByLabelText(/имя/i).value).toBe("Иван");
     expect(screen.getByLabelText(/фамилия/i).value).toBe("Иванов");
+    expect(screen.getByLabelText(/отчество/i).value).toBe("Иванович");
+    expect(screen.getByLabelText(/^пол$/i).value).toBe("female");
     expect(screen.getByLabelText(/email/i).value).toBe("ivan@test.ru");
     expect(screen.getByLabelText(/^пароль$/i).value).toBe("Password123!");
     expect(screen.getByLabelText(/подтверждение пароля/i).value).toBe("Password123!");
+    expect(
+      screen.getByRole("checkbox", { name: /персональных данных/i })
+    ).toBeChecked();
   });
 
   it("renders submit button", () => {
@@ -118,12 +141,19 @@ describe("RegisterPage", () => {
     expect(mockRegisterUser).not.toHaveBeenCalled();
   });
 
-  it("submits form, saves token and navigates to profile", async () => {
+  it("does not submit form without personal data consent", () => {
+    renderPage();
+
+    fillForm({ consent: false });
+
+    fireEvent.click(screen.getByRole("button", { name: /создать аккаунт/i }));
+
+    expect(mockRegisterUser).not.toHaveBeenCalled();
+  });
+
+  it("submits form and shows email confirmation message from api", async () => {
     mockRegisterUser.mockResolvedValue({
-      token: "reg-token",
-      user: {
-        id: 31,
-      },
+      message: "Проверьте почту для подтверждения аккаунта",
     });
 
     renderPage();
@@ -136,50 +166,44 @@ describe("RegisterPage", () => {
       expect(mockRegisterUser).toHaveBeenCalledWith({
         firstName: "Иван",
         lastName: "Иванов",
+        middleName: "Иванович",
+        gender: "male",
         email: "ivan@test.ru",
         password: "Password123!",
+        personalDataConsent: true,
       });
     });
 
-    expect(mockSaveToken).toHaveBeenCalledWith("reg-token");
-    expect(mockNavigate).toHaveBeenCalledWith("/profiles/31");
-  });
-
-  it("navigates to login when user id is missing", async () => {
-    mockRegisterUser.mockResolvedValue({
-      token: "reg-token",
-      user: {},
-    });
-
-    renderPage();
-
-    fillForm();
-
-    fireEvent.click(screen.getByRole("button", { name: /создать аккаунт/i }));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/login");
-    });
-
-    expect(mockSaveToken).toHaveBeenCalledWith("reg-token");
-  });
-
-  it("does not save token when token is missing", async () => {
-    mockRegisterUser.mockResolvedValue({
-      user: { id: 55 },
-    });
-
-    renderPage();
-
-    fillForm();
-
-    fireEvent.click(screen.getByRole("button", { name: /создать аккаунт/i }));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/profiles/55");
-    });
-
     expect(mockSaveToken).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/проверьте почту для подтверждения аккаунта/i)
+    ).toBeInTheDocument();
+  });
+
+  it("shows fallback success message when api response has no message", async () => {
+    mockRegisterUser.mockResolvedValue({});
+
+    renderPage();
+
+    fillForm();
+
+    fireEvent.click(screen.getByRole("button", { name: /создать аккаунт/i }));
+
+    expect(
+      await screen.findByText(/регистрация почти завершена/i)
+    ).toBeInTheDocument();
+
+    expect(screen.getByLabelText(/имя/i).value).toBe("");
+    expect(screen.getByLabelText(/фамилия/i).value).toBe("");
+    expect(screen.getByLabelText(/отчество/i).value).toBe("");
+    expect(screen.getByLabelText(/^пол$/i).value).toBe("male");
+    expect(screen.getByLabelText(/email/i).value).toBe("");
+    expect(screen.getByLabelText(/^пароль$/i).value).toBe("");
+    expect(screen.getByLabelText(/подтверждение пароля/i).value).toBe("");
+    expect(
+      screen.getByRole("checkbox", { name: /персональных данных/i })
+    ).not.toBeChecked();
   });
 
   it("shows request error from api", async () => {
@@ -232,12 +256,11 @@ describe("RegisterPage", () => {
     ).toBeDisabled();
 
     resolveRegister({
-      token: "reg-token",
-      user: { id: 90 },
+      message: "Проверьте почту для подтверждения аккаунта",
     });
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/profiles/90");
-    });
+    expect(
+      await screen.findByText(/проверьте почту для подтверждения аккаунта/i)
+    ).toBeInTheDocument();
   });
 });

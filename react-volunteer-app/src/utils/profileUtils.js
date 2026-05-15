@@ -114,15 +114,15 @@ export function getFieldClassName(hasError) {
 export function buildValidationErrors(formData) {
   const errors = { ...INITIAL_PROFILE_FIELD_ERRORS };
 
-  const firstName = formData.first_name.trim();
-  const lastName = formData.last_name.trim();
-  const middleName = formData.middle_name.trim();
-  const gender = formData.gender.trim();
+  const firstName = String(formData.first_name || "").trim();
+  const lastName = String(formData.last_name || "").trim();
+  const middleName = String(formData.middle_name || "").trim();
+  const gender = String(formData.gender ?? "male").trim();
   const email = normalizeEmail(formData.email);
-  const phone = formData.phone.trim();
-  const socialVk = formData.social_vk.trim();
-  const socialOk = formData.social_ok.trim();
-  const socialMax = formData.social_max.trim();
+  const phone = String(formData.phone || "").trim();
+  const socialVk = String(formData.social_vk || "").trim();
+  const socialOk = String(formData.social_ok || "").trim();
+  const socialMax = String(formData.social_max || "").trim();
 
   if (!firstName) {
     errors.first_name = "Введите имя";

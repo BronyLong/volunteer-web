@@ -51,6 +51,8 @@ const validProfile = {
   id: 5,
   first_name: "Анна",
   last_name: "Иванова",
+  middle_name: "Сергеевна",
+  gender: "female",
   email: "anna@example.com",
   phone: "+7 (999) 000-11-22",
   city: "Москва",
@@ -98,6 +100,8 @@ describe("ProfileSettings", () => {
 
     expect(await screen.findByDisplayValue("Анна")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Иванова")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Сергеевна")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^пол$/i).value).toBe("female");
     expect(screen.getByDisplayValue("anna@example.com")).toBeInTheDocument();
     expect(screen.getByDisplayValue("+7 (999) 000-11-22")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Москва")).toBeInTheDocument();
@@ -239,6 +243,8 @@ describe("ProfileSettings", () => {
     expect(mockUpdateMyProfile).toHaveBeenCalledWith({
       first_name: "Мария",
       last_name: "Петрова",
+      middle_name: "Сергеевна",
+      gender: "female",
       email: "new@mail.ru",
       phone: "+7 (999) 123-45-67",
       city: "Казань",

@@ -376,7 +376,7 @@ describe("ProfilePage", () => {
 
     expect(screen.getAllByText("Контактные данные скрыты")).toHaveLength(3);
     expect(screen.getByText("Социальные сети скрыты")).toBeInTheDocument();
-    expect(screen.getByText(/здесь пока нет мероприятий/i)).toBeInTheDocument();
+    expect(screen.getByText(/предстоящих мероприятий пока нет/i)).toBeInTheDocument();
   });
 
   it("renders visible volunteer contacts and volunteer events title for owner", async () => {
@@ -465,7 +465,7 @@ describe("ProfilePage", () => {
 
     renderPage();
 
-    expect(await screen.findByText(/здесь пока нет мероприятий/i)).toBeInTheDocument();
+    expect(await screen.findByText(/предстоящих мероприятий пока нет/i)).toBeInTheDocument();
     expect(screen.getByText(/социальные сети не указаны/i)).toBeInTheDocument();
   });
 
@@ -525,6 +525,8 @@ describe("ProfilePage", () => {
       expect(mockUpdateMyProfile).toHaveBeenCalledWith({
         first_name: "Анна",
         last_name: "Иванова",
+        middle_name: "",
+        gender: "male",
         email: "anna@example.com",
         phone: "+79990001122",
         city: "Москва",
@@ -754,7 +756,7 @@ describe("ProfilePage", () => {
   
     expect(await screen.findByText(/контактные данные доступны/i)).toBeInTheDocument();
     expect(screen.getByText(/мероприятия координатора/i)).toBeInTheDocument();
-    expect(screen.getByText(/здесь пока нет мероприятий/i)).toBeInTheDocument();
+    expect(screen.getByText(/предстоящих мероприятий пока нет/i)).toBeInTheDocument();
   });
   
   it("renders admin owner administration block", async () => {
