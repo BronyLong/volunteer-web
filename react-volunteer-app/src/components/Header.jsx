@@ -17,7 +17,12 @@ import okIcon from "../assets/SVG/odnoklassniki.svg";
 import vkIcon from "../assets/SVG/vkontakte.svg";
 import maxIcon from "../assets/SVG/max.svg";
 
-import { getMyProfile, getToken, getUnreadNotificationsCount, removeToken } from "../api";
+import {
+  getMyProfile,
+  getToken,
+  getUnreadNotificationsCount,
+  removeToken,
+} from "../api";
 
 function getUserIdFromToken() {
   const token = localStorage.getItem("token");
@@ -48,16 +53,25 @@ export default function Header({
 
   const [authVariant, setAuthVariant] = useState("public");
   const [userId, setUserId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [userAvatar, setUserAvatar] = useState(avatar);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
-  const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
+
+  const toggleMenu = () => {
+    setIsOpen((prev) => !prev);
+    setProfileMenuOpen(false);
+  };
 
   const toggleHelpMenu = () => setHelpMenuOpen((prev) => !prev);
   const closeHelpMenu = () => setHelpMenuOpen(false);
 
-  const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
+  const toggleProfileMenu = () => {
+    setProfileMenuOpen((prev) => !prev);
+    setIsOpen(false);
+  };
+
   const closeProfileMenu = () => setProfileMenuOpen(false);
 
   useEffect(() => {
@@ -67,9 +81,12 @@ export default function Header({
       }
 
       const clickedInsideDesktopMenu =
-        desktopProfileMenuRef.current && desktopProfileMenuRef.current.contains(event.target);
+        desktopProfileMenuRef.current &&
+        desktopProfileMenuRef.current.contains(event.target);
+
       const clickedInsideMobileMenu =
-        mobileProfileMenuRef.current && mobileProfileMenuRef.current.contains(event.target);
+        mobileProfileMenuRef.current &&
+        mobileProfileMenuRef.current.contains(event.target);
 
       if (!clickedInsideDesktopMenu && !clickedInsideMobileMenu) {
         closeProfileMenu();
@@ -80,6 +97,7 @@ export default function Header({
       if (event.key === "Escape") {
         closeHelpMenu();
         closeProfileMenu();
+        closeMenu();
       }
     }
 
@@ -99,6 +117,7 @@ export default function Header({
       if (!token) {
         setAuthVariant("public");
         setUserId(null);
+        setUserRole(null);
         setUserAvatar(avatar);
         setUnreadNotificationsCount(0);
         return;
@@ -111,6 +130,7 @@ export default function Header({
 
         setAuthVariant("private");
         setUserId(profile?.id || tokenUserId);
+        setUserRole(profile?.role || null);
         setUserAvatar(profile?.avatar_url || getProfileAvatar(profile));
 
         if (profile?.role === "volunteer" || profile?.role === "coordinator") {
@@ -127,6 +147,7 @@ export default function Header({
         removeToken();
         setAuthVariant("public");
         setUserId(null);
+        setUserRole(null);
         setUserAvatar(avatar);
         setUnreadNotificationsCount(0);
       }
@@ -142,6 +163,7 @@ export default function Header({
     closeProfileMenu();
     setAuthVariant("public");
     setUserId(null);
+    setUserRole(null);
     setUserAvatar(avatar);
     setUnreadNotificationsCount(0);
     navigate("/");
@@ -155,7 +177,11 @@ export default function Header({
   const variant = variantProp || authVariant;
   const profileLink = userId ? `/profiles/${userId}` : "/login";
   const notificationsLink = userId ? `/profiles/${userId}/notifications` : "/login";
+  const myEventsLink = userId ? `/profiles/${userId}#my-events` : "/login";
   const hasUnreadNotifications = unreadNotificationsCount > 0;
+
+  const isCoordinator = userRole === "coordinator";
+  const isAdmin = userRole === "admin";
 
   const profileMenu = (
     <div
@@ -163,6 +189,24 @@ export default function Header({
       role="dialog"
       aria-label="Меню профиля"
     >
+      <Link
+        to="/"
+        className="header-profile-menu__item header-profile-menu__item--mobile-nav"
+        onClick={handleProfileMenuLinkClick}
+      >
+        <span>Главная</span>
+      </Link>
+
+      <Link
+        to="/events"
+        className="header-profile-menu__item header-profile-menu__item--mobile-nav"
+        onClick={handleProfileMenuLinkClick}
+      >
+        <span>Мероприятия</span>
+      </Link>
+
+      <div className="header-profile-menu__divider header-profile-menu__divider--mobile"></div>
+
       <Link
         to={profileLink}
         className="header-profile-menu__item"
@@ -184,6 +228,36 @@ export default function Header({
           {unreadNotificationsCount}
         </span>
       </Link>
+
+      {isCoordinator ? (
+        <>
+          <Link
+            to="/create"
+            className="header-profile-menu__item"
+            onClick={handleProfileMenuLinkClick}
+          >
+            <span>Создать мероприятие</span>
+          </Link>
+
+          <Link
+            to={myEventsLink}
+            className="header-profile-menu__item"
+            onClick={handleProfileMenuLinkClick}
+          >
+            <span>Мои мероприятия</span>
+          </Link>
+        </>
+      ) : null}
+
+      {isAdmin ? (
+        <Link
+          to="/admin"
+          className="header-profile-menu__item"
+          onClick={handleProfileMenuLinkClick}
+        >
+          <span>Администрирование</span>
+        </Link>
+      ) : null}
 
       <div className="header-profile-menu__divider"></div>
 
@@ -217,7 +291,9 @@ export default function Header({
                 <div className="header-help" ref={helpMenuRef}>
                   <button
                     type="button"
-                    className={`btn btn--green header-help__trigger ${helpMenuOpen ? "is-open" : ""}`}
+                    className={`btn btn--green header-help__trigger ${
+                      helpMenuOpen ? "is-open" : ""
+                    }`}
                     onClick={toggleHelpMenu}
                     aria-expanded={helpMenuOpen}
                     aria-haspopup="true"
@@ -334,7 +410,9 @@ export default function Header({
                 to={profileLink}
                 className={() =>
                   `header__nav-link ${
-                    location.pathname.startsWith("/profiles/") ? "header__nav-link--active" : ""
+                    location.pathname.startsWith("/profiles/")
+                      ? "header__nav-link--active"
+                      : ""
                   }`
                 }
               >
@@ -351,7 +429,11 @@ export default function Header({
                 aria-expanded={profileMenuOpen}
                 onClick={toggleProfileMenu}
               >
-                <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
+                <img
+                  src={userAvatar || avatar}
+                  alt="Аватар пользователя"
+                  className="header__avatar"
+                />
                 {hasUnreadNotifications ? (
                   <span className="header__notification-badge" aria-label="Есть новые уведомления">
                     <span className="header__notification-mark" aria-hidden="true"></span>
@@ -362,7 +444,7 @@ export default function Header({
               {profileMenu}
             </div>
 
-            <div className="header__mobile">
+            <div className="header__mobile header__mobile--private">
               <div className="header__profile-menu-anchor" ref={mobileProfileMenuRef}>
                 <button
                   type="button"
@@ -372,7 +454,11 @@ export default function Header({
                   aria-expanded={profileMenuOpen}
                   onClick={toggleProfileMenu}
                 >
-                  <img src={userAvatar || avatar} alt="Аватар пользователя" className="header__avatar" />
+                  <img
+                    src={userAvatar || avatar}
+                    alt="Аватар пользователя"
+                    className="header__avatar"
+                  />
                   {hasUnreadNotifications ? (
                     <span className="header__notification-badge" aria-label="Есть новые уведомления">
                       <span className="header__notification-mark" aria-hidden="true"></span>
@@ -382,21 +468,6 @@ export default function Header({
 
                 {profileMenu}
               </div>
-
-              <button
-                className={`menu-toggle ${isOpen ? "is-active" : ""}`}
-                type="button"
-                aria-label="Открыть меню"
-                aria-expanded={isOpen}
-                aria-controls="mobileMenu"
-                onClick={toggleMenu}
-              >
-                <span className="menu-toggle__icon" aria-hidden="true">
-                  <span className="menu-toggle__line"></span>
-                  <span className="menu-toggle__line"></span>
-                  <span className="menu-toggle__line"></span>
-                </span>
-              </button>
             </div>
           </>
         )}
@@ -459,25 +530,7 @@ export default function Header({
             </nav>
           </div>
         </div>
-      ) : (
-        <div className={`mobile-menu ${isOpen ? "is-open" : ""}`} id="mobileMenu">
-          <div className="container mobile-menu__inner">
-            <nav className="mobile-menu__nav">
-              <Link to="/" className="mobile-menu__link" onClick={closeMenu}>
-                Главная
-              </Link>
-
-              <Link to="/events" className="mobile-menu__link" onClick={closeMenu}>
-                Мероприятия
-              </Link>
-
-              <Link to={profileLink} className="mobile-menu__link" onClick={closeMenu}>
-                Профиль
-              </Link>
-            </nav>
-          </div>
-        </div>
-      )}
+      ) : null}
     </header>
   );
 }

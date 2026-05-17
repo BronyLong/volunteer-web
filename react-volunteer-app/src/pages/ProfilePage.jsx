@@ -1,5 +1,5 @@
 import "./ProfilePage.css";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getProfileById, updateMyProfile } from "../api";
@@ -202,7 +202,9 @@ function resizeImage(file, maxWidth = 600, maxHeight = 600, quality = 0.8) {
 
 export default function ProfilePage() {
   const { id } = useParams();
+  const location = useLocation();
   const fileInputRef = useRef(null);
+  const eventsSectionRef = useRef(null);
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -227,6 +229,17 @@ export default function ProfilePage() {
 
     loadProfile();
   }, [id]);
+
+  useEffect(() => {
+    if (loading || !profile || location.hash !== "#my-events") {
+      return;
+    }
+
+    eventsSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [loading, profile, location.hash]);
 
   const fullName = useMemo(() => {
     if (!profile) return "";
@@ -601,7 +614,7 @@ export default function ProfilePage() {
               </section>
             ) : null
           ) : (
-            <section className="profile-events">
+            <section className="profile-events" id="my-events" ref={eventsSectionRef}>
               <div className="profile-events__header">
                 <h2 className="profile-events__title">
                   {getEventsTitle(profile.role, profile.is_owner)}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "../api";
+import { Link } from "react-router-dom";
+import { apiFetch, getMyProfile, getToken } from "../api";
 import "./EventsPage.css";
 
 import EventCard from "../components/EventCard";
@@ -62,6 +63,36 @@ export default function EventsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState("all");
   const [urgentOnly, setUrgentOnly] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCurrentUserRole() {
+      if (!getToken()) {
+        setCurrentUserRole(null);
+        return;
+      }
+
+      try {
+        const profile = await getMyProfile();
+
+        if (!isMounted) return;
+
+        setCurrentUserRole(profile?.role || null);
+      } catch {
+        if (isMounted) {
+          setCurrentUserRole(null);
+        }
+      }
+    }
+
+    loadCurrentUserRole();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     apiFetch("/events")
@@ -156,8 +187,23 @@ export default function EventsPage() {
 
       <section className="events-catalog">
         <div className="container">
-          <div className="events-filters">
+          {currentUserRole === "coordinator" ? (
+            <section className="events-create-panel" aria-label="Создание мероприятия">
+              <div className="events-create-panel__content">
+                <h2 className="events-create-panel__title">Создание мероприятия</h2>
+                <p className="events-create-panel__text">
+                  Добавьте новое мероприятие, укажите место, дату, задачи и количество
+                  доступных мест для волонтёров.
+                </p>
+              </div>
 
+              <Link to="/create" className="events-create-panel__button">
+                Создать мероприятие
+              </Link>
+            </section>
+          ) : null}
+
+          <div className="events-filters">
             <button
               type="button"
               className={`events-filters__button events-filters__button--urgent ${
@@ -211,7 +257,7 @@ export default function EventsPage() {
 
           {!paginatedEvents.length && (
             <div className="events-empty">
-По выбранным фильтрам мероприятий пока нет.
+              По выбранным фильтрам мероприятий пока нет.
             </div>
           )}
 

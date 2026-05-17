@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Header from "../src/components/Header";
@@ -342,30 +342,35 @@ describe("Header", () => {
       avatar_url: "",
     });
   
-    const { container } = renderHeader({
+    renderHeader({
       token: "token",
       localStorageToken: makeToken({ id: 15 }),
     });
   
-    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
-  
-    const menuButton = screen.getByRole("button", { name: "Открыть меню" });
+    const profileMenuButtons = await screen.findAllByRole("button", {
+      name: /открыть меню профиля/i,
+    });
+    const mobileMenuButton = profileMenuButtons.at(-1);
+    const mobileProfileMenu = document.querySelector(".header__mobile .header-profile-menu");
+
+    expect(mobileProfileMenu).not.toHaveClass("is-open");
 
     await act(async () => {
-      fireEvent.click(menuButton);
+      fireEvent.click(mobileMenuButton);
     });
   
-    const mobileMenu = container.querySelector("#mobileMenu");
-    expect(mobileMenu).toHaveClass("is-open");
+    expect(mobileProfileMenu).toHaveClass("is-open");
   
-    const mobileEventsLink = screen.getAllByRole("link", { name: /мероприятия/i }).at(-1);
+    const mobileEventsLink = within(mobileProfileMenu).getByRole("link", {
+      name: /мероприятия/i,
+    });
 
     await act(async () => {
       fireEvent.click(mobileEventsLink);
     });
   
     await waitFor(() => {
-      expect(mobileMenu).not.toHaveClass("is-open");
+      expect(mobileProfileMenu).not.toHaveClass("is-open");
     });
   });
   
@@ -380,16 +385,19 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 15 }),
     });
   
-    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
+    const profileMenuButtons = await screen.findAllByRole("button", {
+      name: /открыть меню профиля/i,
+    });
+    const mobileProfileMenu = document.querySelector(".header__mobile .header-profile-menu");
   
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
+      fireEvent.click(profileMenuButtons.at(-1));
     });
   
-    const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
+    expect(mobileProfileMenu).toHaveClass("is-open");
 
     await act(async () => {
-      fireEvent.click(logoutButtons.at(-1));
+      fireEvent.click(within(mobileProfileMenu).getByRole("button", { name: /выйти/i }));
     });
   
     await waitFor(() => {
@@ -439,27 +447,27 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 22 }),
     });
   
-    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
-  
-    const menuButton = screen.getByRole("button", { name: "Открыть меню" });
+    const profileMenuButtons = await screen.findAllByRole("button", {
+      name: /открыть меню профиля/i,
+    });
+    const mobileProfileMenu = document.querySelector(".header__mobile .header-profile-menu");
   
     await act(async () => {
-      fireEvent.click(menuButton);
+      fireEvent.click(profileMenuButtons.at(-1));
     });
   
-    const mobileMenu = document.querySelector("#mobileMenu");
-    expect(mobileMenu).toHaveClass("is-open");
+    expect(mobileProfileMenu).toHaveClass("is-open");
   
-    expect(screen.getAllByRole("link", { name: /главная/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /мероприятия/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /профиль/i }).length).toBeGreaterThan(0);
+    expect(within(mobileProfileMenu).getByRole("link", { name: /главная/i })).toBeInTheDocument();
+    expect(within(mobileProfileMenu).getByRole("link", { name: /мероприятия/i })).toBeInTheDocument();
+    expect(within(mobileProfileMenu).getByRole("link", { name: /^профиль$/i })).toBeInTheDocument();
   
     await act(async () => {
-      fireEvent.click(screen.getAllByRole("link", { name: /профиль/i }).at(-1));
+      fireEvent.click(within(mobileProfileMenu).getByRole("link", { name: /^профиль$/i }));
     });
   
     await waitFor(() => {
-      expect(mobileMenu).not.toHaveClass("is-open");
+      expect(mobileProfileMenu).not.toHaveClass("is-open");
     });
   });
   
@@ -474,16 +482,19 @@ describe("Header", () => {
       localStorageToken: makeToken({ id: 22 }),
     });
   
-    await screen.findAllByRole("button", { name: /открыть меню профиля/i });
+    const profileMenuButtons = await screen.findAllByRole("button", {
+      name: /открыть меню профиля/i,
+    });
+    const mobileProfileMenu = document.querySelector(".header__mobile .header-profile-menu");
   
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Открыть меню" }));
+      fireEvent.click(profileMenuButtons.at(-1));
     });
   
-    const logoutButtons = screen.getAllByRole("button", { name: /выйти/i });
+    expect(mobileProfileMenu).toHaveClass("is-open");
 
     await act(async () => {
-      fireEvent.click(logoutButtons.at(-1));
+      fireEvent.click(within(mobileProfileMenu).getByRole("button", { name: /выйти/i }));
     });
   
     await waitFor(() => {

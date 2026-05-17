@@ -4,9 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import EventsPage from "../src/pages/EventsPage";
 
 const mockApiFetch = vi.fn();
+const mockGetToken = vi.fn();
+const mockGetMyProfile = vi.fn();
 
 vi.mock("../src/api", () => ({
   apiFetch: (...args) => mockApiFetch(...args),
+  getToken: (...args) => mockGetToken(...args),
+  getMyProfile: (...args) => mockGetMyProfile(...args),
 }));
 
 vi.mock("../src/components/EventCard", () => ({
@@ -39,6 +43,8 @@ describe("EventsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.scrollTo = vi.fn();
+    mockGetToken.mockReturnValue(null);
+    mockGetMyProfile.mockResolvedValue({ role: null });
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 

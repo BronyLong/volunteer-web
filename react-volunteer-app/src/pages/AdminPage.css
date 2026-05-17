@@ -115,10 +115,26 @@
   min-height: 42px;
   padding: 0 18px;
   border-radius: 12px;
-  background: var(--white);
-  color: var(--black);
+  background: var(--green);
+  color: var(--white);
   font-size: 15px;
   font-weight: 900;
+  box-shadow: 0 10px 22px var(--green-shadow-20);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-panel__clear:hover,
+.admin-panel__clear:focus-visible {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px var(--green-shadow-20);
+}
+
+.admin-panel__clear:active {
+  transform: translateY(0);
 }
 
 .admin-table-wrap {
