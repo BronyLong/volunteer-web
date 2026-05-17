@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminPage from "../src/pages/AdminPage";
 
 const mockDeleteEvent = vi.fn();
+const mockDeleteAdminUserProfile = vi.fn();
 const mockGetAdminEvents = vi.fn();
 const mockGetAdminLogs = vi.fn();
 const mockGetAdminUsers = vi.fn();
@@ -19,6 +20,7 @@ vi.mock("../src/api", async () => {
   return {
     ...actual,
     deleteEvent: (...args) => mockDeleteEvent(...args),
+    deleteAdminUserProfile: (...args) => mockDeleteAdminUserProfile(...args),
     getAdminEvents: (...args) => mockGetAdminEvents(...args),
     getAdminLogs: (...args) => mockGetAdminLogs(...args),
     getAdminUsers: (...args) => mockGetAdminUsers(...args),
@@ -179,6 +181,7 @@ describe("AdminPage", () => {
     mockUpdateAdminUserActive.mockResolvedValue({ success: true });
     mockUpdateAdminEventCoordinator.mockResolvedValue({ success: true });
     mockDeleteEvent.mockResolvedValue({ success: true });
+    mockDeleteAdminUserProfile.mockResolvedValue({ success: true });
 
     vi.spyOn(window, "confirm").mockReturnValue(true);
   });
@@ -371,6 +374,52 @@ describe("AdminPage", () => {
     fireEvent.click(within(footer).getByRole("button", { name: "«" }));
 
     expect(screen.getByText(/1 \/ 1/i)).toBeInTheDocument();
+  });
+
+
+  it("deletes volunteer profile after confirmation and reloads users and logs", async () => {
+    renderPage();
+
+    await screen.findByText("volunteer@example.com");
+
+    const volunteerRow = screen.getByText("volunteer@example.com").closest("tr");
+    fireEvent.click(within(volunteerRow).getByRole("button", { name: /удалить профиль/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAdminUserProfile).toHaveBeenCalledWith(3);
+    });
+
+    expect(mockGetAdminUsers).toHaveBeenCalled();
+    expect(mockGetAdminLogs).toHaveBeenCalled();
+  });
+
+  it("does not delete current admin or another admin profile", async () => {
+    renderPage();
+
+    await screen.findByText("admin@example.com");
+
+    const currentAdminRow = screen.getByText("admin@example.com").closest("tr");
+    const adminDeleteButton = within(currentAdminRow).getByRole("button", {
+      name: /удалить профиль/i,
+    });
+
+    expect(adminDeleteButton).toBeDisabled();
+    expect(mockDeleteAdminUserProfile).not.toHaveBeenCalled();
+  });
+
+  it("shows fallback delete profile error", async () => {
+    mockDeleteAdminUserProfile.mockRejectedValue({});
+
+    renderPage();
+
+    await screen.findByText("volunteer@example.com");
+
+    const volunteerRow = screen.getByText("volunteer@example.com").closest("tr");
+    fireEvent.click(within(volunteerRow).getByRole("button", { name: /удалить профиль/i }));
+
+    expect(
+      await screen.findByText(/не удалось удалить профиль пользователя/i)
+    ).toBeInTheDocument();
   });
 
   it("renders events table", async () => {

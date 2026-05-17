@@ -15,6 +15,25 @@ vi.mock("react-router-dom", async () => {
     ...actual,
     useNavigate: () => mockNavigate,
   };
+
+  it("opens notification without event link branch", async () => {
+    mockGetNotifications.mockResolvedValue([
+      {
+        id: 10,
+        title: "Системное уведомление",
+        body: "Без события",
+        is_read: false,
+        event_id: null,
+        created_at: "2099-05-10T10:30:00",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
+  });
+
 });
 
 vi.mock("../src/api", async () => {
@@ -26,6 +45,26 @@ vi.mock("../src/api", async () => {
     markNotificationAsRead: (...args) => mockMarkNotificationAsRead(...args),
     markAllNotificationsAsRead: (...args) => mockMarkAllNotificationsAsRead(...args),
   };
+
+
+  it("opens notification without event link branch", async () => {
+    mockGetNotifications.mockResolvedValue([
+      {
+        id: 10,
+        title: "Системное уведомление",
+        body: "Без события",
+        is_read: false,
+        event_id: null,
+        created_at: "2099-05-10T10:30:00",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
+  });
+
 });
 
 const volunteerProfile = {
@@ -201,5 +240,23 @@ describe("NotificationsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /прочитать все/i }));
 
     expect(await screen.findByText("Не удалось обновить список")).toBeInTheDocument();
+  });
+
+  it("opens notification without event link branch", async () => {
+    mockGetNotifications.mockResolvedValue([
+      {
+        id: 10,
+        title: "Системное уведомление",
+        body: "Без события",
+        is_read: false,
+        event_id: null,
+        created_at: "2099-05-10T10:30:00",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
   });
 });

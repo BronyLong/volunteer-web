@@ -14,6 +14,7 @@ vi.mock("react-router-dom", async () => {
     ...actual,
     useNavigate: () => mockNavigate,
   };
+
 });
 
 vi.mock("../src/api", async () => {
@@ -24,6 +25,8 @@ vi.mock("../src/api", async () => {
     getNotificationSettings: (...args) => mockGetNotificationSettings(...args),
     updateNotificationSettings: (...args) => mockUpdateNotificationSettings(...args),
   };
+
+
 });
 
 const volunteerProfile = {

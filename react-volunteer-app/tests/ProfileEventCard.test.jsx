@@ -18,4 +18,23 @@ describe("ProfileEventCard", () => {
 
     expect(screen.getByRole("link")).toBeInTheDocument();
   });
+
+  it("renders confirmation status badge", () => {
+    render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <ProfileEventCard
+          confirmationStatus={{ type: "success", label: "Участие подтверждено" }}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Участие подтверждено")).toHaveClass(
+      "profile-event-card__confirmation--success"
+    );
+  });
 });

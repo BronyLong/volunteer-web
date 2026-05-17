@@ -368,5 +368,22 @@ describe("profileUtils", () => {
 
       expect(result.gender).toBe("Выберите корректное значение пола");
     });
+
+    it("uses male as default gender when value is null", () => {
+      const result = buildValidationErrors({
+        first_name: "Иван",
+        last_name: "Иванов",
+        middle_name: "",
+        gender: null,
+        email: "ivan@example.com",
+        phone: "",
+        social_vk: "",
+        social_ok: "",
+        social_max: "",
+      });
+
+      expect(result.gender).toBe("");
+    });
+
   });
 });

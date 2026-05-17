@@ -91,4 +91,19 @@ describe("EventCard", () => {
       "event-tile__button--orange"
     );
   });
+
+  it("renders urgent marker when event is urgent", () => {
+    render(
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <EventCard title="Срочный сбор" isUrgent />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Срочно")).toBeInTheDocument();
+  });
 });

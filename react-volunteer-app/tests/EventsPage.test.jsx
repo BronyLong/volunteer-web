@@ -333,6 +333,94 @@ describe("EventsPage", () => {
     });
   });
 
+
+  it("shows create panel for coordinator profile", async () => {
+    mockGetToken.mockReturnValue("token");
+    mockGetMyProfile.mockResolvedValue({ role: "coordinator" });
+    mockApiFetch.mockResolvedValue([
+      {
+        id: 1,
+        title: "Координаторское мероприятие",
+        start_at: "2099-05-10T10:00:00.000Z",
+        location: "Москва",
+        available_slots: 5,
+        participant_limit: 20,
+        category_name: "Экология",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Координаторское мероприятие")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /создание мероприятия/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /создать мероприятие/i })).toHaveAttribute(
+      "href",
+      "/create"
+    );
+    expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides create panel when authorized profile loading fails", async () => {
+    mockGetToken.mockReturnValue("token");
+    mockGetMyProfile.mockRejectedValue(new Error("profile failed"));
+    mockApiFetch.mockResolvedValue([
+      {
+        id: 1,
+        title: "Обычное мероприятие",
+        start_at: "2099-05-10T10:00:00.000Z",
+        location: "Москва",
+        available_slots: 5,
+        participant_limit: 20,
+        category_name: "Экология",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Обычное мероприятие")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /создание мероприятия/i })).not.toBeInTheDocument();
+  });
+
+  it("filters urgent events and resets pagination", async () => {
+    const events = [
+      ...Array.from({ length: 7 }, (_, index) => ({
+        id: index + 1,
+        title: `Несрочное ${index + 1}`,
+        start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+        location: "Москва",
+        available_slots: 5,
+        participant_limit: 20,
+        category_name: "Экология",
+        is_urgent: false,
+      })),
+      {
+        id: 100,
+        title: "Срочное мероприятие",
+        start_at: "2099-06-01T10:00:00.000Z",
+        location: "Казань",
+        available_slots: 2,
+        participant_limit: 12,
+        category_name: "Детям",
+        is_urgent: true,
+      },
+    ];
+
+    mockApiFetch.mockResolvedValue(events);
+
+    renderPage();
+
+    expect(await screen.findByText("Несрочное 1")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    expect(await screen.findByText("Несрочное 7")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /срочные/i }));
+
+    expect(await screen.findByText("Срочное мероприятие")).toBeInTheDocument();
+    expect(screen.queryByText("Несрочное 7")).not.toBeInTheDocument();
+  });
+
+
   it("logs api error when loading fails", async () => {
     mockApiFetch.mockRejectedValue(new Error("Ошибка загрузки мероприятий"));
 
