@@ -15,25 +15,6 @@ vi.mock("react-router-dom", async () => {
     ...actual,
     useNavigate: () => mockNavigate,
   };
-
-  it("opens notification without event link branch", async () => {
-    mockGetNotifications.mockResolvedValue([
-      {
-        id: 10,
-        title: "Системное уведомление",
-        body: "Без события",
-        is_read: false,
-        event_id: null,
-        created_at: "2099-05-10T10:30:00",
-      },
-    ]);
-
-    renderPage();
-
-    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
-  });
-
 });
 
 vi.mock("../src/api", async () => {
@@ -45,26 +26,6 @@ vi.mock("../src/api", async () => {
     markNotificationAsRead: (...args) => mockMarkNotificationAsRead(...args),
     markAllNotificationsAsRead: (...args) => mockMarkAllNotificationsAsRead(...args),
   };
-
-
-  it("opens notification without event link branch", async () => {
-    mockGetNotifications.mockResolvedValue([
-      {
-        id: 10,
-        title: "Системное уведомление",
-        body: "Без события",
-        is_read: false,
-        event_id: null,
-        created_at: "2099-05-10T10:30:00",
-      },
-    ]);
-
-    renderPage();
-
-    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
-  });
-
 });
 
 const volunteerProfile = {
@@ -240,6 +201,48 @@ describe("NotificationsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /прочитать все/i }));
 
     expect(await screen.findByText("Не удалось обновить список")).toBeInTheDocument();
+  });
+
+  it("renders unread notification without event link and keeps only read action", async () => {
+    mockGetNotifications.mockResolvedValue([
+      {
+        id: 10,
+        title: "Системное уведомление",
+        body: "Без события",
+        is_read: false,
+        event_id: null,
+        created_at: "2099-05-10T10:30:00",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Системное уведомление")).toBeInTheDocument();
+    expect(screen.getByText("Без события")).toBeInTheDocument();
+    expect(screen.getByText("Новое")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /прочитано/i })).toBeEnabled();
+  });
+
+  it("renders read notification without event link and hides notification actions", async () => {
+    mockGetNotifications.mockResolvedValue([
+      {
+        id: 11,
+        title: "Прочитанное уведомление",
+        body: "Не связано с мероприятием",
+        is_read: true,
+        event_id: null,
+        created_at: "2099-05-10T10:30:00",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Прочитанное уведомление")).toBeInTheDocument();
+    expect(screen.getByText("Не связано с мероприятием")).toBeInTheDocument();
+    expect(screen.queryByText("Новое")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /открыть/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /прочитано/i })).not.toBeInTheDocument();
   });
 
   it("opens notification without event link branch", async () => {
