@@ -15,6 +15,43 @@ import {
 
 const router = Router();
 
+
+function parsePositiveInt(value, fallback, { min = 1, max = 500 } = {}) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(parsed) || parsed < min) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+}
+
+function buildPagination({ page, limit, total }) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const safePage = Math.min(page, totalPages);
+
+  return {
+    page: safePage,
+    limit,
+    total,
+    total_pages: totalPages,
+    has_next_page: safePage < totalPages,
+    has_prev_page: safePage > 1,
+  };
+}
+
+function getSort(req, allowedSortFields, fallbackField = "created_at", fallbackDirection = "desc") {
+  const field = allowedSortFields.includes(req.query.sort_field)
+    ? req.query.sort_field
+    : fallbackField;
+
+  const direction = String(req.query.sort_direction || fallbackDirection).toLowerCase() === "asc"
+    ? "ASC"
+    : "DESC";
+
+  return { field, direction };
+}
+
 function requireAdmin(req, res, next) {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Доступ только для администратора" });
@@ -42,7 +79,59 @@ function decryptAdminEventRows(rows) {
 router.use(authMiddleware, requireAdmin);
 
 router.get("/users", async (req, res) => {
+  const page = parsePositiveInt(req.query.page, 1, { min: 1, max: 100000 });
+  const limit = parsePositiveInt(req.query.limit, 10, { min: 1, max: 500 });
+  const allowedSortFields = [
+    "id",
+    "role",
+    "is_active",
+    "created_at",
+  ];
+  const sort = getSort(req, allowedSortFields, "created_at", "desc");
+  const values = [];
+  const conditions = [];
+
+  if (req.query.role) {
+    values.push(String(req.query.role));
+    conditions.push(`u.role = $${values.length}`);
+  }
+
+  const activeFilter = normalizeBoolean(req.query.is_active);
+  if (activeFilter !== null) {
+    values.push(activeFilter);
+    conditions.push(`u.is_active = $${values.length}`);
+  }
+
+  const whereSql = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const sortMap = {
+    id: "u.id",
+    email: "u.email",
+    first_name: "p.first_name",
+    last_name: "p.last_name",
+    middle_name: "p.middle_name",
+    phone: "p.phone",
+    city: "p.city",
+    role: "u.role",
+    is_active: "u.is_active",
+    created_at: "u.created_at",
+  };
+
   try {
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      ${whereSql}
+      `,
+      values
+    );
+
+    const total = countResult.rows[0]?.total || 0;
+    const pagination = buildPagination({ page, limit, total });
+    const offset = (pagination.page - 1) * limit;
+
     const result = await pool.query(
       `
       SELECT
@@ -60,11 +149,18 @@ router.get("/users", async (req, res) => {
         p.avatar_url
       FROM users u
       LEFT JOIN profiles p ON p.user_id = u.id
-      ORDER BY u.created_at DESC
-      `
+      ${whereSql}
+      ORDER BY ${sortMap[sort.field]} ${sort.direction}, u.created_at DESC
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+      `,
+      [...values, limit, offset]
     );
 
-    res.json(decryptUserProfileRows(result.rows));
+    res.json({
+      items: decryptUserProfileRows(result.rows),
+      pagination,
+    });
   } catch (error) {
     console.error("Admin get users error:", error);
     res.status(500).json({ message: "Не удалось получить пользователей" });
@@ -341,7 +437,45 @@ router.delete("/users/:id/profile", async (req, res) => {
 });
 
 router.get("/events", async (req, res) => {
+  const page = parsePositiveInt(req.query.page, 1, { min: 1, max: 100000 });
+  const limit = parsePositiveInt(req.query.limit, 10, { min: 1, max: 500 });
+  const allowedSortFields = [
+    "id",
+    "title",
+    "category_name",
+    "start_at",
+    "location",
+    "participant_limit",
+    "available_slots",
+    "created_by",
+    "created_at",
+  ];
+  const sort = getSort(req, allowedSortFields, "start_at", "desc");
+
+  const sortMap = {
+    id: "e.id",
+    title: "e.title",
+    category_name: "c.name",
+    start_at: "e.start_at",
+    location: "e.location",
+    participant_limit: "e.participant_limit",
+    available_slots: "available_slots",
+    created_by: "e.created_by",
+    created_at: "e.created_at",
+  };
+
   try {
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM events e
+      `
+    );
+
+    const total = countResult.rows[0]?.total || 0;
+    const pagination = buildPagination({ page, limit, total });
+    const offset = (pagination.page - 1) * limit;
+
     const result = await pool.query(
       `
       SELECT
@@ -374,11 +508,17 @@ router.get("/events", async (req, res) => {
         WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
-      ORDER BY e.start_at DESC
-      `
+      ORDER BY ${sortMap[sort.field]} ${sort.direction}, e.created_at DESC
+      LIMIT $1
+      OFFSET $2
+      `,
+      [limit, offset]
     );
 
-    res.json(decryptAdminEventRows(result.rows));
+    res.json({
+      items: decryptAdminEventRows(result.rows),
+      pagination,
+    });
   } catch (error) {
     console.error("Admin get events error:", error);
     res.status(500).json({ message: "Не удалось получить мероприятия" });
@@ -468,6 +608,21 @@ router.get("/logs", async (req, res) => {
     "route",
     "status",
   ];
+  const allowedSortFields = [
+    "id",
+    "user_id",
+    "user_role",
+    "action",
+    "entity_type",
+    "entity_id",
+    "method",
+    "route",
+    "status",
+    "created_at",
+  ];
+  const sort = getSort(req, allowedSortFields, "created_at", "desc");
+  const page = parsePositiveInt(req.query.page, 1, { min: 1, max: 100000 });
+  const limit = parsePositiveInt(req.query.limit, 10, { min: 1, max: 500 });
 
   const values = [];
   const conditions = [];
@@ -481,7 +636,35 @@ router.get("/logs", async (req, res) => {
     }
   });
 
+  const whereSql = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const sortMap = {
+    id: "id",
+    user_id: "user_id",
+    user_role: "user_role",
+    action: "action",
+    entity_type: "entity_type",
+    entity_id: "entity_id",
+    method: "method",
+    route: "route",
+    status: "status",
+    created_at: "created_at",
+  };
+
   try {
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM audit_logs
+      ${whereSql}
+      `,
+      values
+    );
+
+    const total = countResult.rows[0]?.total || 0;
+    const pagination = buildPagination({ page, limit, total });
+    const offset = (pagination.page - 1) * limit;
+
     const result = await pool.query(
       `
       SELECT
@@ -499,18 +682,22 @@ router.get("/logs", async (req, res) => {
         details,
         created_at
       FROM audit_logs
-      ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""}
-      ORDER BY created_at DESC, id DESC
-      LIMIT 500
+      ${whereSql}
+      ORDER BY ${sortMap[sort.field]} ${sort.direction}, id DESC
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
       `,
-      values
+      [...values, limit, offset]
     );
 
-    res.json(result.rows.map((row) => ({
-      ...row,
-      ip_address: decryptPersonalData(row.ip_address),
-      user_agent: decryptPersonalData(row.user_agent),
-    })));
+    res.json({
+      items: result.rows.map((row) => ({
+        ...row,
+        ip_address: decryptPersonalData(row.ip_address),
+        user_agent: decryptPersonalData(row.user_agent),
+      })),
+      pagination,
+    });
   } catch (error) {
     console.error("Admin get logs error:", error);
     res.status(500).json({ message: "Не удалось получить логи" });

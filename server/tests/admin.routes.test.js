@@ -53,6 +53,26 @@ function resetMocks() {
   mocks.mockWriteAuditLog.mockReset();
 }
 
+function expectPagination(response, { page = 1, limit = 10, total = 0 } = {}) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  expect(response.body.pagination).toMatchObject({
+    page: Math.min(page, totalPages),
+    limit,
+    total,
+    total_pages: totalPages,
+    has_next_page: Math.min(page, totalPages) < totalPages,
+    has_prev_page: Math.min(page, totalPages) > 1,
+  });
+}
+
+function hasQueryWithParams(...expectedValues) {
+  return mocks.mockPool.query.mock.calls.some(([, values]) => {
+    if (!Array.isArray(values)) return false;
+    return expectedValues.every((value) => values.includes(value));
+  });
+}
+
 describe("admin.routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
@@ -77,15 +97,20 @@ describe("admin.routes", () => {
 
   it("returns admin users", async () => {
     const rows = [{ id: 1, email: "admin@mail.ru", role: "admin" }];
-    mocks.mockPool.query.mockResolvedValue({ rows });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: rows.length }] })
+      .mockResolvedValueOnce({ rows });
 
     const response = await request(app)
       .get("/api/admin/users")
       .set(auth())
       .expect(200);
 
-    expect(response.body).toEqual(rows);
+    expect(response.body.items).toEqual(rows);
+    expectPagination(response, { page: 1, limit: 10, total: rows.length });
     expect(mocks.mockPool.query.mock.calls[0][0]).toContain("FROM users u");
+    expect(mocks.mockPool.query.mock.calls[1][0]).toContain("FROM users u");
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual([10, 0]);
   });
 
   it("returns 500 when users loading fails", async () => {
@@ -179,14 +204,18 @@ describe("admin.routes", () => {
 
   it("returns admin events", async () => {
     const rows = [{ id: 9, title: "Субботник" }];
-    mocks.mockPool.query.mockResolvedValue({ rows });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: rows.length }] })
+      .mockResolvedValueOnce({ rows });
 
     const response = await request(app)
       .get("/api/admin/events")
       .set(auth())
       .expect(200);
 
-    expect(response.body).toEqual(rows);
+    expect(response.body.items).toEqual(rows);
+    expectPagination(response, { page: 1, limit: 10, total: rows.length });
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual([10, 0]);
   });
 
   it("assigns coordinator to event inside transaction", async () => {
@@ -282,27 +311,36 @@ describe("admin.routes", () => {
 
   it("returns audit logs without filters", async () => {
     const rows = [{ id: 1, action: "login" }];
-    mocks.mockPool.query.mockResolvedValue({ rows });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: rows.length }] })
+      .mockResolvedValueOnce({ rows });
 
     const response = await request(app)
       .get("/api/admin/logs")
       .set(auth())
       .expect(200);
 
-    expect(response.body).toEqual(rows);
+    expect(response.body.items).toEqual(rows);
+    expectPagination(response, { page: 1, limit: 10, total: rows.length });
     expect(mocks.mockPool.query.mock.calls[0][1]).toEqual([]);
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual([10, 0]);
   });
 
   it("returns audit logs with non-empty allowed filters", async () => {
-    mocks.mockPool.query.mockResolvedValue({ rows: [] });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: 0 }] })
+      .mockResolvedValueOnce({ rows: [] });
 
-    await request(app)
+    const response = await request(app)
       .get("/api/admin/logs?user_id=1&action=UPDATE&status=&unknown=x")
       .set(auth())
       .expect(200);
 
+    expect(response.body.items).toEqual([]);
+    expectPagination(response, { page: 1, limit: 10, total: 0 });
     expect(mocks.mockPool.query.mock.calls[0][0]).toContain("WHERE user_id::text = $1 AND action::text = $2");
     expect(mocks.mockPool.query.mock.calls[0][1]).toEqual(["1", "UPDATE"]);
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual(["1", "UPDATE", 10, 0]);
   });
 
   it("returns 500 when logs loading fails", async () => {
@@ -402,13 +440,16 @@ describe("admin.routes coverage branches", () => {
         coordinator_last_name: "Иванова",
       },
     ];
-    mocks.mockPool.query.mockResolvedValue({ rows });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: rows.length }] })
+      .mockResolvedValueOnce({ rows });
 
     const response = await request(app)
       .get("/api/admin/events")
       .set(auth())
       .expect(200);
 
-    expect(response.body).toEqual(rows);
+    expect(response.body.items).toEqual(rows);
+    expectPagination(response, { page: 1, limit: 10, total: rows.length });
   });
 });

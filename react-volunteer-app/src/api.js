@@ -1,5 +1,19 @@
 const API_URL = "/api";
 
+
+function buildQuery(params = {}) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      searchParams.set(key, value);
+    }
+  });
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
 export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
 
@@ -181,8 +195,12 @@ export function getUserFromToken() {
   }
 }
 
-export async function getAdminUsers() {
-  return apiFetch("/admin/users");
+export async function getEvents(params = {}) {
+  return apiFetch(`/events${buildQuery(params)}`);
+}
+
+export async function getAdminUsers(params = {}) {
+  return apiFetch(`/admin/users${buildQuery(params)}`);
 }
 
 export async function updateAdminUserRole(id, role) {
@@ -205,8 +223,8 @@ export async function deleteAdminUserProfile(id) {
   });
 }
 
-export async function getAdminEvents() {
-  return apiFetch("/admin/events");
+export async function getAdminEvents(params = {}) {
+  return apiFetch(`/admin/events${buildQuery(params)}`);
 }
 
 export async function updateAdminEventCoordinator(id, coordinatorId) {
@@ -216,17 +234,8 @@ export async function updateAdminEventCoordinator(id, coordinatorId) {
   });
 }
 
-export async function getAdminLogs(filters = {}) {
-  const params = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== null && value !== undefined && String(value).trim() !== "") {
-      params.set(key, value);
-    }
-  });
-
-  const query = params.toString();
-  return apiFetch(`/admin/logs${query ? `?${query}` : ""}`);
+export async function getAdminLogs(params = {}) {
+  return apiFetch(`/admin/logs${buildQuery(params)}`);
 }
 
 export async function getNotifications() {

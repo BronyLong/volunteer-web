@@ -80,6 +80,19 @@ function resetMocks() {
   mocks.mockNotifyCoordinatorSelectedVolunteers.mockResolvedValue(undefined);
 }
 
+function expectEventsPagination(response, { page = 1, limit = 6, total = 0 } = {}) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  expect(response.body.pagination).toMatchObject({
+    page: Math.min(page, totalPages),
+    limit,
+    total,
+    total_pages: totalPages,
+    has_next_page: Math.min(page, totalPages) < totalPages,
+    has_prev_page: Math.min(page, totalPages) > 1,
+  });
+}
+
 describe("events.routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
@@ -89,21 +102,31 @@ describe("events.routes", () => {
 
   it("returns events without category filter", async () => {
     const rows = [{ id: 1, title: "Субботник" }];
-    mocks.mockPool.query.mockResolvedValue({ rows });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: rows.length }] })
+      .mockResolvedValueOnce({ rows });
 
     const response = await request(app).get("/api/events").expect(200);
 
-    expect(response.body).toEqual(rows);
+    expect(response.body.items).toEqual(rows);
+    expectEventsPagination(response, { page: 1, limit: 6, total: rows.length });
     expect(mocks.mockPool.query.mock.calls[0][1]).toEqual([]);
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual([6, 0]);
   });
 
   it("returns events with category filter", async () => {
-    mocks.mockPool.query.mockResolvedValue({ rows: [] });
+    mocks.mockPool.query
+      .mockResolvedValueOnce({ rows: [{ total: 0 }] })
+      .mockResolvedValueOnce({ rows: [] });
 
-    await request(app).get("/api/events?category=Экология").expect(200);
+    const response = await request(app).get("/api/events?category=Экология").expect(200);
 
-    expect(mocks.mockPool.query.mock.calls[0][0]).toContain("WHERE c.name = $1");
+    expect(response.body.items).toEqual([]);
+    expectEventsPagination(response, { page: 1, limit: 6, total: 0 });
+    expect(mocks.mockPool.query.mock.calls[0][0]).toContain("c.name = $1");
     expect(mocks.mockPool.query.mock.calls[0][1]).toEqual(["Экология"]);
+    expect(mocks.mockPool.query.mock.calls[1][0]).toContain("c.name = $1");
+    expect(mocks.mockPool.query.mock.calls[1][1]).toEqual(["Экология", 6, 0]);
   });
 
   it("returns 500 when events loading fails", async () => {

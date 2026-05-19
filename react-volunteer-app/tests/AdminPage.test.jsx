@@ -163,6 +163,41 @@ const logs = [
   },
 ];
 
+function createPagedResponse(items, params = {}) {
+  const page = Number(params.page || 1);
+  const limit = Number(params.limit || 10);
+  const total = Number(params.total ?? items.length);
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      total_pages: Math.max(1, Math.ceil(total / limit)),
+      has_next_page: page * limit < total,
+      has_prev_page: page > 1,
+    },
+  };
+}
+
+function paginate(items, params = {}) {
+  const page = Number(params?.page || 1);
+  const limit = Number(params?.limit || 10);
+  const start = (page - 1) * limit;
+
+  return createPagedResponse(items.slice(start, start + limit), {
+    ...params,
+    page,
+    limit,
+    total: items.length,
+  });
+}
+
+function expectLastCallObjectContaining(mock, expected) {
+  expect(mock.mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining(expected));
+}
+
 describe("AdminPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -173,9 +208,26 @@ describe("AdminPage", () => {
       role: "admin",
     });
 
-    mockGetAdminUsers.mockResolvedValue(users);
-    mockGetAdminEvents.mockResolvedValue(events);
-    mockGetAdminLogs.mockResolvedValue(logs);
+    mockGetAdminUsers.mockImplementation((params = {}) => {
+      if (params?.role === "coordinator") {
+        return Promise.resolve(
+          createPagedResponse(
+            users.filter((user) => user.role === "coordinator"),
+            params
+          )
+        );
+      }
+
+      return Promise.resolve(paginate(users, params));
+    });
+
+    mockGetAdminEvents.mockImplementation((params = {}) =>
+      Promise.resolve(paginate(events, params))
+    );
+
+    mockGetAdminLogs.mockImplementation((params = {}) =>
+      Promise.resolve(paginate(logs, params))
+    );
 
     mockUpdateAdminUserRole.mockResolvedValue({ success: true });
     mockUpdateAdminUserActive.mockResolvedValue({ success: true });
@@ -221,13 +273,13 @@ describe("AdminPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows fallback loading error without message", async () => {
+  it("shows fallback events loading error without message", async () => {
     mockGetAdminEvents.mockRejectedValue({});
 
     renderPage();
 
     expect(
-      await screen.findByText(/не удалось загрузить данные администратора/i)
+      await screen.findByText(/не удалось загрузить мероприятия/i)
     ).toBeInTheDocument();
   });
 
@@ -253,18 +305,19 @@ describe("AdminPage", () => {
     expect(mockGetAdminLogs).toHaveBeenCalled();
   });
 
-  it("sorts users by email ascending and descending", async () => {
+  it("does not render sort buttons for encrypted personal user fields", async () => {
     renderPage();
 
     await screen.findByText("admin@example.com");
 
-    const emailSortButton = screen.getByRole("button", { name: /^email/i });
+    expect(screen.queryByRole("button", { name: /^email$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^name$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^phone$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^city$/i })).not.toBeInTheDocument();
 
-    fireEvent.click(emailSortButton);
-    expect(screen.getByRole("button", { name: /email ↑/i })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /email ↑/i }));
-    expect(screen.getByRole("button", { name: /email ↓/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^id$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^role$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^is_active$/i })).toBeInTheDocument();
   });
 
   it("changes user role and reloads users", async () => {
@@ -285,7 +338,7 @@ describe("AdminPage", () => {
 
     await waitFor(() => {
       expect(mockUpdateAdminUserRole).toHaveBeenCalledWith(3, "coordinator");
-      expect(mockGetAdminUsers).toHaveBeenCalledTimes(2);
+      expect(mockGetAdminUsers.mock.calls.length).toBeGreaterThanOrEqual(3);
     });
   });
 
@@ -354,26 +407,31 @@ describe("AdminPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("changes users rows per page and pagination", async () => {
+  it("changes users rows per page and sends pagination params", async () => {
     renderPage();
 
     await screen.findByText("admin@example.com");
 
-    const footer = screen.getByText(/1-3 из 3/i).closest(".admin-table-footer");
+    const footer = screen.getByText(/1\s*-\s*3\s*из\s*3/i).closest(".admin-table-footer");
     const rowsSelect = within(footer).getByRole("combobox");
 
-    fireEvent.change(rowsSelect, {
-      target: {
-        value: "20",
-      },
+    await act(async () => {
+      fireEvent.change(rowsSelect, {
+        target: {
+          value: "20",
+        },
+      });
     });
 
-    expect(screen.getByText(/1-3 из 3/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminUsers, {
+        page: 1,
+        limit: 20,
+      });
+    });
 
-    fireEvent.click(within(footer).getByRole("button", { name: "»" }));
-    fireEvent.click(within(footer).getByRole("button", { name: "«" }));
-
-    expect(screen.getByText(/1 \/ 1/i)).toBeInTheDocument();
+    expect(await screen.findByText(/1\s*-\s*3\s*из\s*3/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\s*\/\s*1/i)).toBeInTheDocument();
   });
 
 
@@ -477,7 +535,7 @@ describe("AdminPage", () => {
 
     await waitFor(() => {
       expect(mockUpdateAdminEventCoordinator).toHaveBeenCalledWith(10, "2");
-      expect(mockGetAdminEvents).toHaveBeenCalledTimes(2);
+      expect(mockGetAdminEvents.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -518,7 +576,7 @@ describe("AdminPage", () => {
     await waitFor(() => {
       expect(window.confirm).toHaveBeenCalledWith("Удалить мероприятие?");
       expect(mockDeleteEvent).toHaveBeenCalledWith(10);
-      expect(mockGetAdminEvents).toHaveBeenCalledTimes(2);
+      expect(mockGetAdminEvents.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -550,20 +608,46 @@ describe("AdminPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("sorts events table", async () => {
+  it("sorts events table through server params", async () => {
     renderPage();
 
     await screen.findByText("admin@example.com");
 
-    fireEvent.click(screen.getByRole("button", { name: /мероприятия/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /мероприятия/i }));
+    });
 
-    const titleSortButton = screen.getByRole("button", { name: /^title/i });
+    const titleSortButton = await screen.findByRole("button", { name: /^title/i });
 
-    fireEvent.click(titleSortButton);
-    expect(screen.getByRole("button", { name: /title ↑/i })).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(titleSortButton);
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: /title ↑/i }));
-    expect(screen.getByRole("button", { name: /title ↓/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /title ↑/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminEvents, {
+        page: 1,
+        limit: 10,
+        sort_field: "title",
+        sort_direction: "asc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /title ↑/i }));
+    });
+
+    expect(await screen.findByRole("button", { name: /title ↓/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminEvents, {
+        page: 1,
+        limit: 10,
+        sort_field: "title",
+        sort_direction: "desc",
+      });
+    });
   });
 
   it("renders logs table and filters by clicked value", async () => {
@@ -584,7 +668,7 @@ describe("AdminPage", () => {
     expect(await screen.findByText(/method: PATCH ×/i)).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenCalledWith({ method: "PATCH" });
+      expectLastCallObjectContaining(mockGetAdminLogs, { method: "PATCH" });
     });
   });
 
@@ -638,7 +722,7 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "PATCH" }));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({ method: "PATCH" });
+      expectLastCallObjectContaining(mockGetAdminLogs, { method: "PATCH" });
     });
   
     expect(await screen.findByText(/не удалось загрузить логи/i)).toBeInTheDocument();
@@ -835,7 +919,7 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "users" }));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({
+      expectLastCallObjectContaining(mockGetAdminLogs, {
         entity_type: "users",
       });
     });
@@ -845,7 +929,7 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "3" }));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({
+      expectLastCallObjectContaining(mockGetAdminLogs, {
         entity_type: "users",
         entity_id: "3",
       });
@@ -856,7 +940,7 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "/api/admin/users/3/role" }));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({
+      expectLastCallObjectContaining(mockGetAdminLogs, {
         entity_type: "users",
         entity_id: "3",
         route: "/api/admin/users/3/role",
@@ -868,7 +952,7 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "200" }));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({
+      expectLastCallObjectContaining(mockGetAdminLogs, {
         entity_type: "users",
         entity_id: "3",
         route: "/api/admin/users/3/role",
@@ -891,11 +975,12 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByText(/entity_type:\s*users/i));
   
     await waitFor(() => {
-      expect(mockGetAdminLogs).toHaveBeenLastCalledWith({
+      expectLastCallObjectContaining(mockGetAdminLogs, {
         entity_id: "3",
         route: "/api/admin/users/3/role",
         status: "200",
       });
+      expect(mockGetAdminLogs.mock.calls.at(-1)?.[0]).not.toHaveProperty("entity_type");
     });
   });
 
@@ -969,175 +1054,134 @@ describe("AdminPage", () => {
     expect(await screen.findByText(/1-20 из 25/i)).toBeInTheDocument();
   });
 
-  it("sorts users by full name, boolean active status, nullable and numeric string values", async () => {
+  it("sorts users only by fields allowed for server-side sorting", async () => {
     mockGetUserFromToken.mockReturnValue({
       id: 1,
       role: "admin",
     });
-  
-    mockGetAdminUsers.mockResolvedValue([
-      {
-        id: 1,
-        email: "admin@example.com",
-        first_name: "Анна",
-        last_name: "Админ",
-        phone: "10",
-        city: "Москва",
-        role: "admin",
-        is_active: true,
-        avatar_url: "",
-        created_at: "2024-01-01T10:00:00.000Z",
-      },
-      {
-        id: 2,
-        email: "coord@example.com",
-        first_name: "Борис",
-        last_name: "Координатор",
-        phone: "2",
-        city: null,
-        role: "coordinator",
-        is_active: false,
-        avatar_url: "",
-        created_at: "2024-01-02T10:00:00.000Z",
-      },
-      {
-        id: 3,
-        email: "volunteer@example.com",
-        first_name: "",
-        last_name: "",
-        phone: undefined,
-        city: "Казань",
-        role: "volunteer",
-        is_active: true,
-        avatar_url: "",
-        created_at: "bad-date",
-      },
-    ]);
-  
-    mockGetAdminEvents.mockResolvedValue([]);
-    mockGetAdminLogs.mockResolvedValue([]);
-  
+
+    mockGetAdminUsers.mockImplementation((params = {}) =>
+      Promise.resolve(paginate(users, params))
+    );
+    mockGetAdminEvents.mockResolvedValue(createPagedResponse([]));
+    mockGetAdminLogs.mockResolvedValue(createPagedResponse([]));
+
     renderPage();
-  
+
     expect(await screen.findByRole("heading", { name: /пользователи/i })).toBeInTheDocument();
-  
-    const getUserRowIds = () =>
-      Array.from(document.querySelectorAll("tbody tr td:first-child .admin-table-link")).map(
-        (link) => link.textContent.trim()
-      );
-  
-    fireEvent.click(screen.getByRole("button", { name: "name" }));
-    expect(getUserRowIds()).toEqual(["1", "2", "3"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: /name ↑/i }));
-    expect(getUserRowIds()).toEqual(["3", "2", "1"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: "is_active" }));
-    expect(getUserRowIds()).toEqual(["2", "1", "3"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: /is_active ↑/i }));
-    expect(getUserRowIds()).toEqual(["1", "3", "2"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: "phone" }));
-    expect(getUserRowIds()).toEqual(["3", "2", "1"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: "city" }));
-    expect(getUserRowIds()).toEqual(["2", "3", "1"]);
+
+    expect(screen.queryByRole("button", { name: "name" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "phone" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "city" })).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "role" }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminUsers, {
+        page: 1,
+        limit: 10,
+        sort_field: "role",
+        sort_direction: "asc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /role ↑/i }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminUsers, {
+        page: 1,
+        limit: 10,
+        sort_field: "role",
+        sort_direction: "desc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "is_active" }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminUsers, {
+        sort_field: "is_active",
+        sort_direction: "asc",
+      });
+    });
   });
 
-  it("sorts logs by numeric string, empty values and invalid dates", async () => {
+  it("sorts logs through server params", async () => {
     mockGetUserFromToken.mockReturnValue({
       id: 1,
       role: "admin",
     });
-  
-    mockGetAdminUsers.mockResolvedValue([
-      {
-        id: 1,
-        email: "admin@example.com",
-        first_name: "Анна",
-        last_name: "Админ",
-        phone: "+79990000001",
-        city: "Москва",
-        role: "admin",
-        is_active: true,
-        avatar_url: "",
-        created_at: "2024-01-01T10:00:00.000Z",
-      },
-    ]);
-  
-    mockGetAdminEvents.mockResolvedValue([]);
-  
-    mockGetAdminLogs.mockResolvedValue([
-      {
-        id: 1,
-        user_id: 10,
-        user_role: "admin",
-        action: "UPDATE",
-        entity_type: "users",
-        entity_id: "10",
-        method: "PATCH",
-        route: "/api/admin/users/10",
-        status: "500",
-        ip_address: "127.0.0.1",
-        user_agent: "Vitest",
-        created_at: "bad-date",
-      },
-      {
-        id: 2,
-        user_id: null,
-        user_role: "",
-        action: "",
-        entity_type: "",
-        entity_id: "",
-        method: "",
-        route: "",
-        status: "",
-        ip_address: "",
-        user_agent: "",
-        created_at: "",
-      },
-      {
-        id: 3,
-        user_id: 2,
-        user_role: "admin",
-        action: "CREATE",
-        entity_type: "events",
-        entity_id: "2",
-        method: "POST",
-        route: "/api/events",
-        status: "200",
-        ip_address: "127.0.0.1",
-        user_agent: "Vitest",
-        created_at: "2024-01-03T10:00:00.000Z",
-      },
-    ]);
-  
+
+    mockGetAdminUsers.mockImplementation((params = {}) =>
+      Promise.resolve(paginate(users, params))
+    );
+    mockGetAdminEvents.mockResolvedValue(createPagedResponse([]));
+    mockGetAdminLogs.mockImplementation((params = {}) =>
+      Promise.resolve(paginate(logs, params))
+    );
+
     renderPage();
-  
+
     expect(await screen.findByRole("heading", { name: /пользователи/i })).toBeInTheDocument();
-  
-    fireEvent.click(screen.getByRole("button", { name: "Логи" }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Логи" }));
+    });
+
     expect(await screen.findByRole("heading", { name: /логи audit_logs/i })).toBeInTheDocument();
-  
-    const getFirstColumnValues = () =>
-      Array.from(document.querySelectorAll("tbody tr td:first-child")).map((cell) =>
-        cell.textContent.trim()
-      );
-  
-    fireEvent.click(screen.getByRole("button", { name: "status" }));
-    expect(getFirstColumnValues()).toEqual(["2", "3", "1"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: /status ↑/i }));
-    expect(getFirstColumnValues()).toEqual(["1", "3", "2"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: "entity_id" }));
-    expect(getFirstColumnValues()).toEqual(["2", "3", "1"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: "created_at" }));
-    expect(getFirstColumnValues()).toEqual(["2", "1", "3"]);
-  
-    fireEvent.click(screen.getByRole("button", { name: /created_at ↑/i }));
-    expect(getFirstColumnValues()).toEqual(["1", "3", "2"]);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "status" }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminLogs, {
+        page: 1,
+        limit: 10,
+        sort_field: "status",
+        sort_direction: "asc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /status ↑/i }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminLogs, {
+        page: 1,
+        limit: 10,
+        sort_field: "status",
+        sort_direction: "desc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "entity_id" }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminLogs, {
+        sort_field: "entity_id",
+        sort_direction: "asc",
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "created_at" }));
+    });
+
+    await waitFor(() => {
+      expectLastCallObjectContaining(mockGetAdminLogs, {
+        sort_field: "created_at",
+        sort_direction: "asc",
+      });
+    });
   });
 });

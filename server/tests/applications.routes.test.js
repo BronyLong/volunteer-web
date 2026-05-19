@@ -537,19 +537,64 @@ describe("applications.routes", () => {
     expect(response.body).toEqual({ message: "Нельзя изменять заявки завершённого мероприятия" });
   });
 
-  it("rejects non-pending application reject", async () => {
+  it("rejects approved application", async () => {
     const future = new Date(Date.now() + 1000000).toISOString();
 
     mocks.mockClient.query
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ id: 1, user_id: 3, event_id: 5, status: "approved", created_by: 2, participant_limit: 10, start_at: future }] });
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: 1,
+            user_id: 3,
+            event_id: 5,
+            status: "approved",
+            participation_confirmed: false,
+            created_by: 2,
+            participant_limit: 10,
+            start_at: future,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ count: 0 }] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    const response = await request(app)
+      .patch("/api/applications/1/reject")
+      .set(auth("coordinator", 2))
+      .expect(200);
+
+    expect(response.body).toEqual({ message: "Заявка отклонена" });
+    expect(mocks.mockWriteAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "application_reject",
+        details: expect.objectContaining({
+          previous_status: "approved",
+          new_status: "rejected",
+          previous_participation_confirmed: false,
+          new_participation_confirmed: false,
+        }),
+      })
+    );
+  });
+
+  it("rejects already rejected application reject", async () => {
+    const future = new Date(Date.now() + 1000000).toISOString();
+
+    mocks.mockClient.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ id: 1, user_id: 3, event_id: 5, status: "rejected", created_by: 2, participant_limit: 10, start_at: future }] });
 
     const response = await request(app)
       .patch("/api/applications/1/reject")
       .set(auth("coordinator", 2))
       .expect(400);
 
-    expect(response.body).toEqual({ message: "Отклонить можно только заявку, ожидающую решения" });
+    expect(response.body).toEqual({
+      message: "Отклонить можно только заявку, ожидающую решения или уже принятую заявку",
+    });
   });
 
   it("returns fallback error when rejecting application fails", async () => {

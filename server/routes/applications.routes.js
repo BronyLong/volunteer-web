@@ -426,9 +426,11 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
       });
     }
 
-    if (application.status !== "pending") {
+    if (application.status !== "pending" && application.status !== "approved") {
       await client.query("ROLLBACK");
-      return res.status(400).json({ message: "Отклонить можно только заявку, ожидающую решения" });
+      return res.status(400).json({
+        message: "Отклонить можно только заявку, ожидающую решения или уже принятую заявку",
+      });
     }
 
     await client.query(
@@ -460,6 +462,8 @@ router.patch("/:id/reject", authMiddleware, async (req, res) => {
         target_user_id: application.user_id,
         previous_status: application.status,
         new_status: "rejected",
+        previous_participation_confirmed: application.participation_confirmed,
+        new_participation_confirmed: false,
       },
       db: client,
     });

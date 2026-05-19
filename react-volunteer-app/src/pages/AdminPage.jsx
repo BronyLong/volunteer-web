@@ -1,6 +1,6 @@
 import "./AdminPage.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   deleteAdminUserProfile,
@@ -37,10 +37,10 @@ const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 const USER_COLUMNS = [
   { field: "id", title: "id", sortable: true },
   { field: "avatar_url", title: "avatar" },
-  { field: "email", title: "email", sortable: true },
-  { field: "full_name", title: "name", sortable: true },
-  { field: "phone", title: "phone", sortable: true },
-  { field: "city", title: "city", sortable: true },
+  { field: "email", title: "email" },
+  { field: "full_name", title: "name" },
+  { field: "phone", title: "phone" },
+  { field: "city", title: "city" },
   { field: "role", title: "role", sortable: true },
   { field: "is_active", title: "is_active", sortable: true },
   { field: "created_at", title: "created_at", sortable: true },
@@ -71,8 +71,8 @@ const LOG_COLUMNS = [
   { field: "method", title: "method", sortable: true },
   { field: "route", title: "route", sortable: true },
   { field: "status", title: "status", sortable: true },
-  { field: "ip_address", title: "ip_address", sortable: true },
-  { field: "user_agent", title: "user_agent", sortable: true },
+  { field: "ip_address", title: "ip_address" },
+  { field: "user_agent", title: "user_agent" },
   { field: "created_at", title: "created_at", sortable: true },
 ];
 
@@ -266,70 +266,112 @@ export default function AdminPage() {
     logs: 1,
   });
 
-  const coordinators = useMemo(
-    () => users.filter((user) => user.role === "coordinator" && user.is_active),
-    [users]
-  );
+  const [coordinators, setCoordinators] = useState([]);
+  const [totalRows, setTotalRows] = useState({
+    users: 0,
+    events: 0,
+    logs: 0,
+  });
 
-  const sortedUsers = useMemo(
-    () => (sort.section === "users" ? sortItems(users, sort) : users),
-    [users, sort]
-  );
+  const pagedUsers = users;
+  const pagedEvents = events;
+  const pagedLogs = logs;
 
-  const sortedEvents = useMemo(
-    () => (sort.section === "events" ? sortItems(events, sort) : events),
-    [events, sort]
-  );
+  function getPaginationParams(section) {
+    const isCurrentSort = sort.section === section;
 
-  const sortedLogs = useMemo(
-    () => (sort.section === "logs" ? sortItems(logs, sort) : logs),
-    [logs, sort]
-  );
+    return {
+      page: page[section],
+      limit: rowsPerPage[section],
+      sort_field: isCurrentSort ? sort.field : "created_at",
+      sort_direction: isCurrentSort ? sort.direction : "desc",
+    };
+  }
 
-  const pagedUsers = useMemo(
-    () => getPageItems(sortedUsers, page.users, rowsPerPage.users),
-    [sortedUsers, page.users, rowsPerPage.users]
-  );
+  function normalizePagedResponse(data) {
+    if (Array.isArray(data)) {
+      return {
+        items: data,
+        pagination: { total: data.length },
+      };
+    }
 
-  const pagedEvents = useMemo(
-    () => getPageItems(sortedEvents, page.events, rowsPerPage.events),
-    [sortedEvents, page.events, rowsPerPage.events]
-  );
-
-  const pagedLogs = useMemo(
-    () => getPageItems(sortedLogs, page.logs, rowsPerPage.logs),
-    [sortedLogs, page.logs, rowsPerPage.logs]
-  );
+    return {
+      items: Array.isArray(data?.items) ? data.items : [],
+      pagination: data?.pagination || { total: 0 },
+    };
+  }
 
   useEffect(() => {
     if (currentUser?.role !== "admin") {
       navigate("/", { replace: true });
-      return;
+    }
+  }, [currentUser?.role, navigate]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "admin") return;
+
+    async function loadCoordinators() {
+      try {
+        const data = await getAdminUsers({
+          page: 1,
+          limit: 500,
+          role: "coordinator",
+          is_active: true,
+          sort_field: "created_at",
+          sort_direction: "desc",
+        });
+        const normalized = normalizePagedResponse(data);
+        setCoordinators(normalized.items);
+      } catch (err) {
+        setError(err.message || "Не удалось загрузить координаторов");
+      }
     }
 
-    async function loadData() {
+    loadCoordinators();
+  }, [currentUser?.role]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "admin") return;
+
+    async function loadUsers() {
       try {
         setLoading(true);
         setError("");
-
-        const [usersData, eventsData, logsData] = await Promise.all([
-          getAdminUsers(),
-          getAdminEvents(),
-          getAdminLogs(),
-        ]);
-
-        setUsers(usersData);
-        setEvents(eventsData);
-        setLogs(logsData);
+        const data = await getAdminUsers(getPaginationParams("users"));
+        const normalized = normalizePagedResponse(data);
+        setUsers(normalized.items);
+        setTotalRows((prev) => ({ ...prev, users: normalized.pagination.total || 0 }));
       } catch (err) {
-        setError(err.message || "Не удалось загрузить данные администратора");
+        setError(err.message || "Не удалось загрузить пользователей");
       } finally {
         setLoading(false);
       }
     }
 
-    loadData();
-  }, [currentUser?.role, navigate]);
+    loadUsers();
+  }, [currentUser?.role, page.users, rowsPerPage.users, sort]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "admin") return;
+
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getAdminEvents(getPaginationParams("events"));
+        const normalized = normalizePagedResponse(data);
+        setEvents(normalized.items);
+        setTotalRows((prev) => ({ ...prev, events: normalized.pagination.total || 0 }));
+      } catch (err) {
+        setError(err.message || "Не удалось загрузить мероприятия");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEvents();
+  }, [currentUser?.role, page.events, rowsPerPage.events, sort]);
 
   useEffect(() => {
     if (currentUser?.role !== "admin") return;
@@ -338,9 +380,13 @@ export default function AdminPage() {
       try {
         setLogsLoading(true);
         setError("");
-        const data = await getAdminLogs(filters);
-        setLogs(data);
-        setPage((prev) => ({ ...prev, logs: 1 }));
+        const data = await getAdminLogs({
+          ...filters,
+          ...getPaginationParams("logs"),
+        });
+        const normalized = normalizePagedResponse(data);
+        setLogs(normalized.items);
+        setTotalRows((prev) => ({ ...prev, logs: normalized.pagination.total || 0 }));
       } catch (err) {
         setError(err.message || "Не удалось загрузить логи");
       } finally {
@@ -349,27 +395,30 @@ export default function AdminPage() {
     }
 
     loadLogs();
-  }, [filters, currentUser?.role]);
-
-  useEffect(() => {
-    setPage((prev) => ({
-      users: Math.min(prev.users, getTotalPages(sortedUsers, rowsPerPage.users)),
-      events: Math.min(
-        prev.events,
-        getTotalPages(sortedEvents, rowsPerPage.events)
-      ),
-      logs: Math.min(prev.logs, getTotalPages(sortedLogs, rowsPerPage.logs)),
-    }));
-  }, [sortedUsers, sortedEvents, sortedLogs, rowsPerPage]);
+  }, [filters, currentUser?.role, page.logs, rowsPerPage.logs, sort]);
 
   async function reloadUsers() {
-    const data = await getAdminUsers();
-    setUsers(data);
+    const data = await getAdminUsers(getPaginationParams("users"));
+    const normalized = normalizePagedResponse(data);
+    setUsers(normalized.items);
+    setTotalRows((prev) => ({ ...prev, users: normalized.pagination.total || 0 }));
+
+    const coordinatorsData = await getAdminUsers({
+      page: 1,
+      limit: 500,
+      role: "coordinator",
+      is_active: true,
+      sort_field: "created_at",
+      sort_direction: "desc",
+    });
+    setCoordinators(normalizePagedResponse(coordinatorsData).items);
   }
 
   async function reloadEvents() {
-    const data = await getAdminEvents();
-    setEvents(data);
+    const data = await getAdminEvents(getPaginationParams("events"));
+    const normalized = normalizePagedResponse(data);
+    setEvents(normalized.items);
+    setTotalRows((prev) => ({ ...prev, events: normalized.pagination.total || 0 }));
   }
 
   async function handleRoleChange(userId, role) {
@@ -413,7 +462,14 @@ export default function AdminPage() {
     try {
       setError("");
       await deleteAdminUserProfile(user.id);
-      await Promise.all([reloadUsers(), getAdminLogs(filters).then(setLogs)]);
+      await reloadUsers();
+      const logsData = await getAdminLogs({
+        ...filters,
+        ...getPaginationParams("logs"),
+      });
+      const normalizedLogs = normalizePagedResponse(logsData);
+      setLogs(normalizedLogs.items);
+      setTotalRows((prev) => ({ ...prev, logs: normalizedLogs.pagination.total || 0 }));
     } catch (err) {
       setError(err.message || "Не удалось удалить профиль пользователя");
     }
@@ -484,6 +540,7 @@ export default function AdminPage() {
       ...prev,
       [field]: String(value),
     }));
+    setPage((prev) => ({ ...prev, logs: 1 }));
     setActiveSection("logs");
   }
 
@@ -493,6 +550,7 @@ export default function AdminPage() {
       delete next[field];
       return next;
     });
+    setPage((prev) => ({ ...prev, logs: 1 }));
   }
 
   if (loading) {
@@ -641,7 +699,7 @@ export default function AdminPage() {
             </div>
 
             <AdminTableFooter
-              total={sortedUsers.length}
+              total={totalRows.users}
               page={page.users}
               rowsPerPage={rowsPerPage.users}
               onRowsPerPageChange={(value) =>
@@ -747,7 +805,7 @@ export default function AdminPage() {
             </div>
 
             <AdminTableFooter
-              total={sortedEvents.length}
+              total={totalRows.events}
               page={page.events}
               rowsPerPage={rowsPerPage.events}
               onRowsPerPageChange={(value) =>
@@ -765,7 +823,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 className="admin-panel__clear"
-                onClick={() => setFilters({})}
+                onClick={() => { setFilters({}); setPage((prev) => ({ ...prev, logs: 1 })); }}
               >
                 Сбросить фильтры
               </button>
@@ -886,7 +944,7 @@ export default function AdminPage() {
             </div>
 
             <AdminTableFooter
-              total={sortedLogs.length}
+              total={totalRows.logs}
               page={page.logs}
               rowsPerPage={rowsPerPage.logs}
               onRowsPerPageChange={(value) =>

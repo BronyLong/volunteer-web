@@ -137,7 +137,9 @@ describe("ApplicationCard", () => {
     expect(handleAccept).toHaveBeenCalledWith(10);
   });
   
-  it("renders approved application without action buttons", () => {
+  it("renders approved application with reject button", () => {
+    const handleReject = vi.fn();
+
     render(
       <MemoryRouter
         future={{
@@ -154,13 +156,18 @@ describe("ApplicationCard", () => {
           email="petr@example.com"
           phone="+7 (999) 222-33-44"
           status="approved"
+          onReject={handleReject}
         />
       </MemoryRouter>
     );
-  
+
     expect(screen.getByText(/принята/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /принять заявку/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /отклонить заявку/i })).not.toBeInTheDocument();
+
+    const rejectButton = screen.getByRole("button", { name: /отклонить принятую заявку/i });
+    fireEvent.click(rejectButton);
+
+    expect(handleReject).toHaveBeenCalledWith(11);
   });
   
   it("disables pending action buttons when application changes are not allowed", () => {

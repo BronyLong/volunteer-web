@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiFetch, getMyProfile, getToken } from "../api";
+import { getEvents, getMyProfile, getToken } from "../api";
 import "./EventsPage.css";
 
 import EventCard from "../components/EventCard";
@@ -46,16 +46,28 @@ const FILTERS = [
   },
 ];
 
-function parseEventDate(dateString) {
-  const date = new Date(dateString);
-  return Number.isNaN(date.getTime()) ? Number.POSITIVE_INFINITY : date.getTime();
-}
+function normalizeEventsResponse(data) {
+  if (Array.isArray(data)) {
+    return {
+      items: data,
+      pagination: {
+        page: 1,
+        limit: EVENTS_PER_PAGE,
+        total: data.length,
+        total_pages: Math.max(1, Math.ceil(data.length / EVENTS_PER_PAGE)),
+      },
+    };
+  }
 
-function isUpcomingEvent(dateString) {
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return false;
-
-  return date.getTime() >= Date.now();
+  return {
+    items: Array.isArray(data?.items) ? data.items : [],
+    pagination: data?.pagination || {
+      page: 1,
+      limit: EVENTS_PER_PAGE,
+      total: 0,
+      total_pages: 1,
+    },
+  };
 }
 
 export default function EventsPage() {
@@ -64,6 +76,12 @@ export default function EventsPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: EVENTS_PER_PAGE,
+    total: 0,
+    total_pages: 1,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -95,44 +113,49 @@ export default function EventsPage() {
   }, []);
 
   useEffect(() => {
-    apiFetch("/events")
-      .then((data) => {
-        const upcomingEvents = data.filter((event) => isUpcomingEvent(event.start_at));
+    let isMounted = true;
 
-        const sorted = [...upcomingEvents].sort(
-          (a, b) => parseEventDate(a.start_at) - parseEventDate(b.start_at)
-        );
+    async function loadEvents() {
+      try {
+        const data = await getEvents({
+          page: currentPage,
+          limit: EVENTS_PER_PAGE,
+          category: activeCategory === "all" ? "" : activeCategory,
+          urgent: urgentOnly ? "true" : "",
+        });
 
-        setEvents(sorted);
-      })
-      .catch((error) => console.error(error.message));
-  }, []);
+        if (!isMounted) return;
 
-  const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      const matchesCategory = activeCategory === "all" || event.category_name === activeCategory;
-      const matchesUrgent = !urgentOnly || event.is_urgent;
+        const normalized = normalizeEventsResponse(data);
+        setEvents(normalized.items);
+        setPagination(normalized.pagination);
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
 
-      return matchesCategory && matchesUrgent;
-    });
-  }, [events, activeCategory, urgentOnly]);
+    loadEvents();
 
-  const totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage, activeCategory, urgentOnly]);
 
-  const paginatedEvents = useMemo(() => {
-    const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
-    const endIndex = startIndex + EVENTS_PER_PAGE;
-    return filteredEvents.slice(startIndex, endIndex);
-  }, [filteredEvents, currentPage]);
+  const totalPages = pagination.total_pages || 1;
 
   const currentGroup = Math.floor((currentPage - 1) / VISIBLE_PAGES);
   const startPage = currentGroup * VISIBLE_PAGES + 1;
   const endPage = Math.min(startPage + VISIBLE_PAGES - 1, totalPages);
 
-  const visiblePages = [];
-  for (let page = startPage; page <= endPage; page += 1) {
-    visiblePages.push(page);
-  }
+  const visiblePages = useMemo(() => {
+    const pages = [];
+
+    for (let page = startPage; page <= endPage; page += 1) {
+      pages.push(page);
+    }
+
+    return pages;
+  }, [startPage, endPage]);
 
   function goToPage(page) {
     setCurrentPage(page);
@@ -240,14 +263,14 @@ export default function EventsPage() {
           <div className="events-divider"></div>
 
           <div className="events-grid">
-            {paginatedEvents.map((event) => (
+            {events.map((event) => (
               <EventCard
                 key={event.id}
                 title={event.title}
                 date={new Date(event.start_at).toLocaleDateString("ru-RU")}
                 location={event.location}
                 places={`${event.available_slots} из ${event.participant_limit}`}
-                image={defaultEventImage}
+                image={event.image_url || defaultEventImage}
                 category={getCategoryType(event.category_name)}
                 isUrgent={event.is_urgent}
                 link={`/events/${event.id}`}
@@ -255,7 +278,7 @@ export default function EventsPage() {
             ))}
           </div>
 
-          {!paginatedEvents.length && (
+          {!events.length && (
             <div className="events-empty">
               По выбранным фильтрам мероприятий пока нет.
             </div>

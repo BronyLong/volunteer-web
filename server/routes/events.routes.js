@@ -17,6 +17,31 @@ function canManageEvent(user, eventCreatorId) {
   return user.role === "coordinator" && String(eventCreatorId) === String(user.id);
 }
 
+
+function parsePositiveInt(value, fallback, { min = 1, max = 100 } = {}) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(parsed) || parsed < min) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+}
+
+function buildPagination({ page, limit, total }) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const safePage = Math.min(page, totalPages);
+
+  return {
+    page: safePage,
+    limit,
+    total,
+    total_pages: totalPages,
+    has_next_page: safePage < totalPages,
+    has_prev_page: safePage > 1,
+  };
+}
+
 function getOptionalViewer(req) {
   const authHeader = req.headers.authorization;
 
@@ -138,11 +163,42 @@ async function getEventForAudit(eventId, db = pool) {
 }
 
 router.get("/", async (req, res) => {
-  const { category } = req.query;
+  const { category, urgent } = req.query;
+  const page = parsePositiveInt(req.query.page, 1, { min: 1, max: 100000 });
+  const limit = parsePositiveInt(req.query.limit, 6, { min: 1, max: 50 });
+  const offset = (page - 1) * limit;
 
   try {
     const params = [];
-    let sql = `
+    const conditions = ["e.start_at >= NOW()"];
+
+    if (category) {
+      params.push(category);
+      conditions.push(`c.name = $${params.length}`);
+    }
+
+    if (urgent === "true" || urgent === true) {
+      conditions.push("e.is_urgent = true");
+    }
+
+    const whereSql = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM events e
+      JOIN categories c ON c.id = e.category_id
+      ${whereSql}
+      `,
+      params
+    );
+
+    const total = countResult.rows[0]?.total || 0;
+    const pagination = buildPagination({ page, limit, total });
+    const safeOffset = (pagination.page - 1) * limit;
+
+    const result = await pool.query(
+      `
       SELECT
         e.id,
         e.title,
@@ -172,17 +228,18 @@ router.get("/", async (req, res) => {
         WHERE status = 'approved'
         GROUP BY event_id
       ) AS active_applications ON active_applications.event_id = e.id
-    `;
+      ${whereSql}
+      ORDER BY e.start_at ASC, e.id ASC
+      LIMIT $${params.length + 1}
+      OFFSET $${params.length + 2}
+      `,
+      [...params, limit, safeOffset]
+    );
 
-    if (category) {
-      params.push(category);
-      sql += ` WHERE c.name = $1 `;
-    }
-
-    sql += ` ORDER BY e.start_at ASC `;
-
-    const result = await pool.query(sql, params);
-    res.json(result.rows);
+    res.json({
+      items: result.rows,
+      pagination,
+    });
   } catch (error) {
     console.error("Get events error:", error);
     res.status(500).json({ message: "Не удалось получить мероприятия" });

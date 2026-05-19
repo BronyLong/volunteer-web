@@ -44,6 +44,8 @@ export default function ApplicationCard({
   canReject = true,
 }) {
   const isPending = status === "pending";
+  const isApproved = status === "approved";
+  const canShowActions = isPending || isApproved;
   const fullName = `${name} ${secondName}`.trim() || "Пользователь";
   const profileLink = userId ? `/profiles/${userId}` : null;
 
@@ -71,26 +73,34 @@ export default function ApplicationCard({
         </div>
       </div>
 
-      {isPending ? (
+      {canShowActions ? (
         <div className="application-card__actions">
-          <button
-            type="button"
-            className="application-card__accept"
-            onClick={() => onAccept?.(id)}
-            disabled={isAccepting || !canAccept}
-            aria-label="Принять заявку"
-            title={!canAccept ? "Нельзя изменять заявки завершённого мероприятия" : "Принять заявку"}
-          >
-            {isAccepting ? "Принятие..." : "Принять"}
-          </button>
+          {isPending ? (
+            <button
+              type="button"
+              className="application-card__accept"
+              onClick={() => onAccept?.(id)}
+              disabled={isAccepting || !canAccept}
+              aria-label="Принять заявку"
+              title={!canAccept ? "Нельзя изменять заявки завершённого мероприятия" : "Принять заявку"}
+            >
+              {isAccepting ? "Принятие..." : "Принять"}
+            </button>
+          ) : null}
 
           <button
             type="button"
             className="application-card__reject"
             onClick={() => onReject?.(id)}
             disabled={isRejecting || !canReject}
-            aria-label="Отклонить заявку"
-            title={!canReject ? "Нельзя изменять заявки завершённого мероприятия" : "Отклонить заявку"}
+            aria-label={isApproved ? "Отклонить принятую заявку" : "Отклонить заявку"}
+            title={
+              !canReject
+                ? "Нельзя изменять заявки завершённого мероприятия"
+                : isApproved
+                  ? "Отклонить принятую заявку"
+                  : "Отклонить заявку"
+            }
           >
             {isRejecting ? "Отклонение..." : "Отклонить"}
           </button>
