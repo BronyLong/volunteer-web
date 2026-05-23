@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiFetch } from "../api";
+import { getEvents } from "../api";
 import "./HomePage.css";
 
 import locationIcon from "../assets/SVG/location.svg";
@@ -82,14 +82,6 @@ function formatDate(dateString) {
   return date.toLocaleDateString("ru-RU");
 }
 
-function isUpcoming(dateString) {
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return false;
-
-  const now = new Date();
-  return date.getTime() >= now.getTime();
-}
-
 function sortByNearestDate(items) {
   return [...items].sort(
     (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()
@@ -113,7 +105,7 @@ function decorateEvent(event) {
     formattedDate: formatDate(event.start_at),
     spotsText: `${event.available_slots ?? 0} мест`,
     placesText: `${event.available_slots ?? 0} из ${event.participant_limit ?? 0}`,
-    image: defaultEventImage,
+    image: event.image_url || defaultEventImage,
   };
 }
 
@@ -170,17 +162,17 @@ export default function HomePage() {
   const fadeTimeoutRef = useRef(null);
 
   useEffect(() => {
-    apiFetch("/events")
+    getEvents({
+      page: 1,
+      limit: 100,
+      category: "",
+      urgent: "",
+    })
       .then((data) => {
-        const upcomingEvents = sortByNearestDate(
-          data.filter((event) => isUpcoming(event.start_at))
-        );
+        const eventItems = Array.isArray(data) ? data : data?.items || [];
+        const sortedEvents = sortByNearestDate(eventItems);
 
-        const sourceEvents = upcomingEvents.length
-          ? upcomingEvents
-          : sortByNearestDate(data);
-
-        setEvents(sourceEvents.map(decorateEvent));
+        setEvents(sortedEvents.map(decorateEvent));
       })
       .catch((error) => {
         console.error("Не удалось загрузить мероприятия:", error);
@@ -405,7 +397,7 @@ export default function HomePage() {
               <h3 className="feature-card__title">Удобные инструменты</h3>
               <p className="feature-card__text">Функции для координаторов и администраторов без перегрузки интерфейса.</p>
             </article>
-          </div>  
+          </div>
         </div>
       </section>
 
@@ -413,11 +405,11 @@ export default function HomePage() {
 
       <section className="join-banner-cta">
         <div className="join-banner">
-            <div className="join-banner__text">Хотите стать частью команды?</div>
-              <Link to="/events" className="join-banner__button">
-                Принять участие
-              </Link>
-          </div>
+          <div className="join-banner__text">Хотите стать частью команды?</div>
+          <Link to="/events" className="join-banner__button">
+            Принять участие
+          </Link>
+        </div>
       </section>
 
       <section className="steps">
@@ -616,7 +608,7 @@ export default function HomePage() {
 
       <section className="cta">
         <div className="container">
-          <div className="cta__box"> 
+          <div className="cta__box">
             <div className="cta__content">
               <h2 className="cta__title">Станьте частью волонтерского сообщества</h2>
               <p className="cta__text">

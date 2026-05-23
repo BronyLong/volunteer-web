@@ -7,11 +7,11 @@ INSERT INTO categories (name) VALUES
 ('Животным'),
 ('Пожилым');
 
-INSERT INTO users (email, password, role, is_active, email_verified)
+INSERT INTO users (email, password, role, is_active, email_verified, personal_data_consent, personal_data_consent_at, personal_data_consent_version)
 VALUES
-('admin@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'admin', TRUE, TRUE),
-('coordinator@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'coordinator', TRUE, TRUE),
-('volunteer@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'volunteer', TRUE, TRUE);
+('admin@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'admin', TRUE, TRUE, TRUE, CURRENT_TIMESTAMP, '2026-05-14'),
+('coordinator@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'coordinator', TRUE, TRUE, TRUE, CURRENT_TIMESTAMP, '2026-05-14'),
+('volunteer@example.com', '$2b$10$7frFehLs0H5OY2HeGgMVV.tznJxMxkpzBtzxXrWOIuIgs5cy3svz2', 'volunteer', TRUE, TRUE, TRUE, CURRENT_TIMESTAMP, '2026-05-14');
 
 INSERT INTO profiles (
     user_id, first_name, last_name, middle_name, gender, phone, city, avatar_url, bio, social_vk, social_ok, social_max
@@ -70,6 +70,13 @@ SELECT
 FROM users
 WHERE email = 'volunteer@example.com';
 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM users WHERE role = 'coordinator') THEN
+        RAISE EXCEPTION 'Не найден пользователь с ролью coordinator. Нельзя создать тестовые мероприятия без created_by.';
+    END IF;
+END $$;
+
 -- =========================================
 -- МЕРОПРИЯТИЯ
 -- =========================================
@@ -87,7 +94,7 @@ INSERT INTO events (
 VALUES (
     'Экологическая акция в городском парке',
     'Уборка территории парка и помощь в сортировке отходов.',
-    '2026-05-15 10:00:00',
+    '2026-06-15 10:00:00',
     'Центральный парк, Казань',
     ARRAY[
         'Сбор пластиковых отходов',
@@ -97,7 +104,7 @@ VALUES (
     20,
     20,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 );
 
 INSERT INTO events (
@@ -124,7 +131,7 @@ VALUES
     ARRAY['Сбор мусора', 'Сортировка отходов'],
     20, 20,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -135,7 +142,7 @@ VALUES
     ARRAY['Посадка деревьев', 'Полив'],
     25, 25,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -146,7 +153,7 @@ VALUES
     ARRAY['Сбор бумаги', 'Сортировка'],
     12, 12,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -157,7 +164,7 @@ VALUES
     ARRAY['Сбор мусора', 'Вывоз отходов'],
     18, 18,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -168,7 +175,7 @@ VALUES
     ARRAY['Уборка', 'Вывоз мусора'],
     15, 15,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- ДЕТЯМ
@@ -181,7 +188,7 @@ VALUES
     ARRAY['Игры', 'Рисование'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -192,7 +199,7 @@ VALUES
     ARRAY['Подготовка материалов', 'Проведение занятия'],
     12, 12,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -203,7 +210,7 @@ VALUES
     ARRAY['Чтение', 'Обсуждение'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -214,7 +221,7 @@ VALUES
     ARRAY['Помощь с ДЗ', 'Объяснение'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -225,7 +232,7 @@ VALUES
     ARRAY['Игры', 'Общение'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- ЖИВОТНЫМ
@@ -238,7 +245,7 @@ VALUES
     ARRAY['Кормление', 'Уборка вольеров'],
     15, 15,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -249,7 +256,7 @@ VALUES
     ARRAY['Выгуливание', 'Кормление'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -260,7 +267,7 @@ VALUES
     ARRAY['Кормление', 'Уборка'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -271,7 +278,7 @@ VALUES
     ARRAY['Уборка', 'Дезинфекция'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -282,7 +289,7 @@ VALUES
     ARRAY['Подготовка инструментов', 'Помощь врачу'],
     6, 6,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- ПОЖИЛЫМ
@@ -295,7 +302,7 @@ VALUES
     ARRAY['Уборка', 'Общение'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -306,7 +313,7 @@ VALUES
     ARRAY['Покупка продуктов', 'Доставка'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -317,7 +324,7 @@ VALUES
     ARRAY['Сопровождение', 'Общение'],
     6, 6,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -328,7 +335,7 @@ VALUES
     ARRAY['Обучение', 'Консультации'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -339,7 +346,7 @@ VALUES
     ARRAY['Покупка лекарств', 'Доставка'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 );
 
 -- =========================================
@@ -370,7 +377,7 @@ VALUES
     ARRAY['Подготовка почвы', 'Посадка кустарников', 'Полив'],
     16, 16,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -381,7 +388,7 @@ VALUES
     ARRAY['Сбор пластика', 'Сортировка мусора'],
     14, 14,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -392,7 +399,7 @@ VALUES
     ARRAY['Сбор мусора', 'Очистка берега', 'Вывоз мешков'],
     20, 20,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -403,7 +410,7 @@ VALUES
     ARRAY['Подготовка клумб', 'Высадка цветов', 'Полив'],
     12, 12,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -414,7 +421,7 @@ VALUES
     ARRAY['Сбор мусора', 'Сортировка', 'Погрузка отходов'],
     24, 24,
     (SELECT id FROM categories WHERE name = 'Экология'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- Детям
@@ -427,7 +434,7 @@ VALUES
     ARRAY['Подготовка материалов', 'Проведение занятия', 'Помощь детям'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -438,7 +445,7 @@ VALUES
     ARRAY['Подготовка инвентаря', 'Проведение игр', 'Поддержка детей'],
     14, 14,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -449,7 +456,7 @@ VALUES
     ARRAY['Подготовка игр', 'Объяснение правил', 'Сопровождение детей'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -460,7 +467,7 @@ VALUES
     ARRAY['Украшение зала', 'Помощь ведущему', 'Сопровождение детей'],
     12, 12,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -471,7 +478,7 @@ VALUES
     ARRAY['Чтение вслух', 'Помощь с упражнениями', 'Поддержка детей'],
     9, 9,
     (SELECT id FROM categories WHERE name = 'Детям'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- Животным
@@ -484,7 +491,7 @@ VALUES
     ARRAY['Подготовка корма', 'Кормление животных', 'Уборка мисок'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -495,7 +502,7 @@ VALUES
     ARRAY['Кормление', 'Уборка зоны', 'Игры со щенками'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -506,7 +513,7 @@ VALUES
     ARRAY['Уборка территории', 'Сбор мусора', 'Дезинфекция'],
     12, 12,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -517,7 +524,7 @@ VALUES
     ARRAY['Прогулка', 'Игры', 'Наблюдение за поведением'],
     6, 6,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -528,7 +535,7 @@ VALUES
     ARRAY['Погрузка кормов', 'Перенос коробок', 'Разгрузка'],
     10, 10,
     (SELECT id FROM categories WHERE name = 'Животным'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 
 -- Пожилым
@@ -541,7 +548,7 @@ VALUES
     ARRAY['Сухая уборка', 'Влажная уборка', 'Помощь по дому'],
     6, 6,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -552,7 +559,7 @@ VALUES
     ARRAY['Встреча', 'Сопровождение', 'Помощь с документами'],
     5, 5,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -563,7 +570,7 @@ VALUES
     ARRAY['Покупка товаров', 'Доставка', 'Передача покупок'],
     7, 7,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -574,7 +581,7 @@ VALUES
     ARRAY['Чтение книг', 'Беседа', 'Поддержка общения'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 ),
 (
     gen_random_uuid(),
@@ -585,7 +592,7 @@ VALUES
     ARRAY['Объяснение интерфейса', 'Помощь с телефоном', 'Ответы на вопросы'],
     8, 8,
     (SELECT id FROM categories WHERE name = 'Пожилым'),
-    (SELECT id FROM users WHERE email = 'coordinator@example.com')
+    (SELECT id FROM users WHERE role = 'coordinator' ORDER BY created_at, id LIMIT 1)
 );
 
 

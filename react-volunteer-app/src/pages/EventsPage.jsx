@@ -13,6 +13,7 @@ import childrenCategoryIcon from "../assets/SVG/childern_category.svg";
 
 const EVENTS_PER_PAGE = 6;
 const VISIBLE_PAGES = 5;
+const VISIBLE_PAGES_WITH_NEXT = VISIBLE_PAGES - 1;
 
 const FILTERS = [
   {
@@ -46,42 +47,20 @@ const FILTERS = [
   },
 ];
 
-function normalizeEventsResponse(data) {
-  if (Array.isArray(data)) {
-    return {
-      items: data,
-      pagination: {
-        page: 1,
-        limit: EVENTS_PER_PAGE,
-        total: data.length,
-        total_pages: Math.max(1, Math.ceil(data.length / EVENTS_PER_PAGE)),
-      },
-    };
-  }
-
-  return {
-    items: Array.isArray(data?.items) ? data.items : [],
-    pagination: data?.pagination || {
-      page: 1,
-      limit: EVENTS_PER_PAGE,
-      total: 0,
-      total_pages: 1,
-    },
-  };
-}
-
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [urgentOnly, setUrgentOnly] = useState(false);
-  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: EVENTS_PER_PAGE,
     total: 0,
     total_pages: 1,
+    has_next_page: false,
+    has_prev_page: false,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [urgentOnly, setUrgentOnly] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -113,49 +92,43 @@ export default function EventsPage() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    getEvents({
+      page: currentPage,
+      limit: EVENTS_PER_PAGE,
+      category: activeCategory === "all" ? "" : activeCategory,
+      urgent: urgentOnly ? "true" : "",
+    })
+      .then((data) => {
+        const items = Array.isArray(data) ? data : data?.items || [];
 
-    async function loadEvents() {
-      try {
-        const data = await getEvents({
-          page: currentPage,
-          limit: EVENTS_PER_PAGE,
-          category: activeCategory === "all" ? "" : activeCategory,
-          urgent: urgentOnly ? "true" : "",
-        });
-
-        if (!isMounted) return;
-
-        const normalized = normalizeEventsResponse(data);
-        setEvents(normalized.items);
-        setPagination(normalized.pagination);
-      } catch (error) {
-        console.error(error.message);
-      }
-    }
-
-    loadEvents();
-
-    return () => {
-      isMounted = false;
-    };
+        setEvents(items);
+        setPagination(
+          data?.pagination || {
+            page: currentPage,
+            limit: EVENTS_PER_PAGE,
+            total: items.length,
+            total_pages: 1,
+            has_next_page: false,
+            has_prev_page: currentPage > 1,
+          }
+        );
+      })
+      .catch((error) => console.error(error.message));
   }, [currentPage, activeCategory, urgentOnly]);
 
   const totalPages = pagination.total_pages || 1;
+  const hasHiddenPages = totalPages > VISIBLE_PAGES;
+  const pagesInGroup = hasHiddenPages ? VISIBLE_PAGES_WITH_NEXT : VISIBLE_PAGES;
+  const currentGroup = Math.floor((currentPage - 1) / pagesInGroup);
+  const startPage = currentGroup * pagesInGroup + 1;
+  const endPage = Math.min(startPage + pagesInGroup - 1, totalPages);
 
-  const currentGroup = Math.floor((currentPage - 1) / VISIBLE_PAGES);
-  const startPage = currentGroup * VISIBLE_PAGES + 1;
-  const endPage = Math.min(startPage + VISIBLE_PAGES - 1, totalPages);
+  const visiblePages = [];
+  for (let page = startPage; page <= endPage; page += 1) {
+    visiblePages.push(page);
+  }
 
-  const visiblePages = useMemo(() => {
-    const pages = [];
-
-    for (let page = startPage; page <= endPage; page += 1) {
-      pages.push(page);
-    }
-
-    return pages;
-  }, [startPage, endPage]);
+  const shouldShowNextButton = endPage < totalPages;
 
   function goToPage(page) {
     setCurrentPage(page);
@@ -163,7 +136,7 @@ export default function EventsPage() {
   }
 
   function goToNextGroup() {
-    if (endPage < totalPages) {
+    if (shouldShowNextButton) {
       goToPage(endPage + 1);
     }
   }
@@ -309,7 +282,7 @@ export default function EventsPage() {
                 </button>
               ))}
 
-              {endPage < totalPages && (
+              {shouldShowNextButton && (
                 <button
                   type="button"
                   className="events-pagination__item"
