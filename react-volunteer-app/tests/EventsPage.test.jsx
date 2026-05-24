@@ -62,9 +62,25 @@ function createPaginationResponse(
   };
 }
 
+function makeEvent(overrides = {}) {
+  return {
+    id: 1,
+    title: "Мероприятие",
+    start_at: "2099-05-10T10:00:00.000Z",
+    location: "Москва",
+    available_slots: 5,
+    participant_limit: 20,
+    category_name: "Экология",
+    is_urgent: false,
+    image_url: null,
+    ...overrides,
+  };
+}
+
 describe("EventsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     window.scrollTo = vi.fn();
 
     mockGetToken.mockReturnValue(null);
@@ -73,21 +89,22 @@ describe("EventsPage", () => {
       role: "volunteer",
     });
 
+    mockGetEvents.mockResolvedValue(createPaginationResponse([]));
+
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   it("loads and renders events from server pagination response", async () => {
-    mockGetEvents.mockResolvedValue(
+    mockGetEvents.mockResolvedValueOnce(
       createPaginationResponse([
-        {
+        makeEvent({
           id: 1,
           title: "Будущее мероприятие",
-          start_at: "2099-05-10T10:00:00.000Z",
           location: "Москва",
           available_slots: 5,
           participant_limit: 20,
           category_name: "Экология",
-        },
+        }),
       ])
     );
 
@@ -106,9 +123,9 @@ describe("EventsPage", () => {
   });
 
   it("renders events in the order returned by the server", async () => {
-    mockGetEvents.mockResolvedValue(
+    mockGetEvents.mockResolvedValueOnce(
       createPaginationResponse([
-        {
+        makeEvent({
           id: 1,
           title: "Ближайшее мероприятие",
           start_at: "2099-05-10T10:00:00.000Z",
@@ -116,8 +133,8 @@ describe("EventsPage", () => {
           available_slots: 5,
           participant_limit: 20,
           category_name: "Экология",
-        },
-        {
+        }),
+        makeEvent({
           id: 3,
           title: "Позднее мероприятие",
           start_at: "2099-06-20T10:00:00.000Z",
@@ -125,7 +142,7 @@ describe("EventsPage", () => {
           available_slots: 4,
           participant_limit: 15,
           category_name: "Животным",
-        },
+        }),
       ])
     );
 
@@ -139,44 +156,31 @@ describe("EventsPage", () => {
   });
 
   it("maps category names to EventCard category types", async () => {
-    mockGetEvents.mockResolvedValue(
+    mockGetEvents.mockResolvedValueOnce(
       createPaginationResponse([
-        {
+        makeEvent({
           id: 1,
           title: "Экология 1",
-          start_at: "2099-05-10T10:00:00.000Z",
-          location: "Москва",
-          available_slots: 5,
-          participant_limit: 20,
           category_name: "Экология",
-        },
-        {
+        }),
+        makeEvent({
           id: 2,
           title: "Детям 1",
           start_at: "2099-05-11T10:00:00.000Z",
-          location: "Казань",
-          available_slots: 2,
-          participant_limit: 12,
           category_name: "Детям",
-        },
-        {
+        }),
+        makeEvent({
           id: 3,
           title: "Животным 1",
           start_at: "2099-05-12T10:00:00.000Z",
-          location: "Уфа",
-          available_slots: 3,
-          participant_limit: 10,
           category_name: "Животным",
-        },
-        {
+        }),
+        makeEvent({
           id: 4,
           title: "Пожилым 1",
           start_at: "2099-05-13T10:00:00.000Z",
-          location: "Тверь",
-          available_slots: 1,
-          participant_limit: 8,
           category_name: "Пожилым",
-        },
+        }),
       ])
     );
 
@@ -199,37 +203,27 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse([
-          {
+          makeEvent({
             id: 1,
             title: "Экология 1",
-            start_at: "2099-05-10T10:00:00.000Z",
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
             category_name: "Экология",
-          },
-          {
+          }),
+          makeEvent({
             id: 2,
             title: "Детям 1",
             start_at: "2099-05-11T10:00:00.000Z",
-            location: "Казань",
-            available_slots: 2,
-            participant_limit: 12,
             category_name: "Детям",
-          },
+          }),
         ])
       )
       .mockResolvedValueOnce(
         createPaginationResponse([
-          {
+          makeEvent({
             id: 2,
             title: "Детям 1",
             start_at: "2099-05-11T10:00:00.000Z",
-            location: "Казань",
-            available_slots: 2,
-            participant_limit: 12,
             category_name: "Детям",
-          },
+          }),
         ])
       );
 
@@ -257,15 +251,11 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse([
-          {
+          makeEvent({
             id: 1,
             title: "Экология 1",
-            start_at: "2099-05-10T10:00:00.000Z",
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
             category_name: "Экология",
-          },
+          }),
         ])
       )
       .mockResolvedValueOnce(createPaginationResponse([]));
@@ -294,15 +284,14 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse(
-          Array.from({ length: 6 }, (_, index) => ({
-            id: index + 1,
-            title: `Экология ${index + 1}`,
-            start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
-            category_name: "Экология",
-          })),
+          Array.from({ length: 6 }, (_, index) =>
+            makeEvent({
+              id: index + 1,
+              title: `Экология ${index + 1}`,
+              start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+              category_name: "Экология",
+            })
+          ),
           {
             page: 1,
             total: 7,
@@ -313,15 +302,12 @@ describe("EventsPage", () => {
       .mockResolvedValueOnce(
         createPaginationResponse(
           [
-            {
+            makeEvent({
               id: 7,
               title: "Экология 7",
               start_at: "2099-05-16T10:00:00.000Z",
-              location: "Москва",
-              available_slots: 5,
-              participant_limit: 20,
               category_name: "Экология",
-            },
+            }),
           ],
           {
             page: 2,
@@ -332,7 +318,7 @@ describe("EventsPage", () => {
       )
       .mockResolvedValueOnce(
         createPaginationResponse([
-          {
+          makeEvent({
             id: 100,
             title: "Детям 1",
             start_at: "2099-06-01T10:00:00.000Z",
@@ -340,7 +326,7 @@ describe("EventsPage", () => {
             available_slots: 2,
             participant_limit: 12,
             category_name: "Детям",
-          },
+          }),
         ])
       );
 
@@ -372,15 +358,14 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse(
-          Array.from({ length: 6 }, (_, index) => ({
-            id: index + 1,
-            title: `Мероприятие ${index + 1}`,
-            start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
-            category_name: index % 2 === 0 ? "Экология" : "Детям",
-          })),
+          Array.from({ length: 6 }, (_, index) =>
+            makeEvent({
+              id: index + 1,
+              title: `Мероприятие ${index + 1}`,
+              start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+              category_name: index % 2 === 0 ? "Экология" : "Детям",
+            })
+          ),
           {
             page: 1,
             total: 31,
@@ -391,18 +376,15 @@ describe("EventsPage", () => {
       .mockResolvedValueOnce(
         createPaginationResponse(
           [
-            {
-              id: 31,
-              title: "Мероприятие 31",
+            makeEvent({
+              id: 5,
+              title: "Мероприятие 5",
               start_at: "2099-06-10T10:00:00.000Z",
-              location: "Москва",
-              available_slots: 5,
-              participant_limit: 20,
               category_name: "Экология",
-            },
+            }),
           ],
           {
-            page: 6,
+            page: 5,
             total: 31,
             totalPages: 6,
           }
@@ -410,15 +392,14 @@ describe("EventsPage", () => {
       )
       .mockResolvedValueOnce(
         createPaginationResponse(
-          Array.from({ length: 6 }, (_, index) => ({
-            id: index + 1,
-            title: `Мероприятие ${index + 1}`,
-            start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
-            category_name: index % 2 === 0 ? "Экология" : "Детям",
-          })),
+          Array.from({ length: 6 }, (_, index) =>
+            makeEvent({
+              id: index + 1,
+              title: `Мероприятие ${index + 1}`,
+              start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+              category_name: index % 2 === 0 ? "Экология" : "Детям",
+            })
+          ),
           {
             page: 1,
             total: 31,
@@ -432,12 +413,14 @@ describe("EventsPage", () => {
     expect(await screen.findByText("Мероприятие 1")).toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "5" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "4" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "5" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /дальше/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /дальше/i }));
 
-    expect(await screen.findByRole("button", { name: "6" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "5" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "6" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /в начало/i })).toBeInTheDocument();
 
     expect(window.scrollTo).toHaveBeenCalledWith({
@@ -454,15 +437,14 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse(
-          Array.from({ length: 6 }, (_, index) => ({
-            id: index + 1,
-            title: `Мероприятие ${index + 1}`,
-            start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
-            category_name: "Экология",
-          })),
+          Array.from({ length: 6 }, (_, index) =>
+            makeEvent({
+              id: index + 1,
+              title: `Мероприятие ${index + 1}`,
+              start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+              category_name: "Экология",
+            })
+          ),
           {
             page: 1,
             total: 7,
@@ -473,15 +455,12 @@ describe("EventsPage", () => {
       .mockResolvedValueOnce(
         createPaginationResponse(
           [
-            {
+            makeEvent({
               id: 7,
               title: "Мероприятие 7",
               start_at: "2099-05-16T10:00:00.000Z",
-              location: "Москва",
-              available_slots: 5,
-              participant_limit: 20,
               category_name: "Экология",
-            },
+            }),
           ],
           {
             page: 2,
@@ -521,17 +500,13 @@ describe("EventsPage", () => {
       role: "coordinator",
     });
 
-    mockGetEvents.mockResolvedValue(
+    mockGetEvents.mockResolvedValueOnce(
       createPaginationResponse([
-        {
+        makeEvent({
           id: 1,
           title: "Координаторское мероприятие",
-          start_at: "2099-05-10T10:00:00.000Z",
-          location: "Москва",
-          available_slots: 5,
-          participant_limit: 20,
           category_name: "Экология",
-        },
+        }),
       ])
     );
 
@@ -550,17 +525,13 @@ describe("EventsPage", () => {
     mockGetToken.mockReturnValue("token");
     mockGetMyProfile.mockRejectedValue(new Error("profile failed"));
 
-    mockGetEvents.mockResolvedValue(
+    mockGetEvents.mockResolvedValueOnce(
       createPaginationResponse([
-        {
+        makeEvent({
           id: 1,
           title: "Обычное мероприятие",
-          start_at: "2099-05-10T10:00:00.000Z",
-          location: "Москва",
-          available_slots: 5,
-          participant_limit: 20,
           category_name: "Экология",
-        },
+        }),
       ])
     );
 
@@ -574,16 +545,15 @@ describe("EventsPage", () => {
     mockGetEvents
       .mockResolvedValueOnce(
         createPaginationResponse(
-          Array.from({ length: 6 }, (_, index) => ({
-            id: index + 1,
-            title: `Несрочное ${index + 1}`,
-            start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
-            location: "Москва",
-            available_slots: 5,
-            participant_limit: 20,
-            category_name: "Экология",
-            is_urgent: false,
-          })),
+          Array.from({ length: 6 }, (_, index) =>
+            makeEvent({
+              id: index + 1,
+              title: `Несрочное ${index + 1}`,
+              start_at: `2099-05-${String(index + 10).padStart(2, "0")}T10:00:00.000Z`,
+              category_name: "Экология",
+              is_urgent: false,
+            })
+          ),
           {
             page: 1,
             total: 7,
@@ -594,16 +564,13 @@ describe("EventsPage", () => {
       .mockResolvedValueOnce(
         createPaginationResponse(
           [
-            {
+            makeEvent({
               id: 7,
               title: "Несрочное 7",
               start_at: "2099-05-16T10:00:00.000Z",
-              location: "Москва",
-              available_slots: 5,
-              participant_limit: 20,
               category_name: "Экология",
               is_urgent: false,
-            },
+            }),
           ],
           {
             page: 2,
@@ -614,7 +581,7 @@ describe("EventsPage", () => {
       )
       .mockResolvedValueOnce(
         createPaginationResponse([
-          {
+          makeEvent({
             id: 100,
             title: "Срочное мероприятие",
             start_at: "2099-06-01T10:00:00.000Z",
@@ -623,7 +590,7 @@ describe("EventsPage", () => {
             participant_limit: 12,
             category_name: "Детям",
             is_urgent: true,
-          },
+          }),
         ])
       );
 
@@ -651,7 +618,7 @@ describe("EventsPage", () => {
   });
 
   it("logs api error when loading fails", async () => {
-    mockGetEvents.mockRejectedValue(new Error("Ошибка загрузки мероприятий"));
+    mockGetEvents.mockRejectedValueOnce(new Error("Ошибка загрузки мероприятий"));
 
     renderPage();
 
